@@ -1,0 +1,29 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/upenn-nets-2120/project-moggers.git"
+  },
+  "author": "Ashley Zhang, Kevin He, Alicia Sun, Matthew Tsui",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/upenn-nets-2120/project-moggers/issues"
+  },
+  "homepage": "https://github.com/upenn-nets-2120/project-moggers#readme",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.556.0",
+    "aws-sdk": "^2.1602.0",
+    "chromadb": "^1.8.1",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "fs": "^0.0.1-security"
+  }
+}

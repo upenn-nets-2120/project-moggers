@@ -8,14 +8,13 @@ import Register from './components/Register/Register';
 
 function App() {
   return (
-    <div className="Moggerstagram">
       <React.Fragment>
         <NavBar />
         <Routes>
-          <Route path = "/register" component = { Register } />
+          <Route path='/register' element={<Register />} />
+          <Route path = "/login" element = {<Login />} />
         </Routes>
       </React.Fragment>
-    </div>
   );
 }
 

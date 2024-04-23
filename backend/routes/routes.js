@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.post('/register', async (req, res) => {
     try {
-        var { username, password, firstName, lastName, email, affiliation, birthday, profilePhoto, hashtags } = req.body;
+        var { username, password, firstName, lastName, email, affiliation, birthday } = req.body;
         
         if (!username || !password || !firstName || !lastName || !email || !affiliation || !birthday) {
             return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});

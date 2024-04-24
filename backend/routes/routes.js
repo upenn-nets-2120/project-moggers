@@ -2,12 +2,15 @@ const express = require('express');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 
-var db = require('../models/database.js');
+var db = require('../models/create_tables.js');
 
 const router = express.Router();
 
 // all functions for handling data, calling the database, post/get requests, etc.
 
+router.get('/hi', (req, res) => {
+    res.status(200).json({message: 'Hello World!'});
+});
 // POST /register
 router.post('/register', async (req, res) => {
     console.log("hellooO!!!!!")

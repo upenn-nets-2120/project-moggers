@@ -10,6 +10,7 @@ const config = JSON.parse(configFile);
 
 const app = express();
 const port = config.serverPort || 8080;
+const userRouter = require('./routes/routes');
 
 app.use(cors());
 
@@ -17,6 +18,8 @@ app.get('/', (req, res) => {
   res.send('Welcome to Moggerstagram');
 });
 
+
+app.use(userRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

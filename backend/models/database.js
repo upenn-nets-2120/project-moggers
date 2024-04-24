@@ -86,5 +86,19 @@ async function create_tables() {
         FOREIGN KEY (post_id) REFERENCES posts(id)
     )`);
 
-    return await Promise.all([q1, q2, q3, q4, q5, q6, q7]);
+    return await Promise.all([q1, q2, q3, q4, q5, q6, q7]).then(async () => { 
+    await dbaccess.close_db(db);
+    console.log('closed db' );
+  });
 }
+
+// Database connection setup
+const db = dbaccess.get_db_connection();
+
+create_tables(dbaccess).then(() => {
+console.log('Tables created');
+}).catch((err) => {
+console.log('Error creating tables:', err);
+});
+// db.close_db():
+const PORT = config.serverPort;

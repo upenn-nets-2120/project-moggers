@@ -8,6 +8,7 @@ const router = express.Router();
 
 // all functions for handling data, calling the database, post/get requests, etc.
 
+// POST /register
 router.post('/register', async (req, res) => {
     try {
         var { username, password, firstName, lastName, email, affiliation, birthday } = req.body;
@@ -51,7 +52,7 @@ router.post('/register', async (req, res) => {
     }
 });
 
-    
+// POST /login
 router.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;

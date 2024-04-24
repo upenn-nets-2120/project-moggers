@@ -73,7 +73,7 @@ async function create_tables(db) {
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(255)
     )`);
-    let q10 = db.create_tables(`CREATE TABLE user_chats (
+    let q10 = db.create_tables(`CREATE TABLE IF NOT EXISTS user_chats (
         user_id INT,
         chat_id INT,
         PRIMARY KEY (user_id, chat_id),

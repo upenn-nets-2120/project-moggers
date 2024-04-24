@@ -81,6 +81,14 @@ async function create_tables(db) {
         FOREIGN KEY (chat_id) REFERENCES chats(id)
     
     )`);
+
+    let q11 = db.create_tables(`CREATE TABLE IF NOT EXISTS interests (
+      name VARCHAR(255),
+      count INT,
+      PRIMARY KEY (name)
+  
+  )`);
+  
     
     
 

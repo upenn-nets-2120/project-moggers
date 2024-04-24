@@ -1,3 +1,4 @@
+// db schemas/models
 const dbaccess = require('./db_access');
 const config = require('../config.json'); // Load configuration
 
@@ -13,83 +14,90 @@ function sendQueryOrCommand(db, query, params = []) {
     });
   }
 
+
 async function create_tables(db) {
+    console.log("hello!!!!");
 
-  // These tables should already exist from prior homeworks.
-  // We include them in case you need to recreate the database.
-
-  // You'll need to define the names table.
-  // var qa = db.create_tables('...');
-
-  // var qb = db.create_tables('CREATE TABLE IF NOT EXISTS titles ( \
-  //   tconst VARCHAR(10) PRIMARY KEY, \
-  //   titleType varchar(255), \
-  //   primaryTitle VARCHAR(255), \
-  //   originalTitle VARCHAR(255), \
-  //   startYear varchar(4), \
-  //   endYear varchar(4), \
-  //   genres VARCHAR(255) \
-  //   );')
-
-  //   var qc = db.create_tables('CREATE TABLE IF NOT EXISTS principals ( \
-  //     tconst VARCHAR(10), \
-  //     ordering int, \
-  //     nconst VARCHAR(10), \
-  //     category VARCHAR(255), \
-  //     job VARCHAR(255), \
-  //     characters VARCHAR(255), \
-  //     FOREIGN KEY (tconst) REFERENCES titles(tconst), \
-  //     FOREIGN KEY (nconst) REFERENCES names(nconst_short) \
-  //     );')
-
-  //   var qd = db.create_tables('CREATE TABLE IF NOT EXISTS recommendations ( \
-  //     person VARCHAR(10), \
-  //     recommendation VARCHAR(10), \
-  //     strength int, \
-  //     FOREIGN KEY (person) REFERENCES names(nconst_short), \
-  //     FOREIGN KEY (recommendation) REFERENCES names(nconst_short) \
-  //     );')
-  
+    let q1 = db.create_tables(`CREATE TABLE IF NOT EXISTS users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        first_name VARCHAR(255) NOT NULL,
+        last_name VARCHAR(255) NOT NULL,
+        affiliation VARCHAR(255),
+        birthday DATE,
+        status BOOL,
+        interests VARCHAR(255)
+    )`);
+    let q2= db.create_tables(`CREATE TABLE IF NOT EXISTS friends (
+        follower INT NOT NULL,
+        followed INT NOT NULL,
+        PRIMARY KEY (follower, followed),
+        FOREIGN KEY (follower) REFERENCES users(id),
+        FOREIGN KEY (followed) REFERENCES users(id)
+    )`);
 
 
+    let q3 = db.create_tables(`CREATE TABLE IF NOT EXISTS posts (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        author INT NOT NULL,
+        content TEXT NOT NULL,
+        date_posted DATE NOT NULL,
+        num_likes INT NOT NULL,
+        timstamp TIMESTAMP NOT NULL,
+        FOREIGN KEY (author) REFERENCES users(id)
+    )`);
 
-  // This table should already exist from HW3
-  var q1 = db.create_tables('CREATE TABLE IF NOT EXISTS friends ( \
-    followed VARCHAR(10), \
-    follower VARCHAR(10), \
-    FOREIGN KEY (follower) REFERENCES names(nconst), \
-    FOREIGN KEY (followed) REFERENCES names(nconst) \
-    );')
+    let q4 = db.create_tables(`CREATE TABLE IF NOT EXISTS comments (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        post_id INT NOT NULL,
+        parent_post INT,
+        author INT NOT NULL,
+        content TEXT NOT NULL,
+        date_posted DATE NOT NULL,
+        timstamp TIMESTAMP NOT NULL,
+        FOREIGN KEY (parent_post) REFERENCES comments(id),
+        FOREIGN KEY (post_id) REFERENCES posts(id),
+        FOREIGN KEY (author) REFERENCES users(id)
+    )`);
 
-    // TODO: create users table
-    var q2 = db.create_tables(
-      'CREATE TABLE IF NOT EXISTS users ( \
-        user_id int NOT NULL AUTO_INCREMENT PRIMARY KEY, \
-        username VARCHAR(255), \
-        hashed_password VARCHAR(255), \
-        linked_nconst VARCHAR(10), \
-        FOREIGN KEY (linked_nconst) REFERENCES names(nconst) \
-        );'
-    );
+    let q5 = db.create_tables(`CREATE TABLE IF NOT EXISTS likes (
+        post_id INT,
+        user_id INT,
+        FOREIGN KEY (post_id) REFERENCES posts(id),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )`);
+
+    let q6 = db.create_tables(`CREATE TABLE IF NOT EXISTS chats (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255)
+    )`);
+    let q10 = db.create_tables(`CREATE TABLE user_chats (
+        user_id INT,
+        chat_id INT,
+        PRIMARY KEY (user_id, chat_id),
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (chat_id) REFERENCES chats(id)
     
-    // TODO: create posts table
-    var q3 = db.create_tables(
-      'CREATE TABLE IF NOT EXISTS posts ( \
-        post_id int NOT NULL AUTO_INCREMENT PRIMARY KEY, \
-        parent_post int, \
-        title VARCHAR(255), \
-        content VARCHAR(255), \
-        author_id int, \
-        FOREIGN KEY (parent_post) REFERENCES posts(post_id), \
-        FOREIGN KEY (author_id) REFERENCES users(user_id) \
-        );'
-    );    
+    )`);
+    
+    
 
-    return await Promise.all([q1, q2, q3]).then(async () => {
-      // Once all tables are created, close the database connection
-      await dbaccess.close_db();
-      console.log("dbaccess closed db");
-    });
+    let q7 = db.create_tables(`CREATE TABLE IF NOT EXISTS messages (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        author INT,
+        timstamp TIMESTAMP NOT NULL,
+        chat_id INT,
+        content TEXT,
+        FOREIGN KEY (author) REFERENCES users(id),
+        FOREIGN KEY (chat_id) REFERENCES chats(id)
+    )`);
+
+    return await Promise.all([q1, q2, q3, q4, q5, q6, q7]).then(async () => { 
+    await dbaccess.close_db(db);
+    console.log('closed db' );
+  });
 }
 
 // Database connection setup

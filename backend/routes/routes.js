@@ -10,6 +10,7 @@ const router = express.Router();
 
 // POST /register
 router.post('/register', async (req, res) => {
+    console.log("hellooO!!!!!")
     try {
         var { username, password, firstName, lastName, email, affiliation, birthday } = req.body;
         

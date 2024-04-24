@@ -1,22 +1,24 @@
 // db schemas/models
-var AWS = require('aws-sdk');
-const configFile = fs.readFileSync('../config.json', 'utf8');
-const config = JSON.parse(configFile);
+const dbaccess = require('./db_access');
+const config = require('../config.json'); // Load configuration
 
-// RDS connection
-AWS.config.update({ region: config.awsRegion });
-var db = new AWS.RDSDataService();
+function sendQueryOrCommand(db, query, params = []) {
+    return new Promise((resolve, reject) => {
+      db.query(query, params, (err, results) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(results);
+        }
+      });
+    });
+  }
 
-async function create_tables() {
-    let q1 = db.create_tables(`CREATE TABLE IF NOT EXISTS friends (
-        follower INT NOT NULL,
-        followed INT NOT NULL,
-        PRIMARY KEY (follower, followed),
-        FOREIGN KEY (follower) REFERENCES users(id),
-        FOREIGN KEY (followed) REFERENCES users(id)
-    )`);
 
-    let q2 = db.create_tables(`CREATE TABLE IF NOT EXISTS users (
+async function create_tables(db) {
+    console.log("hello!!!!");
+
+    let q1 = db.create_tables(`CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         username VARCHAR(255) NOT NULL,
         email VARCHAR(255) NOT NULL,
@@ -25,13 +27,16 @@ async function create_tables() {
         last_name VARCHAR(255) NOT NULL,
         affiliation VARCHAR(255),
         birthday DATE,
-        interests VARCHAR(255),
-        FOREIGN KEY (id) REFERENCES friends(follower),
-        FOREIGN KEY (id) REFERENCES friends(followed),
-        FOREIGN KEY (id) REFERENCES posts(author),
-        FOREIGN KEY (id) REFERENCES comments(author),
-        FOREIGN KEY (id) REFERENCES likes(user_id)
+        interests VARCHAR(255)
     )`);
+    let q2= db.create_tables(`CREATE TABLE IF NOT EXISTS friends (
+        follower INT NOT NULL,
+        followed INT NOT NULL,
+        PRIMARY KEY (follower, followed),
+        FOREIGN KEY (follower) REFERENCES users(id),
+        FOREIGN KEY (followed) REFERENCES users(id)
+    )`);
+
 
     let q3 = db.create_tables(`CREATE TABLE IF NOT EXISTS posts (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -40,10 +45,7 @@ async function create_tables() {
         date_posted DATE NOT NULL,
         num_likes INT NOT NULL,
         timstamp TIMESTAMP NOT NULL,
-        FOREIGN KEY (author) REFERENCES users(id),
-        FOREIGN KEY (id) REFERENCES comments(post_id),
-        FOREIGN KEY (id) REFERENCES likes(post_id),
-        FOREIGN KEY (id) REFERENCES messages(author)
+        FOREIGN KEY (author) REFERENCES users(id)
     )`);
 
     let q4 = db.create_tables(`CREATE TABLE IF NOT EXISTS comments (
@@ -68,12 +70,18 @@ async function create_tables() {
 
     let q6 = db.create_tables(`CREATE TABLE IF NOT EXISTS chats (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(255),
-        users VARCHAR(255),
-        messages INT,
-        FOREIGN KEY (users) REFERENCES users(id),
-        FOREIGN KEY (messages) REFERENCES messages(id)
+        name VARCHAR(255)
     )`);
+    let q10 = db.create_tables(`CREATE TABLE user_chats (
+        user_id INT,
+        chat_id INT,
+        PRIMARY KEY (user_id, chat_id),
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (chat_id) REFERENCES chats(id)
+    
+    )`);
+    
+    
 
     let q7 = db.create_tables(`CREATE TABLE IF NOT EXISTS messages (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -82,8 +90,7 @@ async function create_tables() {
         chat_id INT,
         content TEXT,
         FOREIGN KEY (author) REFERENCES users(id),
-        FOREIGN KEY (chat_id) REFERENCES chats(id),
-        FOREIGN KEY (post_id) REFERENCES posts(id)
+        FOREIGN KEY (chat_id) REFERENCES chats(id)
     )`);
 
     return await Promise.all([q1, q2, q3, q4, q5, q6, q7]).then(async () => { 
@@ -94,11 +101,9 @@ async function create_tables() {
 
 // Database connection setup
 const db = dbaccess.get_db_connection();
-
-create_tables(dbaccess).then(() => {
+var result = create_tables(dbaccess);
 console.log('Tables created');
-}).catch((err) => {
-console.log('Error creating tables:', err);
-});
-// db.close_db():
+
+
 const PORT = config.serverPort;
+

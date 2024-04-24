@@ -93,4 +93,71 @@ router.get('/logout', (req, res) => {
 });
 
 
+// *********************************************************
+// only call this method AFTER person 2 ACCEPTS the invite and also we sent the invite.
+var postChats = async function(req, res) {
+    try {
+        var { chatName, user1, user2 } = req.body;
+        if (!chatName || !user1, !user2) {
+            return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
+        }
+
+        // Now check if both users are online
+        var count1 = await db.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${user1}"`)
+        if (count1 != 1) {
+            return res.status(500).json({message: 'Could not find user1 ID in users or found more than one.'});
+        }
+        var status1 = await db.send_sql(`SELECT status FROM users WHERE id = "${user1}"`);
+        var count2 = await db.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${user2}"`)
+        if (count2 != 1) {
+            return res.status(500).json({message: 'Could not find user2 ID in users or found more than one.'});
+        }
+        var status2 = await db.send_sql(`SELECT status FROM users WHERE id = "${user2}"`);
+        if (!status1 || !status2) {
+            return res.status(500).json({message: 'One or both users are not online, cannot make chat.'});
+        }
+
+
+        var already_exists = false;
+        //////////////////////////////////////////////////////////////////////////////////
+        // Now check if a chat with these two already exists
+        // one that is flipped (user, id )
+        // duplicate it, two filers, one for the first user one for the second user 
+        // merge them back, flip them back join on id 
+        // iterate through id, if any of them have lenght 2, return yes
+        // TODO: update already_exists
+        var x1 = await db.send_sql(`SELECT * FROM user_chats WHERE user_id = "${user1}"`);
+        var x2 = await db.send_sql(`SELECT * FROM user_chats WHERE user_id = "${user2}"`);
+
+
+
+
+        //////////////////////////////////////////////////////////////////////////////////
+
+
+        
+        if (already_exists) {
+            return res.status(500).json({message: 'A chat already exists with only these two users.'});
+        }
+
+        
+
+        // Otherwise let us insert into the DBs
+        await db.insert_items(`INSERT INTO chats (name) VALUES ("${chatName}")`);
+        const dbSize = await db.send_sql('SELECT COUNT(*) FROM user_chats');
+        var new_chat_id;
+        if (dbSize == 0) {
+            // first insert
+            new_chat_id = 1;
+        } else {
+            const max_chat_id = await db.send_sql(`SELECT MAX(chat_id) FROM user_chats`);
+            new_chat_id = max_chat_id + 1;
+        }
+        await db.insert_items(`INSERT INTO user_chats (user_id, chat_id) VALUES (${user1}, ${new_chat_id})`);
+        await db.insert_items(`INSERT INTO user_chats (user_id, chat_id) VALUES (${user2}, ${new_chat_id})`);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({message: 'Internal server error'});
+    };
+};
 module.exports = router;

@@ -6,3 +6,62 @@ const config = JSON.parse(configFile);
 // RDS connection
 AWS.config.update({ region: config.awsRegion });
 var db = new AWS.RDSDataService();
+
+async function create_tables() {
+    let q1 = db.create_tables(`CREATE TABLE IF NOT EXISTS friends (
+        followed INT NOT NULL,
+        followed INT NOT NULL,
+        PRIMARY KEY (follower, followed),
+        FOREIGN KEY (follower) REFERENCES users(id),
+        FOREIGN KEY (followed) REFERENCES users(id)
+    )`);
+
+    let q2 = db.create_tables(`CREATE TABLE IF NOT EXISTS users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        first_name VARCHAR(255) NOT NULL,
+        last_name VARCHAR(255) NOT NULL,
+        affiliation VARCHAR(255),
+        birthday DATE,
+        interests VARCHAR(255),
+        FOREIGN KEY (id) REFERENCES friends(follower),
+        FOREIGN KEY (id) REFERENCES friends(followed),
+        FOREIGN KEY (id) REFERENCES posts(author)
+        FOREIGN KEY (id) REFERENCES comments(author)
+        FOREIGN KEY (id) REFERENCES likes(user_id)
+    )`);
+
+    let q3 = db.create_tables(`CREATE TABLE IF NOT EXISTS posts (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        author INT NOT NULL,
+        content TEXT NOT NULL,
+        date_posted DATE NOT NULL,
+        num_likes INT NOT NULL,
+        FOREIGN KEY (author) REFERENCES users(id)
+        FOREIGN KEY (id) REFERENCES comments(post_id)
+        FOREIGN KEY (id) REFERENCES likes(post_id)
+    )`);
+
+    let q4 = db.create_tables(`CREATE TABLE IF NOT EXISTS comments (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        post_id INT NOT NULL,
+        parent_post INT,
+        author INT NOT NULL,
+        content TEXT NOT NULL,
+        date_posted DATE NOT NULL,
+        FOREIGN KEY (parent_post) REFERENCES comments(id)
+        FOREIGN KEY (post_id) REFERENCES posts(id)
+        FOREIGN KEY (author) REFERENCES users(id)
+    )`);
+
+    let q5 = db.create_tables(`CREATE TABLE IF NOT EXISTS likes (
+        post_id INT,
+        user_id INT,
+        FOREIGN KEY (post_id) REFERENCES posts(id)
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )`);
+
+    return await Promise.all([q1, q2, q3, q4, q5]);
+}

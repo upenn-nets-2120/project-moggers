@@ -39,6 +39,7 @@ async function create_tables() {
         content TEXT NOT NULL,
         date_posted DATE NOT NULL,
         num_likes INT NOT NULL,
+        timstamp TIMESTAMP NOT NULL,
         FOREIGN KEY (author) REFERENCES users(id),
         FOREIGN KEY (id) REFERENCES comments(post_id),
         FOREIGN KEY (id) REFERENCES likes(post_id)
@@ -51,6 +52,7 @@ async function create_tables() {
         author INT NOT NULL,
         content TEXT NOT NULL,
         date_posted DATE NOT NULL,
+        timstamp TIMESTAMP NOT NULL,
         FOREIGN KEY (parent_post) REFERENCES comments(id),
         FOREIGN KEY (post_id) REFERENCES posts(id),
         FOREIGN KEY (author) REFERENCES users(id)
@@ -59,7 +61,7 @@ async function create_tables() {
     let q5 = db.create_tables(`CREATE TABLE IF NOT EXISTS likes (
         post_id INT,
         user_id INT,
-        FOREIGN KEY (post_id) REFERENCES posts(id)
+        FOREIGN KEY (post_id) REFERENCES posts(id),
         FOREIGN KEY (user_id) REFERENCES users(id)
     )`);
 
@@ -75,9 +77,9 @@ async function create_tables() {
     let q7 = db.create_tables(`CREATE TABLE IF NOT EXISTS messages (
         id INT AUTO_INCREMENT PRIMARY KEY,
         author INT,
-        timstamp TIMESTAMP,
+        timstamp TIMESTAMP NOT NULL,
         chat_id INT,
-        content VARCHAR(255),
+        content TEXT,
         FOREIGN KEY (author) REFERENCES users(id),
         FOREIGN KEY (chat_id) REFERENCES chats(id),
         FOREIGN KEY (post_id) REFERENCES posts(id)

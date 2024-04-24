@@ -9,7 +9,7 @@ var db = new AWS.RDSDataService();
 
 async function create_tables() {
     let q1 = db.create_tables(`CREATE TABLE IF NOT EXISTS friends (
-        followed INT NOT NULL,
+        follower INT NOT NULL,
         followed INT NOT NULL,
         PRIMARY KEY (follower, followed),
         FOREIGN KEY (follower) REFERENCES users(id),
@@ -42,7 +42,8 @@ async function create_tables() {
         timstamp TIMESTAMP NOT NULL,
         FOREIGN KEY (author) REFERENCES users(id),
         FOREIGN KEY (id) REFERENCES comments(post_id),
-        FOREIGN KEY (id) REFERENCES likes(post_id)
+        FOREIGN KEY (id) REFERENCES likes(post_id),
+        FOREIGN KEY (id) REFERENCES messages(author)
     )`);
 
     let q4 = db.create_tables(`CREATE TABLE IF NOT EXISTS comments (

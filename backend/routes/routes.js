@@ -212,6 +212,43 @@ router.post('/sendFriendRequest', async (req, res) => {
     }
 });
 
+router.get('/getFriendRequest', async (req, res) => {
+  
+    try {
+
+        // let q13= db.create_tables(`CREATE TABLE IF NOT EXISTS friendRequests (
+        //     follower INT NOT NULL,
+        //     followed INT NOT NULL,
+        //     PRIMARY KEY (follower, followed),
+        //     FOREIGN KEY (follower) REFERENCES users(id),
+        //     FOREIGN KEY (followed) REFERENCES users(id)
+        // )`);
+        var id = req.body.id;
+        
+        
+        if (!id) {
+            return res.status(400).json({error: 'Missing id for friend request'});
+        }
+
+        var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${id}"`)
+        var count1res = count1[0]['COUNT(*)'];
+    
+        if (count1res != 1) {
+            return res.status(500).json({message: 'Could not find follower ID in users or found more than one.'});
+        }
+        var friendRequests = await db1.send_sql(`SELECT follower FROM friendRequests WHERE followed = "${id}"`);
+        var followerIds = friendRequests.map(row => row.follower);
+       return res.status(200).json({ requests: followerIds });
+    
+           
+        
+        } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+
 
 router.post('/acceptFriendRequest', async (req, res) => {
   
@@ -428,10 +465,10 @@ router.post('/createPost', async (req, res) => {
 
         var validAuthor = await db1.send_sql(` SELECT COUNT(*) AS count  FROM users  WHERE id = ${author} `);
         
-        if (existingFriends[0].count == 0) {
+        if (validAuthor[0].count == 0) {
             return res.status(500).json({message: `User does not exists`});
         }
-        await db1.insert_items(`INSERT INTO posts (author, content, date_posted, num_likes, timstamp) VALUES ("${author}", "${content}", "${date_posted}", 0, "${num_likes}", "${timstamp}")`);
+        await db1.insert_items(`INSERT INTO posts (author, content, date_posted, num_likes, timstamp) VALUES ("${author}", "${content}", "${date_posted}", 0, "${timstamp}")`);
 
         res.status(200).json({message: "Post made"});
     } catch (error) {
@@ -440,7 +477,104 @@ router.post('/createPost', async (req, res) => {
     };
 });
 
+router.post('/addLike', async (req, res) => {
 
+    // let q5 = db.create_tables(`CREATE TABLE IF NOT EXISTS likes (
+    //     post_id INT,
+    //     user_id INT,
+    //     FOREIGN KEY (post_id) REFERENCES posts(id),
+    //     FOREIGN KEY (user_id) REFERENCES users(id)
+    // )`);
+    try {
+        var { post_id, user_id} = req.body;
+        if (!post_id || !user_id) {
+            return res.status(400).json({error: 'Create post missing arguments'});
+        }
+
+        var validAuthor = await db1.send_sql(` SELECT COUNT(*) AS count  FROM users  WHERE id = ${user_id} `);
+        
+        if (validAuthor[0].count == 0) {
+            return res.status(500).json({message: `User does not exists`});
+        }
+
+        var validPost = await db1.send_sql(` SELECT COUNT(*) AS count  FROM posts  WHERE id = ${post_id} `);
+        
+        if (validPost[0].count == 0) {
+            return res.status(500).json({message: `Post does not exists`});
+        }
+        var existingLike = await db1.send_sql(`SELECT COUNT(*) AS count FROM likes WHERE post_id = ${post_id} AND user_id = ${user_id}`);
+
+        if (existingLike[0].count > 0) {
+            return res.status(500).json({ message: `Like already exists` });
+        }
+
+        await db1.insert_items(`INSERT INTO likes (post_id, user_id) VALUES ("${post_id}", "${user_id}")`);
+
+        res.status(200).json({message: "Post liked"});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({message: 'Internal server error'});
+    };
+});
+
+router.post('/removeLike', async (req, res) => {
+    try {
+        var { post_id, user_id } = req.body;
+        if (!post_id || !user_id) {
+            return res.status(400).json({ error: 'Remove like missing arguments' });
+        }
+
+
+        var validAuthor = await db1.send_sql(`SELECT COUNT(*) AS count FROM users WHERE id = ${user_id}`);
+        if (validAuthor[0].count == 0) {
+            return res.status(500).json({ message: `User does not exist` });
+        }
+
+        
+        var validPost = await db1.send_sql(`SELECT COUNT(*) AS count FROM posts WHERE id = ${post_id}`);
+        if (validPost[0].count == 0) {
+            return res.status(500).json({ message: `Post does not exist` });
+        }
+
+
+        var existingLike = await db1.send_sql(`SELECT COUNT(*) AS count FROM likes WHERE post_id = ${post_id} AND user_id = ${user_id}`);
+        if (existingLike[0].count == 0) {
+            return res.status(500).json({ message: `Like does not exist` });
+        }
+
+
+        await db1.send_sql(`DELETE FROM likes WHERE post_id = ${post_id} AND user_id = ${user_id}`);
+
+        res.status(200).json({ message: "Like removed" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    };
+});
+
+
+router.get('/numLikes', async (req, res) => {
+    try {
+        var post_id = req.body.post_id;
+        if (!post_id) {
+            return res.status(400).json({ error: 'Missing post_id' });
+        }
+        
+        var validPost = await db1.send_sql(`SELECT COUNT(*) AS count FROM posts WHERE id = ${post_id}`);
+        if (validPost[0].count == 0) {
+            return res.status(500).json({ message: `Post does not exist` });
+        }
+
+
+        var numberLikes = await db1.send_sql(`SELECT COUNT(*) AS count FROM likes WHERE post_id = ${post_id}`);
+     
+        return res.status(200).json({numberLikes: numberLikes});
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    };
+});
 
 
 

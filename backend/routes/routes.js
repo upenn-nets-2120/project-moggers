@@ -3,12 +3,17 @@ const session = require('express-session');
 const bcrypt = require('bcrypt');
 
 var db = require('../models/create_tables.js');
-const db1 = require('../models/db_access.js');
+const db1 = require('../models/db_access');
+const connection = db1.get_db_connection();
+// var db1 = require('../models/db_access');
 
 const router = express.Router();
 var bodyParser = require('body-parser');
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({extended: true}));
+
+
+// all functions for handling data, calling the database, post/get requests, etc.
 
 
 
@@ -20,10 +25,12 @@ router.get('/hi', (req, res) => {
 });
 // POST /register
 router.post('/register', async (req, res) => {
-    console.log(req.body);
-    console.log("hi?");
+  
     try {
         var { username, password, firstName, lastName, email, affiliation, birthday } = req.body;
+
+        const profilePhoto = "";
+        const hashtags = "";
         
         if (!username || !password || !firstName || !lastName || !email || !affiliation || !birthday) {
             return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
@@ -35,11 +42,16 @@ router.post('/register', async (req, res) => {
                 return res.status(400).send({error: 'Username contains invalid characters. Please try again.'});
             }
         }
+        
         var existingUser = await db1.send_sql(`SELECT * FROM users WHERE email = "${email}"`);
+      
         if (existingUser.length > 0) {
+            
             return res.status(409).json({error: "An account with this email already exists, please login."});
         }
+
         var existingUser = await db1.send_sql(`SELECT * FROM users WHERE username = "${username}"`);
+    
         if (existingUser.length > 0) {
             return res.status(409).json({error: "An account with this username already exists, please try again."});
         }
@@ -77,6 +89,7 @@ router.post('/login', async (req, res) => {
         if (user.length === 0) {
             return res.status(401).json({error: 'Username and/or password are invalid.'});
         }
+      
         const user_id = user[0].user_id;
         const hashed_password = user[0].password;
         bcrypt.compare(password, hashed_password, (err, result) => {
@@ -174,3 +187,5 @@ var postChats = async function(req, res) {
     };
 };
 module.exports = router;
+
+

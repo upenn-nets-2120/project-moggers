@@ -23,9 +23,11 @@ async function create_tables(db) {
         username VARCHAR(255) NOT NULL,
         email VARCHAR(255) NOT NULL,
         password VARCHAR(255) NOT NULL,
-        first_name VARCHAR(255) NOT NULL,
-        last_name VARCHAR(255) NOT NULL,
+        firstName VARCHAR(255) NOT NULL,
+        lastName VARCHAR(255) NOT NULL,
         affiliation VARCHAR(255),
+        profilePhoto VARCHAR(255),
+        hashtags VARCHAR(255), 
         birthday DATE,
         status BOOL,
         interests VARCHAR(255)
@@ -103,8 +105,11 @@ async function create_tables(db) {
     )`);
 
     return await Promise.all([q1, q2, q3, q4, q5, q6, q7]).then(async () => { 
-    await dbaccess.close_db(db);
-    console.log('closed db' );
+     
+        await dbaccess.close_db(db);
+        console.log('closed db' );
+    
+
   });
 }
 
@@ -112,6 +117,8 @@ async function create_tables(db) {
 const db = dbaccess.get_db_connection();
 var result = create_tables(dbaccess);
 console.log('Tables created');
+
+
 
 
 const PORT = config.serverPort;

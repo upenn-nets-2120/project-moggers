@@ -130,6 +130,37 @@ router.post('/goOffline', async (req, res) => {
 });
 
 
+router.post('/addInterests', async (req, res) => {
+  
+    try {
+        var name = req.body.name;
+        // name VARCHAR(255),
+        // count INT,
+        // PRIMARY KEY (name)
+        // var username = req.body.username;
+        
+        if (!name) {
+            return res.status(400).json({error: 'Missing interest name'});
+        }
+           
+        var existingInterest = await db1.send_sql(`SELECT * FROM interests WHERE name = "${name}"`);
+      
+        if (existingInterest.length == 0) {
+            await db1.insert_items(`INSERT INTO interests (name, count) VALUES ("${name}", 1)`);
+            res.status(200).json({message: `Added an interest`});
+        } else {
+         
+            await db1.send_sql(`UPDATE interests SET count = count + 1 WHERE name = "${name}"`);
+            res.status(200).json({message: `Updated an interest`});
+
+        }
+     
+        } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 // POST /login
 router.post('/login', async (req, res) => {
     try {
@@ -212,7 +243,7 @@ router.post('/postChats', async (req, res) => {
         // TODO: update already_exists
         var x1 = await db1.send_sql(`SELECT * FROM user_chats WHERE user_id = "${user1}"`);
         var x2 = await db1.send_sql(`SELECT * FROM user_chats WHERE user_id = "${user2}"`);
-        console.log(x1);
+       
         const x1parsed = x1.map(row => ({
             chat_id: row.chat_id, 
             user_id: row.user_id

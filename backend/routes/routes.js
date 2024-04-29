@@ -330,7 +330,6 @@ router.get('/getFeed', async (req, res) => {
         var following = await db1.send_sql(`SELECT followed FROM friends WHERE follower = "${curr_id}"`);
         const followedUserIds = following.map(entry => entry.followed);
         followedUserIds.push(curr_id);
-        console.log(followedUserIds);
         const feed = await db1.send_sql(`
         SELECT posts.content, posts.date_posted, posts.timstamp, users.username, users.firstName, users.lastName, users.profilePhoto,  (
             SELECT COUNT(*) 
@@ -342,7 +341,7 @@ router.get('/getFeed', async (req, res) => {
         WHERE posts.author IN (${followedUserIds.join(', ')})
        
     `);
-        console.log(feed);
+   
         return res.status(200).json({results: feed});
 
 

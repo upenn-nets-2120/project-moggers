@@ -248,19 +248,118 @@ router.get('/getFriendRequest', async (req, res) => {
     }
 });
 
+router.get('/getFollowers', async (req, res) => {
+  
+    try {
+
+        var id = req.body.id;
+        
+        
+        if (!id) {
+            return res.status(400).json({error: 'Missing id for get followers'});
+        }
+
+        var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${id}"`)
+        var count1res = count1[0]['COUNT(*)'];
+    
+        if (count1res != 1) {
+            return res.status(500).json({message: 'Could not find ID in users or found more than one.'});
+        }
+        var followers = await db1.send_sql(`SELECT follower FROM friends WHERE followed = "${id}"`);
+        var followerIds = followers.map(row => row.follower);
+       return res.status(200).json({ followers: followerIds });
+    
+           
+        
+        } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+router.get('/getFollowing', async (req, res) => {
+  
+    try {
+        var id = req.body.id;
+        
+        
+        if (!id) {
+            return res.status(400).json({error: 'Missing id for get following'});
+        }
+
+        var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${id}"`)
+        var count1res = count1[0]['COUNT(*)'];
+    
+        if (count1res != 1) {
+            return res.status(500).json({message: 'Could not find ID in users or found more than one.'});
+        }
+        var following = await db1.send_sql(`SELECT followed FROM friends WHERE follower = "${id}"`);
+        var followingIds = following.map(row => row.followed);
+       return res.status(200).json({ following: followingIds });
+    
+           
+        
+        } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+router.get('/getFeed', async (req, res) => {
+  
+    try {
+        // const curr_id = req.session.user_id
+        const curr_id = 3;
+
+        if (curr_id == null) 
+            return res.status(403).json({error: 'Not logged in.'});
+        
+        
+        if (!curr_id) {
+            return res.status(400).json({error: 'Missing id for get following'});
+        }
+
+        var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${curr_id}"`)
+        var count1res = count1[0]['COUNT(*)'];
+    
+        if (count1res != 1) {
+            return res.status(500).json({message: 'Could not find ID in users or found more than one.'});
+        }
+
+
+        var following = await db1.send_sql(`SELECT followed FROM friends WHERE follower = "${curr_id}"`);
+        const followedUserIds = following.map(entry => entry.followed);
+        followedUserIds.push(curr_id);
+        console.log(followedUserIds);
+        const feed = await db1.send_sql(`
+        SELECT posts.content, posts.date_posted, posts.timstamp, users.username, users.firstName, users.lastName, users.profilePhoto,  (
+            SELECT COUNT(*) 
+            FROM likes 
+            WHERE post_id = posts.id
+        ) AS like_count
+        FROM posts 
+        JOIN users ON posts.author = users.id
+        WHERE posts.author IN (${followedUserIds.join(', ')})
+       
+    `);
+        console.log(feed);
+        return res.status(200).json({results: feed});
+
+
+        
+        } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+
 
 
 router.post('/acceptFriendRequest', async (req, res) => {
   
     try {
 
-        // let q13= db.create_tables(`CREATE TABLE IF NOT EXISTS friendRequests (
-        //     follower INT NOT NULL,
-        //     followed INT NOT NULL,
-        //     PRIMARY KEY (follower, followed),
-        //     FOREIGN KEY (follower) REFERENCES users(id),
-        //     FOREIGN KEY (followed) REFERENCES users(id)
-        // )`);
         var {follower, followed} = req.body;
         
         
@@ -448,15 +547,6 @@ router.post('/postChats', async (req, res) => {
 // only call this method AFTER person 2 ACCEPTS the invite and also we sent the invite.
 router.post('/createPost', async (req, res) => {
 
-    // let q3 = db.create_tables(`CREATE TABLE IF NOT EXISTS posts (
-    //     id INT AUTO_INCREMENT PRIMARY KEY,
-    //     author INT NOT NULL,
-    //     content TEXT NOT NULL,
-    //     date_posted DATE NOT NULL,
-    //     num_likes INT NOT NULL,
-    //     timstamp TIMESTAMP NOT NULL,
-    //     FOREIGN KEY (author) REFERENCES users(id)
-    // )`);
     try {
         var { author, content, date_posted, timstamp} = req.body;
         if (!author || !content || !date_posted || !timstamp) {
@@ -479,12 +569,7 @@ router.post('/createPost', async (req, res) => {
 
 router.post('/addLike', async (req, res) => {
 
-    // let q5 = db.create_tables(`CREATE TABLE IF NOT EXISTS likes (
-    //     post_id INT,
-    //     user_id INT,
-    //     FOREIGN KEY (post_id) REFERENCES posts(id),
-    //     FOREIGN KEY (user_id) REFERENCES users(id)
-    // )`);
+  
     try {
         var { post_id, user_id} = req.body;
         if (!post_id || !user_id) {

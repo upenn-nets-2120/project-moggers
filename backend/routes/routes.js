@@ -3,6 +3,7 @@ const session = require('express-session');
 const bcrypt = require('bcrypt');
 
 var db = require('../models/create_tables.js');
+const db1 = require('../models/db_access.js');
 
 const router = express.Router();
 var bodyParser = require('body-parser');
@@ -34,11 +35,11 @@ router.post('/register', async (req, res) => {
                 return res.status(400).send({error: 'Username contains invalid characters. Please try again.'});
             }
         }
-        var existingUser = await db.send_sql(`SELECT * FROM users WHERE email = "${email}"`);
+        var existingUser = await db1.send_sql(`SELECT * FROM users WHERE email = "${email}"`);
         if (existingUser.length > 0) {
             return res.status(409).json({error: "An account with this email already exists, please login."});
         }
-        var existingUser = await db.send_sql(`SELECT * FROM users WHERE username = "${username}"`);
+        var existingUser = await db1.send_sql(`SELECT * FROM users WHERE username = "${username}"`);
         if (existingUser.length > 0) {
             return res.status(409).json({error: "An account with this username already exists, please try again."});
         }
@@ -53,7 +54,7 @@ router.post('/register', async (req, res) => {
                 console.error(err);
                 return res.status(500).json({ message: 'Internal server error' });
             }
-            await db.insert_items(`INSERT INTO users (username, password, firstName, lastName, email, affiliation, birthday, profilePhoto, hashtags) VALUES ("${username}", "${hashedPassword}", "${firstName}", "${lastName}", "${email}", "${affiliation}", "${birthday}", "${profilePhoto}", "${hashtags}")`);
+            await db1.insert_items(`INSERT INTO users (username, password, firstName, lastName, email, affiliation, birthday, profilePhoto, hashtags) VALUES ("${username}", "${hashedPassword}", "${firstName}", "${lastName}", "${email}", "${affiliation}", "${birthday}", "${profilePhoto}", "${hashtags}")`);
             
             res.status(200).json({message: `{username: '${username}'}`});
             });
@@ -72,7 +73,7 @@ router.post('/login', async (req, res) => {
         if (!username || !password) {
             return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
         }
-        const user = await db.send_sql(`SELECT * FROM users WHERE username = "${username}"`);
+        const user = await db1.send_sql(`SELECT * FROM users WHERE username = "${username}"`);
         if (user.length === 0) {
             return res.status(401).json({error: 'Username and/or password are invalid.'});
         }

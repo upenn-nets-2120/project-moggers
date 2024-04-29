@@ -5,6 +5,12 @@ const bcrypt = require('bcrypt');
 var db = require('../models/create_tables.js');
 
 const router = express.Router();
+var bodyParser = require('body-parser');
+router.use(bodyParser.json());
+router.use(bodyParser.urlencoded({extended: true}));
+
+
+
 
 // all functions for handling data, calling the database, post/get requests, etc.
 
@@ -13,13 +19,15 @@ router.get('/hi', (req, res) => {
 });
 // POST /register
 router.post('/register', async (req, res) => {
-    console.log("hellooO!!!!!")
+    console.log(req.body);
+    console.log("hi?");
     try {
         var { username, password, firstName, lastName, email, affiliation, birthday } = req.body;
         
         if (!username || !password || !firstName || !lastName || !email || !affiliation || !birthday) {
             return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
         }
+        console.log("x?");
 
         for (var i = 0; i < username.length; i++) {
             if (!/[A-Za-z0-9 \.\?,_]/.test(username[i])) {

@@ -314,7 +314,7 @@ router.get('/logout', (req, res) => {
 router.post('/postChats', async (req, res) => {
     try {
         var { chatName, user1, user2 } = req.body;
-        if (!chatName || !user1, !user2) {
+        if (!chatName || !user1 || !user2) {
             return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
         }
 
@@ -400,6 +400,52 @@ router.post('/postChats', async (req, res) => {
         res.status(500).json({message: 'Internal server error'});
     };
 });
+
+
+
+
+
+
+
+// *********************************************************
+// only call this method AFTER person 2 ACCEPTS the invite and also we sent the invite.
+router.post('/createPost', async (req, res) => {
+
+    // let q3 = db.create_tables(`CREATE TABLE IF NOT EXISTS posts (
+    //     id INT AUTO_INCREMENT PRIMARY KEY,
+    //     author INT NOT NULL,
+    //     content TEXT NOT NULL,
+    //     date_posted DATE NOT NULL,
+    //     num_likes INT NOT NULL,
+    //     timstamp TIMESTAMP NOT NULL,
+    //     FOREIGN KEY (author) REFERENCES users(id)
+    // )`);
+    try {
+        var { author, content, date_posted, timstamp} = req.body;
+        if (!author || !content || !date_posted || !timstamp) {
+            return res.status(400).json({error: 'Create post missing arguments'});
+        }
+
+        var validAuthor = await db1.send_sql(` SELECT COUNT(*) AS count  FROM users  WHERE id = ${author} `);
+        
+        if (existingFriends[0].count == 0) {
+            return res.status(500).json({message: `User does not exists`});
+        }
+        await db1.insert_items(`INSERT INTO posts (author, content, date_posted, num_likes, timstamp) VALUES ("${author}", "${content}", "${date_posted}", 0, "${num_likes}", "${timstamp}")`);
+
+        res.status(200).json({message: "Post made"});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({message: 'Internal server error'});
+    };
+});
+
+
+
+
+
+
+
 module.exports = router;
 
 

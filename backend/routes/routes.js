@@ -11,6 +11,18 @@ const router = express.Router();
 var bodyParser = require('body-parser');
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({extended: true}));
+var config = require('../config.json');
+const { Kafka } = require('kafkajs');
+const kafka = new Kafka({
+    clientId: 'my-app',
+    brokers: config.bootstrapServers
+});
+
+const consumer = kafka.consumer({ 
+    groupId: config.groupId, 
+    bootstrapServers: config.bootstrapServers});
+
+var kafka_messages = [];
 
 
 // all functions for handling data, calling the database, post/get requests, etc.
@@ -68,7 +80,7 @@ router.post('/register', async (req, res) => {
             }
             await db1.insert_items(`INSERT INTO users (username, password, firstName, lastName, email, affiliation, birthday, profilePhoto, hashtags) VALUES ("${username}", "${hashedPassword}", "${firstName}", "${lastName}", "${email}", "${affiliation}", "${birthday}", "${profilePhoto}", "${hashtags}")`);
             
-            res.status(200).json({message: `{username: '${username}'}`});
+            res.status(200).json({message: `{username: '${username}'}`})
             });
         });
         } catch (error) {
@@ -155,6 +167,33 @@ router.post('/addInterests', async (req, res) => {
 
         }
      
+        } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+router.post('/addHashtag', async (req, res) => {
+  
+    try {
+        var { name, user_id } = req.body;
+
+    
+        if (!name || !user_id) {
+            return res.status(400).json({ error: 'Missing interest name or user_id' });
+        }
+
+    
+        const existingHashtag = await db1.send_sql(`SELECT * FROM hashtags  WHERE name = "${name}"AND user_id = ${user_id};  `);
+        console.log(existingHashtag)
+        if (existingHashtag.length != 0) {
+            return res.status(400).json({ error: 'Hashtag already exists' });
+        }
+
+   
+        await db1.insert_items(`INSERT INTO hashtags (name, user_id) VALUES ("${name}", ${user_id})`);
+        res.status(200).json({ message: `Added a new hashtag` });
+
         } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
@@ -305,6 +344,26 @@ router.get('/getFollowing', async (req, res) => {
     }
 });
 
+
+router.get('/getTopTenHashtags', async (req, res) => {
+  
+    try {
+       
+        var topTen = await db1.send_sql(`SELECT name, COUNT(*) AS frequency
+        FROM hashtagPosts
+        GROUP BY name
+        ORDER BY frequency DESC
+        LIMIT 10`);
+        var resTop = topTen.map(row => row.name);
+        return res.status(200).json({ topTen: resTop });
+    
+           
+        
+        } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
 router.get('/getFeed', async (req, res) => {
   
     try {
@@ -542,8 +601,7 @@ router.post('/postChats', async (req, res) => {
 
 
 
-// *********************************************************
-// only call this method AFTER person 2 ACCEPTS the invite and also we sent the invite.
+
 router.post('/createPost', async (req, res) => {
 
     try {
@@ -551,14 +609,25 @@ router.post('/createPost', async (req, res) => {
         if (!author || !content || !date_posted || !timstamp) {
             return res.status(400).json({error: 'Create post missing arguments'});
         }
+        
 
         var validAuthor = await db1.send_sql(` SELECT COUNT(*) AS count  FROM users  WHERE id = ${author} `);
+        const words = content.split(' ').map(word => word.trim());
+
+        const filteredHashtags = words.filter(word => word.startsWith('#') && word.length > 1).map(word => word.slice(1));
+
+        const hashtags = filteredHashtags;
+        console.log(hashtags);
         
         if (validAuthor[0].count == 0) {
             return res.status(500).json({message: `User does not exists`});
         }
         await db1.insert_items(`INSERT INTO posts (author, content, date_posted, num_likes, timstamp) VALUES ("${author}", "${content}", "${date_posted}", 0, "${timstamp}")`);
-
+        const x = await db1.send_sql('SELECT LAST_INSERT_ID() AS id');
+        for (const hashtag of hashtags) {
+            await db1.insert_items(`INSERT INTO hashtagPosts (name, hashID) VALUES ("${hashtag}", ${x[0].id})`);
+         
+        }
         res.status(200).json({message: "Post made"});
     } catch (error) {
         console.error(error);
@@ -661,7 +730,29 @@ router.get('/numLikes', async (req, res) => {
 });
 
 
+app.get('/', (req, res) => {
+    res.send(JSON.stringify(kafka_messages));
+});
 
+const run = async () => {
+    // Consuming
+    await consumer.connect();
+    console.log(`Following topic ${config.topic}`);
+    await consumer.subscribe({ topic: config.topic, fromBeginning: true });
+
+    await consumer.run({
+        eachMessage: async ({ topic, partition, message }) => {
+            kafka_messages.push({
+                value: message.value.toString(),
+            });
+            console.log({
+                value: message.value.toString(),
+            });
+        },
+    });
+};
+
+run().catch(console.error);
 
 
 module.exports = router;

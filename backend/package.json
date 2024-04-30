@@ -28,6 +28,7 @@
     "express": "^4.19.2",
     "express-session": "^1.18.0",
     "fs": "^0.0.1-security",
+    "kafkajs": "^2.2.4",
     "mysql": "^2.18.1",
     "mysql2": "^3.9.7"
   }

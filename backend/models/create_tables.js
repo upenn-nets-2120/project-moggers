@@ -97,6 +97,21 @@ async function create_tables(db) {
       PRIMARY KEY (name)
   
   )`);
+
+
+  let q12 = db.create_tables(`CREATE TABLE IF NOT EXISTS hashtags (
+    name VARCHAR(255),
+    user_id INT,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+
+)`);
+
+let q14 = db.create_tables(`CREATE TABLE IF NOT EXISTS hashtagPosts (
+  name VARCHAR(255),
+  hashID INT,
+  FOREIGN KEY (hashID) REFERENCES posts(id)
+
+)`);
   
     
     
@@ -111,7 +126,7 @@ async function create_tables(db) {
         FOREIGN KEY (chat_id) REFERENCES chats(id)
     )`);
 
-    return await Promise.all([q1, q2, q3, q4, q5, q6, q7]).then(async () => { 
+    return await Promise.all([q1, q2, q3, q4, q5, q6, q7, q11, q13, q12,q14]).then(async () => { 
      
         await dbaccess.close_db(db);
         console.log('closed db' );

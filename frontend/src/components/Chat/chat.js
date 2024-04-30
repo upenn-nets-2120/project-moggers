@@ -1,185 +1,95 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
-// var jqueryScript = document.createElement('script');
-// jqueryScript.src = "//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js";
-// document.head.appendChild(jqueryScript);
-
-// // Include Socket.IO library
-// var socketIoScript = document.createElement('script');
-// socketIoScript.src = "/socket.io/socket.io.js";
-// document.head.appendChild(socketIoScript);
 
 const Chat = () => {
-    var socket = io();
-    var id = Math.random();
-    var room = false;
+    const [messages, setMessages] = useState([]);
+    const [room, setRoom] = useState(false);
+    const [inputValue, setInputValue] = useState('');
+    const socket = io();
 
-    // client sending message
-    // function sendChat() {
-    //     const new_msg = $('#input').val().trim();
-    //     if (new_msg !== '') {
-    //         socket.emit('chat message', {
-    //             text: new_msg,
-    //             sender: id,
-    //             room: 1
-    //         });
-            
-    //         // reset to blank
-    //         $('#input').val('');
-    //         $('#input').focus();
-    //     }
-    // }
-    function sendChat() {
-        const inputElement = document.getElementById('input');
-        const new_msg = inputElement.value.trim();
-        if (new_msg !== '') {
+    useEffect(() => {
+        socket.on('chat message', (msg) => {
+            setMessages(prevMessages => [...prevMessages, msg]);
+        });
+    }, [socket]);
+
+    const sendChat = () => {
+        if (inputValue.trim() !== '') {
             socket.emit('chat message', {
-                text: new_msg,
-                sender: id,
+                text: inputValue.trim(),
+                sender: Math.random(),
                 room: 1
             });
-            
-            // reset to blank
-            inputElement.value = '';
-            inputElement.focus();
+            setInputValue('');
         }
-    }
-    
+    };
 
-    // client receiving message
-    // $(document).ready(function() {
-    //     socket.on('chat message', function(msg) {
-    //         // render msg
-    //         var message_temp = document.createElement("li");
-    //         if (id === msg.sender) {
-    //             // msg sent by self
-    //             message_temp.setAttribute("class", "me");
-    //         } else {
-    //             message_temp.setAttribute("class", "other");
-    //         }
-    //         message_temp.appendChild(document.createTextNode(msg.text))
-    //         $('#messages').append(message_temp);
-    //         $('#messages').animate({
-    //             scrollTop: $('#messages').get(0).scrollHeight
-    //         }, 0);
-    //     })
-    // });
-    document.addEventListener('DOMContentLoaded', function() {
-        var messagesElement = document.getElementById('messages');
-        socket.on('chat message', function(msg) {
-            // render msg
-            var message_temp = document.createElement("li");
-            if (id === msg.sender) {
-                // msg sent by self
-                message_temp.setAttribute("class", "me");
-            } else {
-                message_temp.setAttribute("class", "other");
-            }
-            message_temp.appendChild(document.createTextNode(msg.text));
-            messagesElement.appendChild(message_temp);
-            messagesElement.scrollTop = messagesElement.scrollHeight;
-        });
-    });
-    
-    // handling chat button
-    // $("#roomBtn").on("click", function () {
-    //     // if not in a room rn
-    //     if (!room) {
-    //         $.post('/join', { room: 1}, function(data) {
-    //             if (data.success) {
-    //                 room = true;
-    //                 socket.emit('join room', {
-    //                     sender: id,
-    //                     room: 1
-    //                 });
-    //                 $(".left").removeClass("fullWidth");
-    //                 $(".chat").show();
-    //                 $("#roomBtn").html("Leave");
-    //             }
-    //         });
-    //     } else {
-    //         $.post('/leave', {room:1}, function(data){
-    //             if (data.success) {
-    //                 room = false;
-    //                 socket.emit('leave room', {
-    //                     sender: id,
-    //                     room: 1
-    //                 });
-    //                 s(".left").addClass("fullWidth");
-    //                 s(".chat").hide();
-    //                 s("#roomBtn").html("Enter chat room");
-    //             }
-    //         })
-    //     }
-    // });
-    document.getElementById('roomBtn').addEventListener('click', function() {
-        // if not in a room rn
+    const toggleRoom = () => {
         if (!room) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', '/join', true);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-                    var data = JSON.parse(xhr.responseText);
-                    if (data.success) {
-                        room = true;
-                        socket.emit('join room', {
-                            sender: id,
-                            room: 1
-                        });
-                        document.querySelector(".left").classList.remove("fullWidth");
-                        document.querySelector(".chat").style.display = 'block';
-                        document.getElementById("roomBtn").innerHTML = "Leave";
+            axios.post('/join', { room: 1 })
+                .then(response => {
+                    if (response.data.success) {
+                        setRoom(true);
+                        socket.emit('join room', { sender: Math.random(), room: 1 });
                     }
-                }
-            };
-            xhr.send(JSON.stringify({ room: 1 }));
+                })
+                .catch(error => {
+                    console.error('Error joining room:', error);
+                });
         } else {
-            var xhrLeave = new XMLHttpRequest();
-            xhrLeave.open('POST', '/leave', true);
-            xhrLeave.setRequestHeader('Content-Type', 'application/json');
-            xhrLeave.onreadystatechange = function() {
-                if (xhrLeave.readyState === XMLHttpRequest.DONE && xhrLeave.status === 200) {
-                    var data = JSON.parse(xhrLeave.responseText);
-                    if (data.success) {
-                        room = false;
-                        socket.emit('leave room', {
-                            sender: id,
-                            room: 1
-                        });
-                        document.querySelector(".left").classList.add("fullWidth");
-                        document.querySelector(".chat").style.display = 'none';
-                        document.getElementById("roomBtn").innerHTML = "Enter chat room";
+            axios.post('/leave', { room: 1 })
+                .then(response => {
+                    if (response.data.success) {
+                        setRoom(false);
+                        socket.emit('leave room', { sender: Math.random(), room: 1 });
                     }
-                }
-            };
-            xhrLeave.send(JSON.stringify({ room: 1 }));
+                })
+                .catch(error => {
+                    console.error('Error leaving room:', error);
+                });
         }
-    });
-    
+    };
 
     return (
         <div>
-            <div class="left">
-                <div class="wrapper">
-                    <h1 class="fadeIn zeroth"><span>Start chatting!</span></h1>
-                    <div class="fadeIn second" id="buttons-wrapper">
-                        <h2 id="roomBtn" class="underlineHover">Enter chat room</h2>
+            <div className="left">
+                <div className="wrapper">
+                    <h1 className="fadeIn zeroth"><span>Start chatting!</span></h1>
+                    <div className="fadeIn second" id="buttons-wrapper">
+                        <button id="roomBtn" className="underlineHover" onClick={toggleRoom}>
+                            {room ? "Leave" : "Enter chat room"}
+                        </button>
                     </div>
                 </div>
             </div>
             <div class="chat">
                 <div>
-                    <ul id="messages">
+                    <ul>
+                        <li>hi</li>
+                        <li>hello</li>
+                        <li>how are you</li>
+                        {/* {messages.map((msg, index) => (
+                            <li key={index} className={msg.sender === id ? "me" : "other"}>
+                                {msg.text}
+                            </li>
+                        ))} */}
                     </ul>
                 </div>
 
-                <form id="message-form">
-                    <div id="form-message">
-                        <input class="form-control" id="input" autcomplete="off" placeholder="Enter your message..." onfocus="this.placeholder = ''" onblur="this.placeholder='Enter your message...'"></input>   
-                        <button type="button" id="send_btn" class="btn btn-light" onclick={sendChat}></button>                 
+                <form>
+                    <div>
+                        <input
+                            className="form-control"
+                            value={inputValue}
+                            onChange={(e) => setInputValue(e.target.value)}
+                            placeholder="Enter your message..."
+                            autoComplete="off"
+                        />
+                        <button type="button" className="btn btn-light" onClick={sendChat}>
+                            Send
+                        </button>
                     </div>
                 </form>
             </div>

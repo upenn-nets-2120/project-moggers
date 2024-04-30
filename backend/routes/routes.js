@@ -761,6 +761,35 @@ router.get('/', (req, res) => {
     res.send(JSON.stringify(kafka_messages));
 });
 
+router.post('/joinChat', async (req, res) => {
+    try {
+        const room = req.body.room;
+
+        // write to database
+        return res.send({
+            success: true
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    };
+});
+
+router.post('/leaveChat', async (req, res) => {
+    try {
+        const room = req.body.room;
+
+        // write to database
+        
+        return res.send({
+            success: true
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    };
+});
+
 const run = async () => {
     // Consuming
     await consumer.connect();

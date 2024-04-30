@@ -12,7 +12,7 @@ function App() {
       <React.Fragment>
         <NavBar />
         <Routes>
-          <Route path= "./chat" element = {<Chat/>}/>
+          <Route path= "/chat" element = {<Chat />}/>
           <Route path='/register' element={<Register />} />
           <Route path = "/login" element = {<Login />} />
         </Routes>

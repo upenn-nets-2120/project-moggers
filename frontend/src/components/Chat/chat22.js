@@ -81,6 +81,52 @@ const Chat = () => {
             messagesElement.appendChild(message_temp);
             messagesElement.scrollTop = messagesElement.scrollHeight;
         });
+        
+
+        document.getElementById('roomBtn').addEventListener('click', function() {
+            // if not in a room rn
+            if (!room) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', '/join', true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                        var data = JSON.parse(xhr.responseText);
+                        if (data.success) {
+                            room = true;
+                            socket.emit('join room', {
+                                sender: id,
+                                room: 1
+                            });
+                            document.querySelector(".left").classList.remove("fullWidth");
+                            document.querySelector(".chat").style.display = 'block';
+                            document.getElementById("roomBtn").innerHTML = "Leave";
+                        }
+                    }
+                };
+                xhr.send(JSON.stringify({ room: 1 }));
+            } else {
+                var xhrLeave = new XMLHttpRequest();
+                xhrLeave.open('POST', '/leave', true);
+                xhrLeave.setRequestHeader('Content-Type', 'application/json');
+                xhrLeave.onreadystatechange = function() {
+                    if (xhrLeave.readyState === XMLHttpRequest.DONE && xhrLeave.status === 200) {
+                        var data = JSON.parse(xhrLeave.responseText);
+                        if (data.success) {
+                            room = false;
+                            socket.emit('leave room', {
+                                sender: id,
+                                room: 1
+                            });
+                            document.querySelector(".left").classList.add("fullWidth");
+                            document.querySelector(".chat").style.display = 'none';
+                            document.getElementById("roomBtn").innerHTML = "Enter chat room";
+                        }
+                    }
+                };
+                xhrLeave.send(JSON.stringify({ room: 1 }));
+            }
+        });
     });
     
     // handling chat button
@@ -114,50 +160,7 @@ const Chat = () => {
     //         })
     //     }
     // });
-    document.getElementById('roomBtn').addEventListener('click', function() {
-        // if not in a room rn
-        if (!room) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', '/join', true);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-                    var data = JSON.parse(xhr.responseText);
-                    if (data.success) {
-                        room = true;
-                        socket.emit('join room', {
-                            sender: id,
-                            room: 1
-                        });
-                        document.querySelector(".left").classList.remove("fullWidth");
-                        document.querySelector(".chat").style.display = 'block';
-                        document.getElementById("roomBtn").innerHTML = "Leave";
-                    }
-                }
-            };
-            xhr.send(JSON.stringify({ room: 1 }));
-        } else {
-            var xhrLeave = new XMLHttpRequest();
-            xhrLeave.open('POST', '/leave', true);
-            xhrLeave.setRequestHeader('Content-Type', 'application/json');
-            xhrLeave.onreadystatechange = function() {
-                if (xhrLeave.readyState === XMLHttpRequest.DONE && xhrLeave.status === 200) {
-                    var data = JSON.parse(xhrLeave.responseText);
-                    if (data.success) {
-                        room = false;
-                        socket.emit('leave room', {
-                            sender: id,
-                            room: 1
-                        });
-                        document.querySelector(".left").classList.add("fullWidth");
-                        document.querySelector(".chat").style.display = 'none';
-                        document.getElementById("roomBtn").innerHTML = "Enter chat room";
-                    }
-                }
-            };
-            xhrLeave.send(JSON.stringify({ room: 1 }));
-        }
-    });
+    
     
 
     return (

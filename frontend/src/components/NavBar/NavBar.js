@@ -20,6 +20,11 @@ const NavBar = () => {
         </Link>
         <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
           <ul className="navbar-nav">
+          <li className="nav-item">
+              <Link className="nav-link" to="/chat">
+                Chat
+              </Link>
+            </li>
             <li className="nav-item">
               <Link className="nav-link" to="/register">
                 Register

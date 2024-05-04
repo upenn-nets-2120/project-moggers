@@ -783,59 +783,98 @@ router.get('/numLikes', async (req, res) => {
 });
 
 
-router.get('/', (req, res) => {
-    res.send(JSON.stringify(kafka_messages));
-});
+// router.get('/', (req, res) => {
+//     res.send(JSON.stringify(kafka_messages));
+// });
 
-router.post('/joinChat', async (req, res) => {
-    try {
-        const room = req.body.room;
+// router.post('/joinChat', async (req, res) => {
+//     try {
+//         const room = req.body.room;
 
-        // write to database
-        return res.send({
-            success: true
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
-    };
-});
+//         // write to database
+//         return res.send({
+//             success: true
+//         });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ message: 'Internal server error' });
+//     };
+// });
 
-router.post('/leaveChat', async (req, res) => {
-    try {
-        const room = req.body.room;
+// router.post('/leaveChat', async (req, res) => {
+//     try {
+//         const room = req.body.room;
 
-        // write to database
+//         // write to database
         
-        return res.send({
-            success: true
-        });
+//         return res.send({
+//             success: true
+//         });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ message: 'Internal server error' });
+//     };
+// });
+
+
+router.get('/getConvos', async (req, res) => {
+    try {
+        // let q10 = db.create_tables(`CREATE TABLE IF NOT EXISTS user_chats (
+        //     user_id INT,
+        //     chat_id INT,
+        //     PRIMARY KEY (user_id, chat_id),
+        //     FOREIGN KEY (user_id) REFERENCES users(id),
+        //     FOREIGN KEY (chat_id) REFERENCES chats(id)
+        
+        // )`);
+        const user1 = req.body.user_id;
+
+        if (!user1) {
+            return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
+        }
+
+        
+        var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${user1}"`)
+        var count1res = count1[0]['COUNT(*)'];
+    
+        if (count1res != 1) {
+            return res.status(500).json({message: 'Could not find user1 ID in users or found more than one.'});
+        }
+        console.log(user1);
+        var x1 = await db1.send_sql(`SELECT user_chats.chat_id, chats.name, messages.timstamp
+        FROM user_chats
+        JOIN chats ON user_chats.chat_id = chats.id
+        JOIN messages ON user_chats.chat_id = messages.chat_id
+        WHERE user_chats.user_id  = "${user1}"`)
+        console.log (x1);
+
+        return res.status(200).json({x1});
+        
+ 
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
     };
 });
+router.post('/postMessage', async (req, res) => {
+    try {
+        var { author, content, chat_id } = req.body; // Assuming you also need chat_id for posting a message
+        if (!author || !content || !chat_id) {
+            return res.status(400).json({ error: 'Missing required arguments' });
+        }
+        
+        const timestamp = new Date().toISOString(); 
 
-const run = async () => {
-    // Consuming
-    await consumer.connect();
-    console.log(`Following topic ${config.topic}`);
-    await consumer.subscribe({ topic: config.topic, fromBeginning: true });
+ 
+        await db1.insert_items(`INSERT INTO messages (author, content, chat_id, timstamp) VALUES ("${author}", "${content}", "${chat_id}", "${timestamp}")`);
 
-    await consumer.run({
-        eachMessage: async ({ topic, partition, message }) => {
-            kafka_messages.push({
-                value: message.value.toString(),
-            });
-            console.log({
-                value: message.value.toString(),
-            });
-        },
-    });
-};
-
-run().catch(console.error);
-
+        return res.status(200).json({ message: "Message posted successfully" });
+    } catch (error) {
+        // Handle errors
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+});
 
 module.exports = router;
 

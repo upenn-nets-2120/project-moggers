@@ -819,14 +819,7 @@ router.get('/numLikes', async (req, res) => {
 
 router.get('/getConvos', async (req, res) => {
     try {
-        // let q10 = db.create_tables(`CREATE TABLE IF NOT EXISTS user_chats (
-        //     user_id INT,
-        //     chat_id INT,
-        //     PRIMARY KEY (user_id, chat_id),
-        //     FOREIGN KEY (user_id) REFERENCES users(id),
-        //     FOREIGN KEY (chat_id) REFERENCES chats(id)
-        
-        // )`);
+   
         const user1 = req.body.user_id;
 
         if (!user1) {
@@ -840,14 +833,49 @@ router.get('/getConvos', async (req, res) => {
         if (count1res != 1) {
             return res.status(500).json({message: 'Could not find user1 ID in users or found more than one.'});
         }
-        console.log(user1);
-        var x1 = await db1.send_sql(`SELECT user_chats.chat_id, chats.name, messages.timstamp
-        FROM user_chats
-        JOIN chats ON user_chats.chat_id = chats.id
-        JOIN messages ON user_chats.chat_id = messages.chat_id
-        WHERE user_chats.user_id  = "${user1}"`)
-        console.log (x1);
+        var x1 = await db1.send_sql(`
+        SELECT uc.chat_id, 
+               c.name, 
+               MAX(m.timstamp) AS latest_timestamp
+        FROM user_chats uc
+        JOIN chats c ON uc.chat_id = c.id
+        JOIN messages m ON uc.chat_id = m.chat_id
+        WHERE uc.user_id = "${user1}"
+        GROUP BY uc.chat_id, c.name
+        ORDER BY m.timstamp DESC
+        `);
+        return res.status(200).json({x1});
+        
+ 
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    };
+});
 
+router.get('/getMessages', async (req, res) => {
+    try {
+   
+        const {chatid} = req.body;
+
+        if (!chatid) {
+            return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
+        }
+
+        
+        var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${user1}"`)
+        var count1res = count1[0]['COUNT(*)'];
+    
+        if (count1res != 1) {
+            return res.status(500).json({message: 'Could not find user1 ID in users or found more than one.'});
+        }
+        var x1 = await db1.send_sql(`
+        SELECT messages.id, messages.author, messages.timstamp, messages.chat_id, messages.content, chats.name
+        FROM messages
+        JOIN chats ON messages.chat_id = chats.id 
+        WHERE chats.id = "${chatid}"
+        ORDER BY messages.timstamp DESC;
+        `);
         return res.status(200).json({x1});
         
  

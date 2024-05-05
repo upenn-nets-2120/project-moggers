@@ -1,6 +1,9 @@
 const express = require('express');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
+const { v4: uuidv4 } = require('uuid');
+const {S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 var db = require('../models/create_tables.js');
 const db1 = require('../models/db_access');
@@ -13,16 +16,16 @@ router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({extended: true}));
 var config = require('../config.json');
 const { Kafka } = require('kafkajs');
-const kafka = new Kafka({
-    clientId: 'my-app',
-    brokers: config.bootstrapServers
-});
+// const kafka = new Kafka({
+//     clientId: 'my-app',
+//     brokers: config.bootstrapServers
+// });
 
-const consumer = kafka.consumer({ 
-    groupId: config.groupId, 
-    bootstrapServers: config.bootstrapServers});
+// const consumer = kafka.consumer({ 
+//     groupId: config.groupId, 
+//     bootstrapServers: config.bootstrapServers});
 
-var kafka_messages = [];
+// var kafka_messages = [];
 
 
 // all functions for handling data, calling the database, post/get requests, etc.
@@ -188,7 +191,7 @@ router.post('/addInterests', async (req, res) => {
         // count INT,
         // PRIMARY KEY (name)
         // var username = req.body.username;
-        
+        console.log(name);
         if (!name) {
             return res.status(400).json({error: 'Missing interest name'});
         }
@@ -708,18 +711,9 @@ router.get('/numLikes', async (req, res) => {
 });
 
 
-
-
-
-
-
-
-
-
-
-// router.get('/', (req, res) => {
-//     res.send(JSON.stringify(kafka_messages));
-// });
+router.get('/', (req, res) => {
+    // res.send(JSON.stringify(kafka_messages));
+});
 
 router.post('/joinChat', async (req, res) => {
     try {
@@ -757,7 +751,6 @@ router.post('/postChats', async (req, res) => {
         if (!chatName || !user1 || !user2) {
             return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
         }
-
         // Now check if both users are online
         var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${user1}"`)
         var count1res = count1[0]['COUNT(*)'];
@@ -777,7 +770,6 @@ router.post('/postChats', async (req, res) => {
         if (!status1 || !status2) {
             return res.status(500).json({message: 'One or both users are not online, cannot make chat.'});
         }
-
 
         var already_exists = false;
         //////////////////////////////////////////////////////////////////////////////////
@@ -935,6 +927,51 @@ router.post('/postMessage', async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 });
+
+const s3Client = new S3Client({ region: config.awsRegion });
+// gets an S3 presigned URL for uploading a file
+router.post("/get_presigned_url", async (req, res) => {
+    try {
+        const fileName = req.body.fileName;
+        const fileType = req.body.fileType;
+        console.log("file name", fileName);
+        console.log("file type", fileType)
+        const uniqueFileName = `${uuidv4()}_${fileName}`;
+        const params = {
+            Bucket: config.s3BucketName,
+            Key: uniqueFileName,
+            ContentType: fileType,
+        };
+
+        const command = new PutObjectCommand(params);
+        const presignedUrl = await getSignedUrl(s3Client, command, {
+            expiresIn: 3600,
+        });
+
+        res.json({ url: presignedUrl, fileName: uniqueFileName });
+    } catch (error) {
+        console.error("Error generating presigned URL:", error);
+        res.status(500).json({ error: "Error generating presigned URL" });
+    }
+});
+
+const run = async () => {
+    // Consuming
+    // await consumer.connect();
+    console.log(`Following topic ${config.topic}`);
+    // await consumer.subscribe({ topic: config.topic, fromBeginning: true });
+
+    // await consumer.run({
+    //     eachMessage: async ({ topic, partition, message }) => {
+    //         kafka_messages.push({
+    //             value: message.value.toString(),
+    //         });
+    //         console.log({
+    //             value: message.value.toString(),
+    //         });
+    //     },
+    // });
+};
 
 module.exports = router;
 

@@ -1,7 +1,11 @@
 import "./chat.css"
+<<<<<<< HEAD
 import config from '/Users/matthewtsui/project-moggers/frontend/src/serverConfig.json';
+=======
+>>>>>>> 774af5b133c258e7a5c0c130c812c42a37e2a771
 import axios from 'axios';
 import io from 'socket.io-client';
+import config from '../../serverConfig.json';
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -127,7 +131,7 @@ const Chat = () => {
                     params: {
                         user_id: currUserId
                     }
-                };
+                  };
                 const res = await axios.get(`${rootURL}/getConvos`, requestBody);
                 setConversations(res.data);
             } catch (error) {

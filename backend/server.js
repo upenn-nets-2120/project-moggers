@@ -1,6 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const cors = require('cors');
+const session = require('express-session');
 
 const {S3Client, GetObjectCommand} = require("@aws-sdk/client-s3");
 const {ChromaClient} = require("chromadb");
@@ -14,6 +15,16 @@ const userRouter = require('./routes/routes');
 
 app.use(cors());
 
+app.use(session({
+  secret: 'moggers',
+  resave: false,
+  saveUninitialized: true,
+  // cookie: { secure: true } // Uncomment this line when using HTTPS
+}));
+
+// app.get('/', (req, res) => {
+//   res.send('Welcome to Moggerstagram');
+// });
 
 
 app.use(userRouter);

@@ -872,7 +872,9 @@ router.post('/getConvos', async (req, res) => {
         GROUP BY uc.chat_id, c.name
         ORDER BY m.timstamp DESC
         `);
+        
         return res.status(200).json({data});
+     
         
  
     } catch (error) {

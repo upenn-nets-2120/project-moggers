@@ -131,7 +131,11 @@ const Chat = () => {
                   };
                   console.log(currUserId);
                   const res = await axios.post(`${rootURL}/getConvos`, {user_id: currUserId});
-                setConversations(res.data.data);
+                  
+                  console.log(res.data.data);
+                 
+                  console.log(Array.isArray(res.data.data));
+                    setConversations(res.data.data);
             } catch (error) {
                 console.log(error);
             }
@@ -142,7 +146,7 @@ const Chat = () => {
     console.log(`${rootURL}/getConvos`);
 
     console.log(currUserId);
-
+    console.log("okhimnb");
     console.log(conversations);
     // turn into a function called by abnove
     // useEffect(() => {
@@ -173,7 +177,9 @@ const Chat = () => {
                 <div className="chatMenu">
                     <div className="chatMenuWrapper">
                         <input placeholder="Search friend" className="chatMenuInput"/>
-                        {conversations.map(convo => (
+                        {
+                      
+                        conversations.map(convo => (
                             <div onCLick={() => setCurrentChatId(convo)}>
                                 <Conversation conversation={convo}/>
                             </div>

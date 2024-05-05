@@ -32,8 +32,18 @@ var kafka_messages = [];
 
 // all functions for handling data, calling the database, post/get requests, etc.
 router.get('/', (req, res) => {
-    const user_id = req.session.user_id;
-    const username = req.session.username;
+    var user_id = 0;
+    
+    var username ="lmfao";
+    if (typeof req.session !== 'undefined' && typeof req.session.user_id !== 'undefined') {
+        user_id = req.session.user_id;
+        username = req.session.username;
+    } else {
+        console.log("Session or user_id is undefined, setting defaults.");
+        user_id = -1;
+        username = "default_username"; // You can set any default value for username here
+    }
+
     return res.json({ "user_id" : user_id, "username":username });
 });
 
@@ -833,18 +843,20 @@ router.post('/postChats', async (req, res) => {
 
 router.get('/getConvos', async (req, res) => {
     try {
-        console.log(req);
+        console.log("ok!!!!");
+      
         const user1 = req.query.user_id;
-        console.log("hello there");
-        console.log(user1);
-        console.log("2");
+      
         if (!user1) {
             console.log("3");
             return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
         }
 
         console.log("4");
-        var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${user1}"`)
+        
+        console.log(user1);
+        var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = ${user1}`);
+        console.log("AWTFF");
         var count1res = count1[0]['COUNT(*)'];
         console.log("5");
         if (count1res != 1) {
@@ -866,6 +878,7 @@ router.get('/getConvos', async (req, res) => {
         
  
     } catch (error) {
+        console.log("xxxxx?");
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
     };
@@ -874,7 +887,7 @@ router.get('/getConvos', async (req, res) => {
 
 router.get('/getMessages', async (req, res) => {
     try {
-   
+        
         const chatid = req.body.chatId;
 
         if (!chatid) {

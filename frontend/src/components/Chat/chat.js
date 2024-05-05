@@ -1,5 +1,5 @@
 import "./chat.css"
-import config from '/nets2120/project-moggers/frontend/src/serverConfig.json';
+import config from '/Users/matthewtsui/project-moggers/frontend/src/serverConfig.json';
 import axios from 'axios';
 import io from 'socket.io-client';
 
@@ -101,10 +101,14 @@ const Chat = () => {
         const setCurrUser = async () => {
             try {
                 const res = await axios.get(`${rootURL}/`);
-                const user_id = res.user_id;
-                const username = res.username;
-
-                if (!user_id) {
+                console.log("spnogeobob");
+                console.log(res);
+                const user_id = res.data.user_id;
+                const username = res.data.username;
+                console.log("hello!");
+                console.log(user_id);
+                if (user_id !== -1) {
+                    console.log("ok!");
                     setCurrUserId(user_id);
                     setCurrUsername(username);
                 }
@@ -114,6 +118,7 @@ const Chat = () => {
         }
         setCurrUser();
     }, [])
+    console.log("this is the current user_id");
     console.log(currUserId);
     useEffect(() => {
         const getConversations = async () => {

@@ -14,9 +14,6 @@ const userRouter = require('./routes/routes');
 
 app.use(cors());
 
-app.get('/', (req, res) => {
-  res.send('Welcome to Moggerstagram');
-});
 
 
 app.use(userRouter);

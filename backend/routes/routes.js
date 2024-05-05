@@ -833,20 +833,24 @@ router.post('/postChats', async (req, res) => {
 
 router.get('/getConvos', async (req, res) => {
     try {
-   
-        const user1 = req.body.user_id;
-
+        console.log(req);
+        const user1 = req.query.user_id;
+        console.log("hello there");
+        console.log(user1);
+        console.log("2");
         if (!user1) {
+            console.log("3");
             return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
         }
 
-        
+        console.log("4");
         var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${user1}"`)
         var count1res = count1[0]['COUNT(*)'];
-    
+        console.log("5");
         if (count1res != 1) {
             return res.status(500).json({message: 'Could not find user1 ID in users or found more than one.'});
         }
+        console.log("6");
         var data = await db1.send_sql(`
         SELECT uc.chat_id AS chat_id, 
                c.name AS chat_name, 

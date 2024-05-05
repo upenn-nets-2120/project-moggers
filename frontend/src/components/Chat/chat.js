@@ -103,23 +103,26 @@ const Chat = () => {
                 const res = await axios.get(`${rootURL}/`);
                 const user_id = res.user_id;
                 const username = res.username;
-                setCurrUserId(user_id);
-                setCurrUsername(username);
+
+                if (!user_id) {
+                    setCurrUserId(user_id);
+                    setCurrUsername(username);
+                }
             } catch (error) {
                 console.log(error);
             }
         }
         setCurrUser();
     }, [])
-    
+    console.log(currUserId);
     useEffect(() => {
         const getConversations = async () => {
             try {
                 const requestBody = {
-                    body: {
+                    params: {
                         user_id: currUserId
                     }
-                  };
+                };
                 const res = await axios.get(`${rootURL}/getConvos`, requestBody);
                 setConversations(res.data);
             } catch (error) {
@@ -129,7 +132,12 @@ const Chat = () => {
         }
         getConversations();
     }, [currUserId])
+    console.log(`${rootURL}/getConvos`);
 
+    console.log(currUserId);
+
+    console.log(conversations);
+    // turn into a function called by abnove
     useEffect(() => {
         const getMsgs = async () => {
             try {

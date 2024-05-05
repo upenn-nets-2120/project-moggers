@@ -94,7 +94,7 @@ const Chat = () => {
     const [currUserId, setCurrUserId] = useState(null);
     const [currUsername, setCurrUsername] = useState(null);
     const [conversations, setConversations] = useState([]);
-    const [currentChat, setCurrentChat] = useState(null);
+    const [currentChatId, setCurrentChatId] = useState(null);
     const [messages, setMessages] = useState([]);
 
     useEffect(() => {
@@ -108,7 +108,6 @@ const Chat = () => {
             } catch (error) {
                 console.log(error);
             }
-            
         }
         setCurrUser();
     }, [])
@@ -131,6 +130,24 @@ const Chat = () => {
         getConversations();
     }, [currUserId])
 
+    useEffect(() => {
+        const getMsgs = async () => {
+            try {
+                const requestBody = {
+                    body: {
+                        chatId: currentChatId
+                    }
+                };
+                const res = await axios.get(`${rootURL}/getMessages`, requestBody);
+                setMessages(res.data);
+            } catch (error) {
+                console.log(error);
+            }
+            
+        } 
+        getMsgs();
+    }, [currentChatId])
+
     return (
         <>
             <div className="chat">
@@ -138,7 +155,7 @@ const Chat = () => {
                     <div className="chatMenuWrapper">
                         <input placeholder="Search friend" className="chatMenuInput"/>
                         {conversations.map(convo => (
-                            <div onCLick={() => setCurrentChat(convo)}>
+                            <div onCLick={() => setCurrentChatId(convo)}>
                                 <Conversation conversation={convo}/>
                             </div>
                         ))}
@@ -151,9 +168,14 @@ const Chat = () => {
                 </div>
                 <div className="chatBox">
                     <div className="chatBoxWrapper">
-                        {currentChat ? 
+                        {currentChatId ? 
                             <>
                                 <div className='chatBoxTop'>
+                                    {messages.map(msg => (
+                                        <div>
+                                            <Message conversation={convo}/>
+                                        </div>
+                                    ))}
                                     <Message />
                                     <Message own={true}/>
                                     <Message />

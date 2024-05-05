@@ -847,7 +847,7 @@ router.get('/getConvos', async (req, res) => {
         if (count1res != 1) {
             return res.status(500).json({message: 'Could not find user1 ID in users or found more than one.'});
         }
-        var x1 = await db1.send_sql(`
+        var data = await db1.send_sql(`
         SELECT uc.chat_id AS chat_id, 
                c.name AS chat_name, 
                MAX(m.timstamp) AS latest_timestamp
@@ -858,7 +858,7 @@ router.get('/getConvos', async (req, res) => {
         GROUP BY uc.chat_id, c.name
         ORDER BY m.timstamp DESC
         `);
-        return res.status(200).json({x1});
+        return res.status(200).json({data});
         
  
     } catch (error) {
@@ -871,7 +871,7 @@ router.get('/getConvos', async (req, res) => {
 router.get('/getMessages', async (req, res) => {
     try {
    
-        const {chatid} = req.body;
+        const chatid = req.body.chatId;
 
         if (!chatid) {
             return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});

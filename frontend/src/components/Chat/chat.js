@@ -1,8 +1,4 @@
 import "./chat.css"
-<<<<<<< HEAD
-import config from '/Users/matthewtsui/project-moggers/frontend/src/serverConfig.json';
-=======
->>>>>>> 774af5b133c258e7a5c0c130c812c42a37e2a771
 import axios from 'axios';
 import io from 'socket.io-client';
 import config from '../../serverConfig.json';
@@ -105,6 +101,7 @@ const Chat = () => {
         const setCurrUser = async () => {
             try {
                 const res = await axios.get(`${rootURL}/`);
+                console.log(`${rootURL}/` );
                 console.log("spnogeobob");
                 console.log(res);
                 const user_id = res.data.user_id;
@@ -132,7 +129,8 @@ const Chat = () => {
                         user_id: currUserId
                     }
                   };
-                const res = await axios.get(`${rootURL}/getConvos`, requestBody);
+                  console.log(currUserId);
+                  const res = await axios.post(`${rootURL}/getConvos`, {user_id: currUserId});
                 setConversations(res.data);
             } catch (error) {
                 console.log(error);

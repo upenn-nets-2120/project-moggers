@@ -833,11 +833,11 @@ router.post('/postChats', async (req, res) => {
     };
 });
 
-router.get('/getConvos', async (req, res) => {
+router.post('/getConvos', async (req, res) => {
     try {
         console.log("ok!!!!");
       
-        const user1 = req.query.user_id;
+        const user1 = req.body.user_id;
       
         if (!user1) {
             console.log("3");
@@ -847,6 +847,10 @@ router.get('/getConvos', async (req, res) => {
         console.log("4");
         
         console.log(user1);
+        
+        console.log(`SELECT COUNT(*) FROM users WHERE id = ${user1}`);
+        var count2 = await db1.send_sql(`SELECT COUNT(*) FROM users`);
+        console.log("AWTFF");
         var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = ${user1}`);
         console.log("AWTFF");
         var count1res = count1[0]['COUNT(*)'];

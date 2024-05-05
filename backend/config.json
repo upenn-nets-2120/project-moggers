@@ -6,7 +6,7 @@
     "port": "3306",
     "database": "moggersdb"
   },
-  "groupId": "nets-2120-group-a",
+  "groupId": "nets-2120-group-19110",
   "bootstrapServers": ["localhost:9092"],
   "topic": "sample-topic",
   "port": 4567,

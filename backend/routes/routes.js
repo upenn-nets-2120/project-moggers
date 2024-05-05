@@ -16,16 +16,30 @@ router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({extended: true}));
 var config = require('../config.json');
 const { Kafka } = require('kafkajs');
-// const kafka = new Kafka({
-//     clientId: 'my-app',
-//     brokers: config.bootstrapServers
-// });
+const kafka = new Kafka({
+    clientId: 'my-app',
+    brokers: config.bootstrapServers
+});
 
-// const consumer = kafka.consumer({ 
-//     groupId: config.groupId, 
-//     bootstrapServers: config.bootstrapServers});
+const consumer = kafka.consumer({ 
+    groupId: config.groupId, 
+    bootstrapServers: config.bootstrapServers});
 
-// var kafka_messages = [];
+const consumer2 = kafka.consumer({ 
+        groupId: config.groupId, 
+        bootstrapServers: config.bootstrapServers});
+
+var kafka_messages = [];
+var kafka_messages1 = [];
+router.get('/getKafka', (req, res) => {
+    res.send(JSON.stringify(kafka_messages));
+});
+const {  CompressionTypes, CompressionCodecs } = require('kafkajs')
+const SnappyCodec = require('kafkajs-snappy');
+const { LexRuntimeV2 } = require('aws-sdk');
+ 
+CompressionCodecs[CompressionTypes.Snappy] = SnappyCodec
+
 
 
 // all functions for handling data, calling the database, post/get requests, etc.
@@ -967,21 +981,43 @@ router.post("/get_presigned_url", async (req, res) => {
 
 const run = async () => {
     // Consuming
-    // await consumer.connect();
-    console.log(`Following topic ${config.topic}`);
-    // await consumer.subscribe({ topic: config.topic, fromBeginning: true });
+    await consumer.connect();
+    console.log(`Following topic Twitter-Kafka`);
+    await consumer.subscribe({ topic: 'FederatedPosts', fromBeginning: true });
 
-    // await consumer.run({
-    //     eachMessage: async ({ topic, partition, message }) => {
-    //         kafka_messages.push({
-    //             value: message.value.toString(),
-    //         });
-    //         console.log({
-    //             value: message.value.toString(),
-    //         });
-    //     },
-    // });
+    await consumer.run({
+        eachMessage: async ({ topic, partition, message }) => {
+            kafka_messages.push({
+                value: message.value.toString(),
+            });
+            console.log({
+                value: message.value.toString(),
+            });
+        },
+    });
 };
+// const run2 = async () => {
+//     // Consuming
+//     await consumer2.connect();
+//     console.log(`Following topic FederatedPosts`);
+//     await consumer2.subscribe({ topic: 'FederatedPosts', fromBeginning: true });
+
+//     await consumer2.run({
+//         eachMessage: async ({ topic, partition, message }) => {
+//             kafka_messages1.push({
+//                 value: message.value.toString(),
+//             });
+//             console.log({
+//                 value: message.value.toString(),
+//             });
+//         },
+//     });
+// };
+    
+  
+
+run().catch(console.error);
+// run2().catch(console.error);
 
 module.exports = router;
 

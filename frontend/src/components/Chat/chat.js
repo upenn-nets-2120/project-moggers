@@ -91,17 +91,34 @@ const Chat = () => {
     // assumes a field called id
 
     /////////////////////////////////////////
+    const [currUserId, setCurrUserId] = useState(null);
+    const [currUsername, setCurrUsername] = useState(null);
     const [conversations, setConversations] = useState([]);
     const [currentChat, setCurrentChat] = useState(null);
     const [messages, setMessages] = useState([]);
 
+    useEffect(() => {
+        const setCurrUser = async () => {
+            try {
+                const res = await axios.get(`${rootURL}/`);
+                const user_id = res.user_id;
+                const username = res.username;
+                setCurrUserId(user_id);
+                setCurrUsername(username);
+            } catch (error) {
+                console.log(error);
+            }
+            
+        }
+        setCurrUser();
+    }, [])
     
     useEffect(() => {
         const getConversations = async () => {
             try {
                 const requestBody = {
                     body: {
-                        user_id: user.id
+                        user_id: currUserId
                     }
                   };
                 const res = await axios.get(`${rootURL}/getConvos`, requestBody);
@@ -111,7 +128,8 @@ const Chat = () => {
             }
             
         }
-    }, [user.id])
+        getConversations();
+    }, [currUserId])
 
     return (
         <>

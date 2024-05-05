@@ -31,6 +31,10 @@ var kafka_messages = [];
 
 
 // all functions for handling data, calling the database, post/get requests, etc.
+router.get('/', (req, res) => {
+    res.render('index', { sessionId: req.session.id });
+});
+
 
 router.get('/hi', (req, res) => {
     res.status(200).json({message: 'Hello World!'});

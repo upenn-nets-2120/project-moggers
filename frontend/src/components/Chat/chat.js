@@ -14,65 +14,65 @@ import Message from "./Message/Message.js";
 
 const Chat = () => {
     ////////////////////////////////////////////////////////////////// OLD STUFF////////////
-    const [socket, setSocket] = useState(null);
-    const [id, setId] = useState(Math.random());
-    const [room, setRoom] = useState(false);
-    const [inputValue, setInputValue] = useState('');
+    // const [socket, setSocket] = useState(null);
+    // const [id, setId] = useState(Math.random());
+    // const [room, setRoom] = useState(false);
+    // const [inputValue, setInputValue] = useState('');
 
-    useEffect(() => {
-        const newSocket = io();
-        setSocket(newSocket);
+    // useEffect(() => {
+    //     const newSocket = io();
+    //     setSocket(newSocket);
 
-        return () => {
-            newSocket.disconnect();
-        };
-    }, []);
+    //     return () => {
+    //         newSocket.disconnect();
+    //     };
+    // }, []);
 
-    useEffect(() => {
-        if (socket) {
-            socket.on('chat message', (msg) => {
-                setMessages((prevMessages) => [...prevMessages, msg]);
-            });
-        }
-    }, [socket]);
+    // useEffect(() => {
+    //     if (socket) {
+    //         socket.on('chat message', (msg) => {
+    //             setMessages((prevMessages) => [...prevMessages, msg]);
+    //         });
+    //     }
+    // }, [socket]);
 
-    const sendChat = () => {
-        if (inputValue.trim() !== '') {
-            socket.emit('chat message', {
-                text: inputValue.trim(),
-                sender: id,
-                room: 1
-            });
+    // const sendChat = () => {
+    //     if (inputValue.trim() !== '') {
+    //         socket.emit('chat message', {
+    //             text: inputValue.trim(),
+    //             sender: id,
+    //             room: 1
+    //         });
 
-            setInputValue('');
-        }
-    };
+    //         setInputValue('');
+    //     }
+    // };
 
-    const handleRoomButtonClick = () => {
-        if (!room) {
-            axios.post('/join', { room: 1 })
-                .then((response) => {
-                    if (response.data.success) {
-                        setRoom(true);
-                        socket.emit('join room', { sender: id, room: 1 });
-                    }
-                })
-                .catch((error) => {
-                    console.error('Error joining room:', error);
-                });
-        } else {
-            axios.post('/leave', { room: 1 })
-                .then((response) => {
-                    if (response.data.success) {
-                        setRoom(false);
-                        socket.emit('leave room', { sender: id, room: 1 });
-                    }
-                })
-                .catch((error) => {
-                    console.error('Error leaving room:', error);
-                });
-        }
-    };
+    // const handleRoomButtonClick = () => {
+    //     if (!room) {
+    //         axios.post('/join', { room: 1 })
+    //             .then((response) => {
+    //                 if (response.data.success) {
+    //                     setRoom(true);
+    //                     socket.emit('join room', { sender: id, room: 1 });
+    //                 }
+    //             })
+    //             .catch((error) => {
+    //                 console.error('Error joining room:', error);
+    //             });
+    //     } else {
+    //         axios.post('/leave', { room: 1 })
+    //             .then((response) => {
+    //                 if (response.data.success) {
+    //                     setRoom(false);
+    //                     socket.emit('leave room', { sender: id, room: 1 });
+    //                 }
+    //             })
+    //             .catch((error) => {
+    //                 console.error('Error leaving room:', error);
+    //             });
+    //     }
+    // };
 
         ////////////////////////////////////////////////////////////////// OLD STUFF////////////
 
@@ -131,7 +131,7 @@ const Chat = () => {
                   };
                   console.log(currUserId);
                   const res = await axios.post(`${rootURL}/getConvos`, {user_id: currUserId});
-                setConversations(res.data);
+                setConversations(res.data.data);
             } catch (error) {
                 console.log(error);
             }
@@ -145,24 +145,28 @@ const Chat = () => {
 
     console.log(conversations);
     // turn into a function called by abnove
-    useEffect(() => {
-        const getMsgs = async () => {
-            try {
-                const requestBody = {
-                    body: {
-                        chatId: currentChatId
-                    }
-                };
-                const res = await axios.get(`${rootURL}/getMessages`, requestBody);
-                setMessages(res.data);
-            } catch (error) {
-                console.log(error);
-            }
+    // useEffect(() => {
+    //     const getMsgs = async () => {
+    //         try {
+    //             const requestBody = {
+    //                 params: {
+    //                     chatId: currChatId
+    //                 }
+    //               };
+    //             const res = await axios.get(`${rootURL}/getMessages`, requestBody);
+    //             console.log("squidward");
+    //             console.log(res);
+    //             setMessages(res.data);
+                
+    //         } catch (error) {
+    //             console.log("sandycheeks");
+    //             console.log(error);
+    //         }
             
-        } 
-        getMsgs();
-    }, [currentChatId])
-
+    //     } 
+    //     getMsgs();
+    // }, [currentChatId])
+    console.log(messages);
     return (
         <>
             <div className="chat">

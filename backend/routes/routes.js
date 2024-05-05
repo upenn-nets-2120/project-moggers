@@ -836,7 +836,9 @@ router.post('/postChats', async (req, res) => {
 router.post('/getConvos', async (req, res) => {
     try {
         console.log("ok!!!!");
-      
+        if (typeof req.body.user_id === 'undefined') {
+            console.log("we failed here");
+        }
         const user1 = req.body.user_id;
       
         if (!user1) {
@@ -852,7 +854,7 @@ router.post('/getConvos', async (req, res) => {
         var count2 = await db1.send_sql(`SELECT COUNT(*) FROM users`);
         console.log("AWTFF");
         var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = ${user1}`);
-        console.log("AWTFF");
+        console.log(count1);
         var count1res = count1[0]['COUNT(*)'];
         console.log("5");
         if (count1res != 1) {
@@ -883,17 +885,21 @@ router.post('/getConvos', async (req, res) => {
 
 router.get('/getMessages', async (req, res) => {
     try {
-        
+        console.log("x1");
+        console.log(req.body);
         const chatid = req.body.chatId;
 
         if (!chatid) {
+            console.log("x3");
             return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
         }
+        console.log("x2");
 
         
         var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${user1}"`)
         var count1res = count1[0]['COUNT(*)'];
-    
+        
+        console.log("x3");
         if (count1res != 1) {
             return res.status(500).json({message: 'Could not find user1 ID in users or found more than one.'});
         }
@@ -904,6 +910,7 @@ router.get('/getMessages', async (req, res) => {
         WHERE chats.id = "${chatid}"
         ORDER BY messages.timstamp DESC;
         `);
+        console.log("x4");
         return res.status(200).json({x1});
         
  

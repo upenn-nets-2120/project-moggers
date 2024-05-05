@@ -66,7 +66,7 @@ async function get_db_connection() {
                 return reject(err);
             else {
                 console.log('Connected to the MySQL server.');
-                return the_db;
+                return resolve(the_db);
             }
         });
     });

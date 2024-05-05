@@ -34,7 +34,7 @@ var kafka_messages = [];
 router.get('/', (req, res) => {
     const user_id = req.session.user_id;
     const username = req.session.username;
-    res.render('index', { user_id, username });
+    return res.json({ user_id, username });
 });
 
 router.get('/hi', (req, res) => {

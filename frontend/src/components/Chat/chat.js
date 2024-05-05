@@ -92,7 +92,7 @@ const Chat = () => {
 
     /////////////////////////////////////////
     const [currUserId, setCurrUserId] = useState(2);
-    const [currUsername, setCurrUsername] = useState(mts);
+    const [currUsername, setCurrUsername] = useState("mts");
     const [conversations, setConversations] = useState([]);
     const [currentChatId, setCurrentChatId] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -171,11 +171,11 @@ const Chat = () => {
                         {currentChatId ? 
                             <>
                                 <div className='chatBoxTop'>
-                                    {messages.map(msg => (
+                                    {/* {messages.map(msg => (
                                         <div>
-                                            <Message conversation={convo}/>
+                                            <Message conversation={msg}/>
                                         </div>
-                                    ))}
+                                    ))} */}
                                     <Message />
                                     <Message own={true}/>
                                     <Message />

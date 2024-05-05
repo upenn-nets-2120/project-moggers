@@ -905,15 +905,14 @@ router.get('/getMessages', async (req, res) => {
         if (count1res != 1) {
             return res.status(500).json({message: 'Could not find user1 ID in users or found more than one.'});
         }
-        var x1 = await db1.send_sql(`
-        SELECT messages.id, messages.author, messages.timstamp, messages.chat_id, messages.content, chats.name
+        var data = await db1.send_sql(`
+        SELECT messages.id AS message_id, messages.author AS author, messages.timstamp AS timestamp, messages.chat_id AS chat_id, messages.content AS content, chats.name AS chat_name
         FROM messages
         JOIN chats ON messages.chat_id = chats.id 
         WHERE chats.id = "${chatid}"
         ORDER BY messages.timstamp DESC;
         `);
-        console.log("x4");
-        return res.status(200).json({x1});
+        return res.status(200).json({data});
         
  
     } catch (error) {

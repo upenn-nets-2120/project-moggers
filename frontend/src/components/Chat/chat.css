@@ -62,3 +62,12 @@
     padding: 10px;
     height: 100%;
 }
+
+.noCurrentConvoText {
+    position: absolute;
+    top: 20%;
+    font-size: 40px;
+    color: darkgray;
+    text-align: center;
+    cursor: default;
+}

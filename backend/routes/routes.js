@@ -693,6 +693,15 @@ router.get('/numLikes', async (req, res) => {
 });
 
 
+
+
+
+
+
+
+
+
+
 // router.get('/', (req, res) => {
 //     res.send(JSON.stringify(kafka_messages));
 // });
@@ -834,8 +843,8 @@ router.get('/getConvos', async (req, res) => {
             return res.status(500).json({message: 'Could not find user1 ID in users or found more than one.'});
         }
         var x1 = await db1.send_sql(`
-        SELECT uc.chat_id, 
-               c.name, 
+        SELECT uc.chat_id AS chat_id, 
+               c.name AS chat_name, 
                MAX(m.timstamp) AS latest_timestamp
         FROM user_chats uc
         JOIN chats c ON uc.chat_id = c.id

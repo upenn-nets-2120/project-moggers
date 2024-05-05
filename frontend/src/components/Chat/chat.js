@@ -1,17 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import "./chat.css"
+import config from '/nets2120/project-moggers/frontend/src/serverConfig.json';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
+
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
+
 import Conversation from "./Conversations/Conversations.js";
 import Message from "./Message/Message.js";
 
 
 
 const Chat = () => {
+    ////////////////////////////////////////////////////////////////// OLD STUFF////////////
     const [socket, setSocket] = useState(null);
     const [id, setId] = useState(Math.random());
     const [room, setRoom] = useState(false);
-    const [messages, setMessages] = useState([]);
     const [inputValue, setInputValue] = useState('');
 
     useEffect(() => {
@@ -69,46 +74,83 @@ const Chat = () => {
         }
     };
 
+        ////////////////////////////////////////////////////////////////// OLD STUFF////////////
+
+
+
+
+
+
+
+    const rootURL = config.serverRootURL;
+    // const {user} = useContext(); // CHANGE HERE TO GET USER/////////////////
+    const user  = {
+        id: 9999
+    }
+
+    // assumes a field called id
+
+    /////////////////////////////////////////
+    const [conversations, setConversations] = useState([]);
+    const [currentChat, setCurrentChat] = useState(null);
+    const [messages, setMessages] = useState([]);
+
+    
+    useEffect(() => {
+        const getConversations = async () => {
+            try {
+                const requestBody = {
+                    body: {
+                        user_id: user.id
+                    }
+                  };
+                const res = await axios.get(`${rootURL}/getConvos`, requestBody);
+                setConversations(res.data);
+            } catch (error) {
+                console.log(error);
+            }
+            
+        }
+    }, [user.id])
+
     return (
         <>
-            {/* <div className="left">
-                <div className="wrapper">
-                    <h1 className="fadeIn zeroth"><span>Start chatting!</span></h1>
-                    <div className="fadeIn second" id="buttons-wrapper">
-                        <h2 id="roomBtn" className="underlineHover" onClick={handleRoomButtonClick}>
-                            {room ? 'Leave chat room' : 'Enter chat room'}
-                        </h2>
-                    </div>
-                </div>
-            </div> */}
-
-
-
             <div className="chat">
                 <div className="chatMenu">
                     <div className="chatMenuWrapper">
                         <input placeholder="Search friend" className="chatMenuInput"/>
+                        {conversations.map(convo => (
+                            <div onCLick={() => setCurrentChat(convo)}>
+                                <Conversation conversation={convo}/>
+                            </div>
+                        ))}
+                        {/* DUMMY STUFF
                         <Conversation/>
                         <Conversation/>
                         <Conversation/>
-                        <Conversation/>
+                        <Conversation/> */}
                     </div>
                 </div>
                 <div className="chatBox">
                     <div className="chatBoxWrapper">
-                        <div className='chatBoxTop'>
-                            <Message />
-                            <Message own={true}/>
-                            <Message />
-                            <Message />
-                            <Message />
-                            <Message />
-                            <Message />
-                        </div>
-                        <div className='chatBoxBottom'>
-                            <textarea className='chatMessageInput' placeholder="Enter a message..."></textarea>
-                            <button className='chatSubmitButton'>Send</button>
-                        </div>
+                        {currentChat ? 
+                            <>
+                                <div className='chatBoxTop'>
+                                    <Message />
+                                    <Message own={true}/>
+                                    <Message />
+                                    <Message />
+                                    <Message />
+                                    <Message />
+                                    <Message />
+                                </div>
+                                <div className='chatBoxBottom'>
+                                    <textarea className='chatMessageInput' placeholder="Enter a message..."></textarea>
+                                    <button className='chatSubmitButton'>Send</button>
+                                </div>
+                            </> : <span className="noCurrentConvoText">
+                                Open a previous conversation or start a new one!
+                            </span>}
                     </div>
                 </div>
                 {/* <div className="chatOnline">

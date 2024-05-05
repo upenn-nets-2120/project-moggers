@@ -91,8 +91,8 @@ const Chat = () => {
     // assumes a field called id
 
     /////////////////////////////////////////
-    const [currUserId, setCurrUserId] = useState(null);
-    const [currUsername, setCurrUsername] = useState(null);
+    const [currUserId, setCurrUserId] = useState(2);
+    const [currUsername, setCurrUsername] = useState(mts);
     const [conversations, setConversations] = useState([]);
     const [currentChatId, setCurrentChatId] = useState(null);
     const [messages, setMessages] = useState([]);

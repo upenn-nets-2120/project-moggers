@@ -4,23 +4,21 @@ import React from 'react'
 
 // sender is 0 if self, 1 if system, and 2 if other
 // still need to add a variable holdibng the actual text
-export default function Message({msgContents}) {
-    const sender = msgContents.author;
+export default function Message({msgContents, currUser}) {
+    var sender = msgContents.author;
     const contents = msgContents.content;
     const timestamp = msgContents.timestamp;
-
     let messageClass;
-    switch(sender) {
-        case 0:
-            messageClass = 'message own';
-            break;
-        case 1:
-            messageClass = 'message system';
-            break;
-        case 2:
-            messageClass = 'message';
-            break;
+    if (currUser === sender) {
+        messageClass = 'message own';
+    } else if (sender === -1) {
+        messageClass = 'message system';
+    } else {
+        messageClass = 'message';
     }
+  
+   
+    console.log(messageClass);
 
     return (
         <div className={messageClass}>

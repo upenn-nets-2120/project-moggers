@@ -887,9 +887,11 @@ router.post('/getConvos', async (req, res) => {
 
 router.get('/getMessages', async (req, res) => {
     try {
-        console.log("x1");
-        console.log(req.body);
-        const chatid = req.body.chatId;
+        console.log("x999999");
+  
+        console.log(req.query);
+        console.log(req.chatId);
+        const chatid = req.query.chatId;
 
         if (!chatid) {
             console.log("x3");
@@ -898,13 +900,9 @@ router.get('/getMessages', async (req, res) => {
         console.log("x2");
 
         
-        var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${user1}"`)
-        var count1res = count1[0]['COUNT(*)'];
+
         
-        console.log("x3");
-        if (count1res != 1) {
-            return res.status(500).json({message: 'Could not find user1 ID in users or found more than one.'});
-        }
+      
         var data = await db1.send_sql(`
         SELECT messages.id AS message_id, messages.author AS author, messages.timstamp AS timestamp, messages.chat_id AS chat_id, messages.content AS content, chats.name AS chat_name
         FROM messages

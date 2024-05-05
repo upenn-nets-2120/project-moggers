@@ -133,7 +133,12 @@ const Chat = () => {
     useEffect(() => {
         const getMsgs = async () => {
             try {
-                const res = await axios.get(`${rootURL}/getMessages`, {chatId: currentChatId});
+                console.log("kms");
+                const params = {
+                    chatId: currentChatId
+                  };
+                 
+                  const res = await axios.get(`${rootURL}/getMessages`, { params: { chatId: currentChatId } });
 
                 setMessages(res.data.data);
             } catch (error) {
@@ -154,7 +159,7 @@ const Chat = () => {
                         {
                       
                         conversations.map(convo => (
-                            <div onCLick={() => setCurrentChatId(convo.chat_id)}>
+                            <div onClick={() => setCurrentChatId(convo.chat_id)}>
                                 <Conversation conversation={convo}/>
                             </div>
                         ))}
@@ -167,7 +172,7 @@ const Chat = () => {
                                 <div className='chatBoxTop'>
                                     {messages.map(msg => (
                                         <div>
-                                            <Message msgContents={msg}/>
+                                            <Message msgContents={msg} currUser =  {currUserId}/>
                                         </div>
                                     ))}
                                     {/* <Message sender={2}/>

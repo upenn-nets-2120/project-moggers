@@ -15,7 +15,7 @@ export default function Conversation({conversation}) {
         const latest_timestamp = conversation.latest_timestamp;
         setChatId(chat_id);
         setchatName(chat_name);
-        setLatestTimestamp(latestTimestamp);
+        setLatestTimestamp(latest_timestamp);
     }, [conversation])
 
     return (

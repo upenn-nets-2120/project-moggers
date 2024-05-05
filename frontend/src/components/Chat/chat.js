@@ -154,7 +154,7 @@ const Chat = () => {
                         {
                       
                         conversations.map(convo => (
-                            <div onCLick={() => setCurrentChatId(convo)}>
+                            <div onCLick={() => setCurrentChatId(convo.chat_id)}>
                                 <Conversation conversation={convo}/>
                             </div>
                         ))}

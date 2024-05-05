@@ -1,7 +1,7 @@
 import "./chat.css"
-import config from '/nets2120/project-moggers/frontend/src/serverConfig.json';
 import axios from 'axios';
 import io from 'socket.io-client';
+import config from '../../serverConfig.json';
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -122,7 +122,7 @@ const Chat = () => {
                     params: {
                         user_id: currUserId
                     }
-                };
+                  };
                 const res = await axios.get(`${rootURL}/getConvos`, requestBody);
                 setConversations(res.data);
             } catch (error) {

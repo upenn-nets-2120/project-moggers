@@ -128,10 +128,8 @@ let q14 = db.create_tables(`CREATE TABLE IF NOT EXISTS hashtagPosts (
 
     return await Promise.all([q1, q2, q3, q4, q5, q6, q7, q11, q13, q12,q14]).then(async () => { 
      
-        await dbaccess.close_db(db);
-        console.log('closed db' );
-    
-
+    await dbaccess.close_db(db);
+    console.log('closed db' );
   });
 }
 
@@ -139,8 +137,6 @@ let q14 = db.create_tables(`CREATE TABLE IF NOT EXISTS hashtagPosts (
 const db = dbaccess.get_db_connection();
 var result = create_tables(dbaccess);
 console.log('Tables created');
-
-
 
 
 const PORT = config.serverPort;

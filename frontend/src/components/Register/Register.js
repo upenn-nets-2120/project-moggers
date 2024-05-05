@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useCookies } from 'react-cookie';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import styles from './Register.module.css';
@@ -20,6 +21,7 @@ const Register = () => {
   const [step, setStep] = useState(1);
   const [selectedHashtags, setSelectedHashtags] = useState([]);
   const [customHashtag, setCustomHashtag] = useState('');
+  const [cookies, setCookie] = useCookies(['user_id', 'username']);
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -30,7 +32,11 @@ const Register = () => {
     birthday: ''
   });
   const [profilePhoto, setProfilePhoto] = useState(null);
+  const [presignedUrl, setPresignedUrl] = useState('');
   const [error, setError] = useState('');
+  const [similarImages, setSimilarImages] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [s3FileName, setS3FileName] = useState('');
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -44,6 +50,8 @@ const Register = () => {
     try {
       const response = await axios.post('localhost:8080/register', formData);
       console.log(response.data);
+      setCookie('user_id', response.data.user_id, { path: 'localhost:8080/' });
+      setCookie('username', response.data.username, { path: 'localhost:8080/' });
       navigate('/login');
     } catch (error) {
       setError(error.response.data.error || 'An error occurred');
@@ -68,11 +76,60 @@ const Register = () => {
 
   const handleSubmitStep2 = async (e) => {
     e.preventDefault();
-    setStep(3);
+    try {
+      // add interests to database
+      for (const hashtag of selectedHashtags) {
+        await addInterest(hashtag);
+      }
+
+      setStep(3);
+    } catch (error) {
+      setError('Error selecting interests');
+    }
   };
 
-  const handleProfilePhotoChange = (e) => {
-    // Handle profile photo upload
+  const addInterest = async (interest) => {
+      try {
+          const response = await axios.post('http://localhost:8080/addInterests', { name: interest });
+          console.log(response.data);
+      } catch (error) {
+          console.error('Error adding interest:', error);
+      }
+  };
+
+  const handleSubmitStep3 = async (e) => {
+    e.preventDefault();
+    try {
+      console.log(profilePhoto.name);
+      const signedUrlResponse = await axios.post('http://localhost:8080/get_presigned_url', { fileName: profilePhoto.name, fileType: profilePhoto.type});
+      console.log(signedUrlResponse.data);
+      setPresignedUrl(signedUrlResponse.data.url);
+      console.log(signedUrlResponse.data.url);
+      setS3FileName(signedUrlResponse.data.fileName);
+      const updatedProfilePhoto = new File([profilePhoto], signedUrlResponse.data.fileName, 
+        { type: profilePhoto.type }
+      );
+      console.log(updatedProfilePhoto.name);
+      try {
+        await fetch(signedUrlResponse.data.url, {
+          method: 'PUT',
+          body: updatedProfilePhoto
+        });
+        console.log('File successfully uploaded to S3');
+      } catch (error) {
+        console.error('Error uploading profile photo:', error);
+      };
+
+      const response = await axios.post('http:localhost:8080/find_similar', {
+        fileName: signedUrlResponse.data.fileName
+      });
+      console.log(response.data);
+      setSimilarImages(response.data.similarImages);
+      setStep(4);
+    } catch (error) {
+      console.log("Error", error);
+      setError('Error uploading profile photo');
+    }
   };
 
   const handleHashtagClick = (hashtag) => {
@@ -97,6 +154,15 @@ const Register = () => {
     console.log(selectedHashtags);
     setCustomHashtag('');
     setError('');
+  };
+
+  const handleProfilePhotoChange = (e) => {
+    const file = e.target.files[0]; 
+    setProfilePhoto(file);
+  };
+
+  const handleImageSelect = (image) => {
+    setSelectedImage(image);
   };
 
   const renderStep = () => {
@@ -176,11 +242,28 @@ const Register = () => {
       case 3:
         return (
           <div><h2 style={{ 'textAlign': 'center', 'marginBlock': '25px'}}><b>Select a Profile Photo</b></h2>
-          <form onSubmit={handleSubmit} className={styles.registerform}>
+          
+          <form onSubmit={handleSubmitStep3}>
             {/* Step 3: Profile photo upload */}
-            {/* Profile photo upload fields */}
-            <button type="submit" className={styles.registerbtn}>Submit</button>
+            <input type="file" onChange={handleProfilePhotoChange} />
+            <button type="submit">Upload</button>
           </form></div>
+        );
+      case 4:
+        return (
+          <div>
+            {/* Step 4: Display similar images */}
+            {similarImages.map(image => (
+              <img
+                key={image.id}
+                src={image.url}
+                alt={image.description}
+                onClick={() => handleImageSelect(image)}
+                style={{ cursor: 'pointer', border: selectedImage === image ? '2px solid red' : 'none' }}
+              />
+            ))}
+            <button onClick={handleSubmit}>Submit</button>
+          </div>
         );
       default:
         return null;

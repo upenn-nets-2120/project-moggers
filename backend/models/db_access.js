@@ -1,4 +1,4 @@
-const mysql = require('mysql');
+const mysql = require('mysql2');
 const config = require('../config.json'); // Load configuration
 const process = require('process');
 require('dotenv').config();
@@ -8,6 +8,16 @@ require('dotenv').config();
  */
 
 var the_db = null;
+var dbconfig = null;
+
+var pool = mysql.createPool({
+    connectionLimit : 10,
+    host: "localhost",
+    user: process.env.RDS_USER,
+    password: process.env.RDS_PWD,
+    database: "moggersdb",
+    port: "3306"
+})
 
 module.exports = {
     get_db_connection,

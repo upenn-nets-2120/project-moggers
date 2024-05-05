@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useCookies } from 'react-cookie';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
@@ -9,6 +10,7 @@ const Login = () => {
     password: ''
   });
   const [error, setError] = useState('');
+  const [cookies, setCookie] = useCookies(['user_id', 'username']);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -28,6 +30,8 @@ const Login = () => {
       }
       const response = await axios.post('localhost:8080/login', formData);
       console.log(response.data);
+      document.cookie = `user_id=${response.data.user_id}; path=localhost:8080/`;
+      document.cookie = `username=${response.data.username}; path=localhost:8080/`;
       navigate('/');
     } catch (error) {
       setError(error.response.data.error || 'An error occurred');

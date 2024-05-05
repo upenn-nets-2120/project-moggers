@@ -83,14 +83,7 @@ const Chat = () => {
 
 
     const rootURL = config.serverRootURL;
-    // const {user} = useContext(); // CHANGE HERE TO GET USER/////////////////
-    const user  = {
-        id: 9999
-    }
 
-    // assumes a field called id
-
-    /////////////////////////////////////////
     const [currUserId, setCurrUserId] = useState(2);
     const [currUsername, setCurrUsername] = useState("mts");
     const [conversations, setConversations] = useState([]);
@@ -101,15 +94,11 @@ const Chat = () => {
         const setCurrUser = async () => {
             try {
                 const res = await axios.get(`${rootURL}/`);
-                console.log(`${rootURL}/` );
-                console.log("spnogeobob");
-                console.log(res);
+
                 const user_id = res.data.user_id;
                 const username = res.data.username;
-                console.log("hello!");
-                console.log(user_id);
+
                 if (user_id !== -1) {
-                    console.log("ok!");
                     setCurrUserId(user_id);
                     setCurrUsername(username);
                 }
@@ -119,8 +108,7 @@ const Chat = () => {
         }
         setCurrUser();
     }, [])
-    console.log("this is the current user_id");
-    console.log(currUserId);
+
     useEffect(() => {
         const getConversations = async () => {
             try {
@@ -128,9 +116,10 @@ const Chat = () => {
                     params: {
                         user_id: currUserId
                     }
-                  };
-                  console.log(currUserId);
-                  const res = await axios.post(`${rootURL}/getConvos`, {user_id: currUserId});
+                };
+
+                const res = await axios.post(`${rootURL}/getConvos`, {user_id: currUserId});
+
                 setConversations(res.data.data);
             } catch (error) {
                 console.log(error);
@@ -139,50 +128,36 @@ const Chat = () => {
         }
         getConversations();
     }, [currUserId])
-    console.log(`${rootURL}/getConvos`);
 
-    console.log(currUserId);
-
-    console.log(conversations);
     // turn into a function called by abnove
-    // useEffect(() => {
-    //     const getMsgs = async () => {
-    //         try {
-    //             const requestBody = {
-    //                 params: {
-    //                     chatId: currChatId
-    //                 }
-    //               };
-    //             const res = await axios.get(`${rootURL}/getMessages`, requestBody);
-    //             console.log("squidward");
-    //             console.log(res);
-    //             setMessages(res.data);
-                
-    //         } catch (error) {
-    //             console.log("sandycheeks");
-    //             console.log(error);
-    //         }
+    useEffect(() => {
+        const getMsgs = async () => {
+            try {
+                const res = await axios.get(`${rootURL}/getMessages`, {chatId: currentChatId});
+
+                setMessages(res.data.data);
+            } catch (error) {
+                console.log(error);
+            }
             
-    //     } 
-    //     getMsgs();
-    // }, [currentChatId])
+        } 
+        getMsgs();
+    }, [currentChatId])
     console.log(messages);
+
     return (
         <>
             <div className="chat">
                 <div className="chatMenu">
                     <div className="chatMenuWrapper">
                         <input placeholder="Search friend" className="chatMenuInput"/>
-                        {conversations.map(convo => (
-                            <div onCLick={() => setCurrentChatId(convo)}>
+                        {
+                      
+                        conversations.map(convo => (
+                            <div onCLick={() => setCurrentChatId(convo.chat_id)}>
                                 <Conversation conversation={convo}/>
                             </div>
                         ))}
-                        {/* DUMMY STUFF
-                        <Conversation/>
-                        <Conversation/>
-                        <Conversation/>
-                        <Conversation/> */}
                     </div>
                 </div>
                 <div className="chatBox">
@@ -190,18 +165,18 @@ const Chat = () => {
                         {currentChatId ? 
                             <>
                                 <div className='chatBoxTop'>
-                                    {/* {messages.map(msg => (
+                                    {messages.map(msg => (
                                         <div>
-                                            <Message conversation={msg}/>
+                                            <Message msgContents={msg}/>
                                         </div>
-                                    ))} */}
-                                    <Message />
-                                    <Message own={true}/>
-                                    <Message />
-                                    <Message />
-                                    <Message />
-                                    <Message />
-                                    <Message />
+                                    ))}
+                                    {/* <Message sender={2}/>
+                                    <Message sender={0}/>
+                                    <Message sender={2}/>
+                                    <Message sender={1} />
+                                    <Message sender={1}/>
+                                    <Message sender={2}/>
+                                    <Message sender={0}/> */}
                                 </div>
                                 <div className='chatBoxBottom'>
                                     <textarea className='chatMessageInput' placeholder="Enter a message..."></textarea>

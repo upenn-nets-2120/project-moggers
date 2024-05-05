@@ -38,3 +38,15 @@
     background-color: lightgray;
     color: black;
 }
+
+
+.message.system{
+    display: flex;
+    justify-content: center; 
+    align-items: center;
+}
+
+.message.system .messageText {
+    color: darkgray;
+    border-radius: 0px;
+}

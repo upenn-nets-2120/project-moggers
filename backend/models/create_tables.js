@@ -32,6 +32,7 @@ async function create_tables(db) {
         status BOOL,
         interests VARCHAR(255)
     )`);
+
     let q2= db.create_tables(`CREATE TABLE IF NOT EXISTS friends (
         follower INT NOT NULL,
         followed INT NOT NULL,
@@ -39,14 +40,14 @@ async function create_tables(db) {
         FOREIGN KEY (follower) REFERENCES users(id),
         FOREIGN KEY (followed) REFERENCES users(id)
     )`);
+
     let q13= db.create_tables(`CREATE TABLE IF NOT EXISTS friendRequests (
       follower INT NOT NULL,
       followed INT NOT NULL,
       PRIMARY KEY (follower, followed),
       FOREIGN KEY (follower) REFERENCES users(id),
       FOREIGN KEY (followed) REFERENCES users(id)
-  )`);
-
+    )`);
 
     let q3 = db.create_tables(`CREATE TABLE IF NOT EXISTS posts (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -83,6 +84,7 @@ async function create_tables(db) {
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(255)
     )`);
+
     let q10 = db.create_tables(`CREATE TABLE IF NOT EXISTS user_chats (
         user_id INT,
         chat_id INT,
@@ -96,26 +98,19 @@ async function create_tables(db) {
       name VARCHAR(255),
       count INT,
       PRIMARY KEY (name)
-  
-  )`);
+    )`);
 
+    let q12 = db.create_tables(`CREATE TABLE IF NOT EXISTS hashtags (
+      name VARCHAR(255),
+      user_id INT,
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    )`);
 
-  let q12 = db.create_tables(`CREATE TABLE IF NOT EXISTS hashtags (
-    name VARCHAR(255),
-    user_id INT,
-    FOREIGN KEY (user_id) REFERENCES users(id)
-
-)`);
-
-let q14 = db.create_tables(`CREATE TABLE IF NOT EXISTS hashtagPosts (
-  name VARCHAR(255),
-  hashID INT,
-  FOREIGN KEY (hashID) REFERENCES posts(id)
-
-)`);
-  
-    
-    
+    let q14 = db.create_tables(`CREATE TABLE IF NOT EXISTS hashtagPosts (
+      name VARCHAR(255),
+      hashID INT,
+      FOREIGN KEY (hashID) REFERENCES posts(id)
+    )`);
 
     let q7 = db.create_tables(`CREATE TABLE IF NOT EXISTS messages (
         id INT AUTO_INCREMENT PRIMARY KEY,

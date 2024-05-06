@@ -134,11 +134,7 @@ const Chat = () => {
         const getMsgs = async () => {
             try {
                 console.log("kms");
-                const params = {
-                    chatId: currentChatId
-                  };
-                 
-                  const res = await axios.get(`${rootURL}/getMessages`, { params: { chatId: currentChatId } });
+                const res = await axios.get(`${rootURL}/getMessages`, { params: { chatId: currentChatId } });
 
                 setMessages(res.data.data);
             } catch (error) {

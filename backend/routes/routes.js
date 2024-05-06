@@ -92,7 +92,6 @@ router.post('/register', async (req, res) => {
         var existingUser = await db1.send_sql(`SELECT * FROM users WHERE email = "${email}"`);
       
         if (existingUser.length > 0) {
-            
             return res.status(409).json({error: "An account with this email already exists, please login."});
         }
 
@@ -123,7 +122,6 @@ router.post('/register', async (req, res) => {
     }
 });
 
-
 router.post('/goOnline', async (req, res) => {
   
     try {
@@ -141,7 +139,6 @@ router.post('/goOnline', async (req, res) => {
         await db1.send_sql(`UPDATE users SET status = true WHERE username = "${username}"`);
         res.status(200).json({message: `updated status`});
 
-     
         } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
@@ -168,11 +165,8 @@ router.post('/sendComment', async (req, res) => { // needs to be debugged
             VALUES (${post_id}, ${parent_post}, ${author}, "${content}", "${date_posted}", "${timestampString}")`;
             await db1.insert_items(query);
             return res.status(200).json({ message: 'Comment sent successfully'});
-
         }
-       
 
-      
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
@@ -186,7 +180,7 @@ router.post('/goOffline', async (req, res) => {
         if (!username) {
             return res.status(400).json({error: 'Missing username'});
         }
-       
+
         var existingUser = await db1.send_sql(`SELECT * FROM users WHERE username = "${username}"`);
       
         if (existingUser.length == 0) {
@@ -201,9 +195,7 @@ router.post('/goOffline', async (req, res) => {
     }
 });
 
-
 router.post('/addInterests', async (req, res) => {
-  
     try {
         var name = req.body.name;
         // name VARCHAR(255),
@@ -221,10 +213,8 @@ router.post('/addInterests', async (req, res) => {
             await db1.insert_items(`INSERT INTO interests (name, count) VALUES ("${name}", 1)`);
             res.status(200).json({message: `Added an interest`});
         } else {
-         
             await db1.send_sql(`UPDATE interests SET count = count + 1 WHERE name = "${name}"`);
             res.status(200).json({message: `Updated an interest`});
-
         }
      
         } catch (error) {
@@ -234,22 +224,18 @@ router.post('/addInterests', async (req, res) => {
 });
 
 router.post('/addHashtag', async (req, res) => {
-  
     try {
         var { name, user_id } = req.body;
 
-    
         if (!name || !user_id) {
             return res.status(400).json({ error: 'Missing interest name or user_id' });
         }
-
     
         const existingHashtag = await db1.send_sql(`SELECT * FROM hashtags  WHERE name = "${name}"AND user_id = ${user_id};  `);
         console.log(existingHashtag)
         if (existingHashtag.length != 0) {
             return res.status(400).json({ error: 'Hashtag already exists' });
         }
-
    
         await db1.insert_items(`INSERT INTO hashtags (name, user_id) VALUES ("${name}", ${user_id})`);
         res.status(200).json({ message: `Added a new hashtag` });
@@ -260,11 +246,8 @@ router.post('/addHashtag', async (req, res) => {
     }
 });
 
-
 router.post('/sendFriendRequest', async (req, res) => {
-  
     try {
-
         // let q13= db.create_tables(`CREATE TABLE IF NOT EXISTS friendRequests (
         //     follower INT NOT NULL,
         //     followed INT NOT NULL,
@@ -273,7 +256,6 @@ router.post('/sendFriendRequest', async (req, res) => {
         //     FOREIGN KEY (followed) REFERENCES users(id)
         // )`);
         var {follower, followed} = req.body;
-        
         
         if (!follower || ! followed) {
             return res.status(400).json({error: 'Missing friend request input'});
@@ -291,7 +273,6 @@ router.post('/sendFriendRequest', async (req, res) => {
         if (count2res != 1) {
             return res.status(500).json({message: 'Could not find followed ID in users or found more than one.'});
         }
-
            
         var existingFriends = await db1.send_sql(` SELECT COUNT(*) AS count  FROM friends  WHERE follower = ${follower} AND followed = ${followed};  `);
         
@@ -311,10 +292,8 @@ router.post('/sendFriendRequest', async (req, res) => {
     }
 });
 
-router.get('/getFriendRequest', async (req, res) => {
-  
+router.get('/getFriendRequests', async (req, res) => {
     try {
-
         // let q13= db.create_tables(`CREATE TABLE IF NOT EXISTS friendRequests (
         //     follower INT NOT NULL,
         //     followed INT NOT NULL,
@@ -322,8 +301,7 @@ router.get('/getFriendRequest', async (req, res) => {
         //     FOREIGN KEY (follower) REFERENCES users(id),
         //     FOREIGN KEY (followed) REFERENCES users(id)
         // )`);
-        var id = req.body.id;
-        
+        var id = req.body.id; 
         
         if (!id) {
             return res.status(400).json({error: 'Missing id for friend request'});
@@ -335,24 +313,24 @@ router.get('/getFriendRequest', async (req, res) => {
         if (count1res != 1) {
             return res.status(500).json({message: 'Could not find follower ID in users or found more than one.'});
         }
-        var friendRequests = await db1.send_sql(`SELECT follower FROM friendRequests WHERE followed = "${id}"`);
+        var friendRequests = await db1.send_sql(`
+            SELECT u.id, u.username, u.firstName, u.lastName 
+            FROM users u 
+            JOIN friendRequests f ON u.id = f.follower 
+            WHERE f.followed = "${id}"
+        `);
         var followerIds = friendRequests.map(row => row.follower);
-       return res.status(200).json({ requests: followerIds });
-    
-           
+       return res.status(200).json({ requests: followerIds });    
         
-        } catch (error) {
+    } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
 
 router.get('/getFollowers', async (req, res) => {
-  
     try {
-
-        var id = req.body.id;
-        
+        var id = req.query.user_id;
         
         if (!id) {
             return res.status(400).json({error: 'Missing id for get followers'});
@@ -364,92 +342,60 @@ router.get('/getFollowers', async (req, res) => {
         if (count1res != 1) {
             return res.status(500).json({message: 'Could not find ID in users or found more than one.'});
         }
-        var followers = await db1.send_sql(`SELECT follower FROM friends WHERE followed = "${id}"`);
+        var followers = await db1.send_sql(`
+            SELECT u.id, u.username, u.firstName, u.lastName 
+            FROM users u 
+            JOIN friends f ON u.id = f.follower 
+            WHERE f.followed = "${id}"
+        `);
         var followerIds = followers.map(row => row.follower);
-       return res.status(200).json({ followers: followerIds });
-    
-           
+        return res.status(200).json({ followers: followerIds });
         
-        } catch (error) {
+    } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
 
 router.get('/getFollowing', async (req, res) => {
-  
     try {
-        var id = req.body.id;
-        
+        var id = req.query.user_id;
         
         if (!id) {
             return res.status(400).json({error: 'Missing id for get following'});
         }
-
         var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${id}"`)
         var count1res = count1[0]['COUNT(*)'];
     
         if (count1res != 1) {
             return res.status(500).json({message: 'Could not find ID in users or found more than one.'});
         }
-        var following = await db1.send_sql(`SELECT followed FROM friends WHERE follower = "${id}"`);
+        var following = await db1.send_sql(`
+            SELECT u.id, u.username, u.firstName, u.lastName 
+            FROM users u 
+            JOIN friends f ON u.id = f.followed 
+            WHERE f.follower = "${id}"
+        `);
         var followingIds = following.map(row => row.followed);
        return res.status(200).json({ following: followingIds });
-    
-           
         
-        } catch (error) {
+    } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
-
-
-
-router.get('/getFollowing', async (req, res) => {
-  
-    try {
-        var post_id = req.body.post_id;
-        
-        
-        if (!id) {
-            return res.status(400).json({error: 'Missing id for get following'});
-        }
-
-        var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${id}"`)
-        var count1res = count1[0]['COUNT(*)'];
-    
-        if (count1res != 1) {
-            return res.status(500).json({message: 'Could not find ID in users or found more than one.'});
-        }
-        var following = await db1.send_sql(`SELECT followed FROM friends WHERE follower = "${id}"`);
-        var followingIds = following.map(row => row.followed);
-       return res.status(200).json({ following: followingIds });
-    
-           
-        
-        } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-});
-
 
 router.get('/getTopTenHashtags', async (req, res) => {
-  
     try {
-       
         var topTen = await db1.send_sql(`SELECT name, COUNT(*) AS frequency
         FROM hashtagPosts
         GROUP BY name
         ORDER BY frequency DESC
         LIMIT 10`);
         var resTop = topTen.map(row => row.name);
-        return res.status(200).json({ topTen: resTop });
-    
-           
+        return res.status(200).json({ topTen: resTop });     
         
-        } catch (error) {
+    } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
     }
@@ -461,8 +407,8 @@ router.get('/getFeed', async (req, res) => {
         const curr_id = 3;
 
         if (curr_id == null) 
-            return res.status(403).json({error: 'Not logged in.'});
-        
+            return res.status(403).json({error: 'Not logged in.'}
+        );
         
         if (!curr_id) {
             return res.status(400).json({error: 'Missing id for get following'});
@@ -479,7 +425,7 @@ router.get('/getFeed', async (req, res) => {
         const followedUserIds = following.map(entry => entry.followed);
         followedUserIds.push(curr_id);
         const feed = await db1.send_sql(`
-            SELECT posts.content, posts.image, posts.date_posted, posts.timstamp, users.username, users.firstName, users.lastName, users.profilePhoto,  (
+            SELECT posts.id, posts.content, posts.image, posts.date_posted, posts.timstamp, users.username, users.firstName, users.lastName, users.profilePhoto, (
                 SELECT COUNT(*) 
                 FROM likes 
                 WHERE post_id = posts.id
@@ -537,7 +483,6 @@ router.post('/acceptFriendRequest', async (req, res) => {
     }
 });
 
-
 // POST /login
 router.post('/login', async (req, res) => {
     try {
@@ -579,18 +524,7 @@ router.get('/logout', (req, res) => {
     }
 });
 
-
-
-
-
-
-
-
-
-
-
 router.post('/createPost', async (req, res) => {
-
     try {
         var { author, content, date_posted} = req.body;
         if (!author || !content || !date_posted) {
@@ -634,7 +568,6 @@ router.post('/createPost', async (req, res) => {
             messages: [message]
         });
 
-
         return res.status(200).json({message: "Post made"});
     } catch (error) {
         console.error(error);
@@ -643,8 +576,6 @@ router.post('/createPost', async (req, res) => {
 });
 
 router.post('/addLike', async (req, res) => {
-
-  
     try {
         var { post_id, user_id} = req.body;
         if (!post_id || !user_id) {
@@ -684,24 +615,20 @@ router.post('/removeLike', async (req, res) => {
             return res.status(400).json({ error: 'Remove like missing arguments' });
         }
 
-
         var validAuthor = await db1.send_sql(`SELECT COUNT(*) AS count FROM users WHERE id = ${user_id}`);
         if (validAuthor[0].count == 0) {
             return res.status(500).json({ message: `User does not exist` });
         }
-
         
         var validPost = await db1.send_sql(`SELECT COUNT(*) AS count FROM posts WHERE id = ${post_id}`);
         if (validPost[0].count == 0) {
             return res.status(500).json({ message: `Post does not exist` });
         }
 
-
         var existingLike = await db1.send_sql(`SELECT COUNT(*) AS count FROM likes WHERE post_id = ${post_id} AND user_id = ${user_id}`);
         if (existingLike[0].count == 0) {
             return res.status(500).json({ message: `Like does not exist` });
         }
-
 
         await db1.send_sql(`DELETE FROM likes WHERE post_id = ${post_id} AND user_id = ${user_id}`);
 
@@ -724,7 +651,6 @@ router.get('/numLikes', async (req, res) => {
         if (validPost[0].count == 0) {
             return res.status(500).json({ message: `Post does not exist` });
         }
-
 
         var numberLikes = await db1.send_sql(`SELECT COUNT(*) AS count FROM likes WHERE post_id = ${post_id}`);
      
@@ -760,7 +686,6 @@ router.post('/leaveChat', async (req, res) => {
         const room = req.body.room;
 
         // write to database
-        
         return res.send({
             success: true
         });
@@ -829,12 +754,9 @@ router.post('/postChats', async (req, res) => {
             }
         }
 
-        
         if (hasDuplicates) {
             return res.status(500).json({message: 'A chat already exists with only these two users.'});
         }
-
-        
 
         // Otherwise let us insert into the DBs
         await db1.insert_items(`INSERT INTO chats (name) VALUES ("${chatName}")`);
@@ -900,8 +822,6 @@ router.post('/getConvos', async (req, res) => {
         `);
         
         return res.status(200).json({data});
-     
-        
  
     } catch (error) {
         console.log("xxxxx?");
@@ -924,10 +844,6 @@ router.get('/getMessages', async (req, res) => {
             return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
         }
         console.log("x2");
-
-        
-
-        
       
         var data = await db1.send_sql(`
         SELECT messages.id AS message_id, messages.author AS author, messages.timstamp AS timestamp, messages.chat_id AS chat_id, messages.content AS content, chats.name AS chat_name
@@ -937,7 +853,6 @@ router.get('/getMessages', async (req, res) => {
         ORDER BY messages.timstamp DESC;
         `);
         return res.status(200).json({data});
-        
  
     } catch (error) {
         console.error(error);
@@ -945,10 +860,8 @@ router.get('/getMessages', async (req, res) => {
     };
 });
 
-
 router.get('/getComments', async (req, res) => {
     try {
-  
         console.log(req.query);
 
         const postid = req.query.postId;
@@ -956,8 +869,7 @@ router.get('/getComments', async (req, res) => {
         if (!postid) {
             return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
         }
-        
-      
+    
         var data = await db1.send_sql(`
         SELECT comments.id AS comment_id, comments.author AS author, comments.timstamp AS timestamp, comments.content AS content 
         FROM comments
@@ -973,7 +885,6 @@ router.get('/getComments', async (req, res) => {
 
 router.get('/getCommentThreads', async (req, res) => {
     try {
-  
         console.log(req.query);
 
         const postcommentid = req.query.postCommentId;
@@ -981,8 +892,7 @@ router.get('/getCommentThreads', async (req, res) => {
         if (!postcommentid) {
             return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
         }
-        
-      
+         
         var data = await db1.send_sql(`
         SELECT comments.id AS comment_id, comments.author AS author, comments.timstamp AS timestamp, comments.content AS content 
         FROM comments
@@ -995,6 +905,7 @@ router.get('/getCommentThreads', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     };
 });
+
 router.post('/postMessage', async (req, res) => {
     try {
         var { author, content, chat_id } = req.body; // Assuming you also need chat_id for posting a message
@@ -1004,7 +915,6 @@ router.post('/postMessage', async (req, res) => {
         
         const timestamp = new Date().toISOString(); 
 
- 
         await db1.insert_items(`INSERT INTO messages (author, content, chat_id, timstamp) VALUES ("${author}", "${content}", "${chat_id}", "${timestamp}")`);
 
         return res.status(200).json({ message: "Message posted successfully" });
@@ -1053,10 +963,7 @@ const run = async () => {
     // Consuming
     
     console.log(`Following topic FederatedPosts`);
-   await  consumer.connect();
-    
- 
-
+    await  consumer.connect();
     
     await consumer.subscribe({ topic: 'FederatedPosts', fromBeginning: true });
 
@@ -1071,6 +978,7 @@ const run = async () => {
         },
     });
 };
+
 const run2 = async () => {
     // Consuming
    
@@ -1091,8 +999,6 @@ const run2 = async () => {
     });
 };
 
-    
-  
 
 run().catch(console.error);
 run2().catch(console.error);

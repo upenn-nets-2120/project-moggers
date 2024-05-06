@@ -17,13 +17,14 @@ router.use(bodyParser.urlencoded({extended: true}));
 var config = require('../config.json');
 const { Kafka } = require('kafkajs');
 const kafka = new Kafka({
-    clientId: 'my-app',
+    clientId: 'g01',
     brokers: config.bootstrapServers
 });
 
 const consumer = kafka.consumer({ 
     groupId: config.groupId, 
     bootstrapServers: config.bootstrapServers});
+const producer = kafka.producer();
 
 const consumer2 = kafka.consumer({ 
         groupId: config.groupId, 
@@ -623,10 +624,27 @@ router.post('/createPost', async (req, res) => {
             await db1.insert_items(`INSERT INTO hashtagPosts (name, hashID) VALUES ("${hashtag}", ${x[0].id})`);
          
         }
-        res.status(200).json({message: "Post made"});
+        await producer.connect();
+        const post = {
+            username: 'example_user',
+            source_site: 'MoggersLite',
+            post_uuid_within_site: '1234567890',
+            post_text: content,
+            content_type: 'text/plain'
+        };
+        const message = {
+            value: JSON.stringify(post)
+        };
+        await producer.send({
+            topic: 'FederatedPosts',
+            messages: [message]
+        });
+
+
+        return res.status(200).json({message: "Post made"});
     } catch (error) {
         console.error(error);
-        res.status(500).json({message: 'Internal server error'});
+        return res.status(500).json({message: 'Internal server error'});
     };
 });
 

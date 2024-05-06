@@ -1015,17 +1015,17 @@ router.get('/getProfile', async (req, res) => {
 router.get('/getUserName', async (req, res) => {
     try {
        
-        const user_id = req.query.id;
+        const username = req.query.username;
 
-        if (!user_id) {
-            return res.status(400).json({error: 'Missing user_id.'});
+        if (!username) {
+            return res.status(400).json({error: 'Missing username.'});
         }
         
       
         var data = await db1.send_sql(`
-        SELECT users.username 
+        SELECT users.id 
         FROM users 
-        WHERE users.id = "${user_id}"
+        WHERE users.username = "${username}"
         `);
         console.log(data);
         return res.status(200).json({data});

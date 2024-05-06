@@ -22,23 +22,23 @@ const kafka = new Kafka({
 });
 
 const consumer = kafka.consumer({ 
-    groupId: config.groupId, 
+    groupId: 'g01a', 
     bootstrapServers: config.bootstrapServers});
 const producer = kafka.producer();
 
 const consumer2 = kafka.consumer({ 
-        groupId: config.groupId, 
+        groupId: 'g01b', 
         bootstrapServers: config.bootstrapServers});
 
-var kafka_messages = [];
+var kafka_messages_federated_posts = [];
 var kafka_messages1 = [];
 router.get('/getKafka', (req, res) => {
-    res.send(JSON.stringify(kafka_messages));
+    res.send(JSON.stringify(kafka_messages_federated_posts));
 });
 const {  CompressionTypes, CompressionCodecs } = require('kafkajs')
 const SnappyCodec = require('kafkajs-snappy');
 const { LexRuntimeV2 } = require('aws-sdk');
- 
+
 CompressionCodecs[CompressionTypes.Snappy] = SnappyCodec
 
 
@@ -613,8 +613,7 @@ router.post('/createPost', async (req, res) => {
         const filteredHashtags = words.filter(word => word.startsWith('#') && word.length > 1).map(word => word.slice(1));
 
         const hashtags = filteredHashtags;
-        console.log(hashtags);
-        
+     
         if (validAuthor[0].count == 0) {
             return res.status(500).json({message: `User does not exists`});
         }
@@ -624,11 +623,15 @@ router.post('/createPost', async (req, res) => {
             await db1.insert_items(`INSERT INTO hashtagPosts (name, hashID) VALUES ("${hashtag}", ${x[0].id})`);
          
         }
+        const username1 = await db1.send_sql(` SELECT username FROM users WHERE id = ${author} `);
+    
+        const x1 = username1[0].username;
+   
         await producer.connect();
         const post = {
-            username: 'example_user',
-            source_site: 'MoggersLite',
-            post_uuid_within_site: '1234567890',
+            username: x1,
+            source_site: 'g01',
+            post_uuid_within_site: x[0].id,
             post_text: content,
             content_type: 'text/plain'
         };
@@ -999,13 +1002,18 @@ router.post("/get_presigned_url", async (req, res) => {
 
 const run = async () => {
     // Consuming
-    await consumer.connect();
-    console.log(`Following topic Twitter-Kafka`);
+    
+    console.log(`Following topic FederatedPosts`);
+   await  consumer.connect();
+    
+ 
+
+    
     await consumer.subscribe({ topic: 'FederatedPosts', fromBeginning: true });
 
     await consumer.run({
         eachMessage: async ({ topic, partition, message }) => {
-            kafka_messages.push({
+            kafka_messages_federated_posts.push({
                 value: message.value.toString(),
             });
             console.log({
@@ -1014,28 +1022,31 @@ const run = async () => {
         },
     });
 };
-// const run2 = async () => {
-//     // Consuming
-//     await consumer2.connect();
-//     console.log(`Following topic FederatedPosts`);
-//     await consumer2.subscribe({ topic: 'FederatedPosts', fromBeginning: true });
+const run2 = async () => {
+    // Consuming
+   
+    console.log(`Following topic Twitter-Kafka`);
+    await consumer2.connect();
 
-//     await consumer2.run({
-//         eachMessage: async ({ topic, partition, message }) => {
-//             kafka_messages1.push({
-//                 value: message.value.toString(),
-//             });
-//             console.log({
-//                 value: message.value.toString(),
-//             });
-//         },
-//     });
-// };
+    await consumer2.subscribe({ topic: 'Twitter-Kafka', fromBeginning: true });
+
+    await consumer2.run({
+        eachMessage: async ({ topic, partition, message }) => {
+            kafka_messages_federated_posts.push({
+                value: message.value.toString(),
+            });
+            console.log({
+                value: message.value.toString(),
+            });
+        },
+    });
+};
+
     
   
 
 run().catch(console.error);
-// run2().catch(console.error);
+run2().catch(console.error);
 
 module.exports = router;
 

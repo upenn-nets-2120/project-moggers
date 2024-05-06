@@ -6,7 +6,7 @@
     "port": "3306",
     "database": "moggersdb"
   },
-  "groupId": "g01",
+  "groupId": "g981119",
   "bootstrapServers": ["localhost:9092"],
   "topic": "sample-topic",
   "port": 4567,

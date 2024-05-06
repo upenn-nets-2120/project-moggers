@@ -3,7 +3,7 @@ import axios from 'axios';
 import io from 'socket.io-client';
 import config from '../../serverConfig.json';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 
@@ -92,6 +92,7 @@ const Chat = () => {
     const [newMessage, setNewMessage] = useState('');
 
     const [sentMessage, setSentMessage] = useState(false);
+    const chatBoxRef = useRef(null);
 
     useEffect(() => {
         const setCurrUser = async () => {
@@ -142,6 +143,14 @@ const Chat = () => {
         } 
         getMsgs();
     }, [currentChatId, sentMessage])
+
+    useEffect(() => {
+        if (chatBoxRef.current) {
+            // Scroll to the bottom of the chat box
+            chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
+        }
+    }, [messages]);
+
     console.log(messages);
 
     const handleMessageChange = (event) => {
@@ -200,7 +209,7 @@ const Chat = () => {
                     <div className="chatBoxWrapper">
                         {currentChatId ? 
                             <>
-                                <div className='chatBoxTop'>
+                                <div className='chatBoxTop' ref={chatBoxRef}>
                                     {messages.map(msg => (
                                         <div>
                                             <Message msgContents={msg} currUser =  {currUserId}/>

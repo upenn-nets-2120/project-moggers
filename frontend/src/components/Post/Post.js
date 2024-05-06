@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import config from '../../serverConfig.json';
 
@@ -11,7 +11,7 @@ function Post() {
   useEffect(() => {
     const setCurrUser = async () => {
         try {
-            const res = await axios.get(`${rootURL}/`);
+            const res = await axios.get(`${config.serverRootURL}/`);
             const user_id = res.data.user_id;
             const username = res.data.username;
 

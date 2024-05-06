@@ -12,7 +12,7 @@ function Profile() {
   useEffect(() => {
     const setCurrUser = async () => {
         try {
-            const res = await axios.get(`${rootURL}/`);
+            const res = await axios.get(`${config.serverRootURL}/`);
             const user_id = res.data.user_id;
             const username = res.data.username;
 

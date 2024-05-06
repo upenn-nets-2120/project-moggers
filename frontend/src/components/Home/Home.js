@@ -60,7 +60,7 @@ function Home() {
 
   return (
     <div>
-      <h1>Feed</h1>
+      <h1 style={{marginTop: "30px", textAlign: "center"}}>Feed</h1>
       <div>
         {feed.map(post => (
           <div key={post.id} className="post">

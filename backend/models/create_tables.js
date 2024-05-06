@@ -121,7 +121,15 @@ async function create_tables(db) {
         FOREIGN KEY (chat_id) REFERENCES chats(id)
     )`);
 
-    return await Promise.all([q1, q2, q3, q4, q5, q6, q7, q11, q13, q12,q14]).then(async () => { 
+    let q15= db.create_tables(`CREATE TABLE IF NOT EXISTS chatRequests (
+      sender INT NOT NULL,
+      receiver INT NOT NULL,
+      PRIMARY KEY (sender, receiver),
+      FOREIGN KEY (sender) REFERENCES users(id),
+      FOREIGN KEY (receiver) REFERENCES users(id)
+    )`);
+
+    return await Promise.all([q1, q2, q3, q4, q5, q6, q7, q11, q13, q12,q14,q15]).then(async () => { 
      
     await dbaccess.close_db(db);
     console.log('closed db' );

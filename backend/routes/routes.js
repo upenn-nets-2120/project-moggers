@@ -1112,6 +1112,39 @@ router.get('/chatAlreadyExists', async (req, res) => {
 });
 
 
+router.get('/alreadySent', async (req, res) => {
+    try {
+       
+        const userid1 = req.query.user_id1;
+        const userid2 = req.query.user_id2;
+
+        if (!userid1 || !userid2) {
+            return res.status(400).json({error: 'Missing id.'});
+        }
+        
+        
+      
+        var status1 = await db1.send_sql(`
+        SELECT *
+        FROM chatRequests
+        WHERE sender = "${userid1}" OR receiver = "${userid2}"
+        `);
+        console.log(status1);
+     
+        if (status1.length === 0) {
+            return res.status(200).json({ status: false});
+        } else {
+            return res.status(200).json({ status: true});
+        }
+       
+ 
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    };
+});
+
+
 
 
 

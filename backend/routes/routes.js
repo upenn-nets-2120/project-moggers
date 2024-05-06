@@ -49,7 +49,7 @@ router.get('/', (req, res) => {
     var user_id = 0;
     
     var username ="lmfao";
-    if (typeof req.session !== 'undefined' && typeof req.session.user_id !== 'undefined') {
+    if (typeof req.session !== null && typeof req.session.user_id !== null) {
         user_id = req.session.user_id;
         username = req.session.username;
     } else {
@@ -58,7 +58,7 @@ router.get('/', (req, res) => {
         username = "default_username"; // You can set any default value for username here
     }
 
-    return res.json({ "user_id" : user_id, "username":username });
+    return res.json({ "user_id" : user_id, "username": username });
 });
 
 router.get('/hi', (req, res) => {
@@ -402,44 +402,48 @@ router.get('/getTopTenHashtags', async (req, res) => {
 });
 
 router.get('/getFeed', async (req, res) => {
-    try {
-        // const curr_id = req.session.user_id
-        const curr_id = 3;
-
-        if (curr_id == null) 
-            return res.status(403).json({error: 'Not logged in.'}
-        );
-        
-        if (!curr_id) {
-            return res.status(400).json({error: 'Missing id for get following'});
-        }
-
-        var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${curr_id}"`)
-        var count1res = count1[0]['COUNT(*)'];
+    if (req.session.userId && req.session.username) {
+        try {
+            // const curr_id = req.session.user_id
+            const curr_id = 3;
     
-        if (count1res != 1) {
-            return res.status(500).json({message: 'Could not find ID in users or found more than one.'});
+            if (curr_id == null) 
+                return res.status(403).json({error: 'Not logged in.'}
+            );
+            
+            if (!curr_id) {
+                return res.status(400).json({error: 'Missing id for get following'});
+            }
+    
+            var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${curr_id}"`)
+            var count1res = count1[0]['COUNT(*)'];
+        
+            if (count1res != 1) {
+                return res.status(500).json({message: 'Could not find ID in users or found more than one.'});
+            }
+    
+            var following = await db1.send_sql(`SELECT followed FROM friends WHERE follower = "${curr_id}"`);
+            const followedUserIds = following.map(entry => entry.followed);
+            followedUserIds.push(curr_id);
+            const feed = await db1.send_sql(`
+                SELECT posts.id, posts.content, posts.image, posts.date_posted, posts.timstamp, users.username, users.firstName, users.lastName, users.profilePhoto, (
+                    SELECT COUNT(*) 
+                    FROM likes 
+                    WHERE post_id = posts.id
+                ) AS like_count
+                FROM posts 
+                JOIN users ON posts.author = users.id
+                WHERE posts.author IN (${followedUserIds.join(', ')})
+            `);
+       
+            return res.status(200).json({results: feed});
+    
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: 'Internal server error' });
         }
-
-        var following = await db1.send_sql(`SELECT followed FROM friends WHERE follower = "${curr_id}"`);
-        const followedUserIds = following.map(entry => entry.followed);
-        followedUserIds.push(curr_id);
-        const feed = await db1.send_sql(`
-            SELECT posts.id, posts.content, posts.image, posts.date_posted, posts.timstamp, users.username, users.firstName, users.lastName, users.profilePhoto, (
-                SELECT COUNT(*) 
-                FROM likes 
-                WHERE post_id = posts.id
-            ) AS like_count
-            FROM posts 
-            JOIN users ON posts.author = users.id
-            WHERE posts.author IN (${followedUserIds.join(', ')})
-        `);
-   
-        return res.status(200).json({results: feed});
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+    } else {
+        res.send('Please login to view this page.');
     }
 });
 
@@ -526,8 +530,8 @@ router.get('/logout', (req, res) => {
 
 router.post('/createPost', async (req, res) => {
     try {
-        var { author, content, date_posted, image_url} = req.body;
-        if (!author || !content || !date_posted) {
+        var { author, content, image_url} = req.body;
+        if (!author || !content || !image_url) {
             return res.status(400).json({error: 'Create post missing arguments'});
         }
         const timstamp = new Date().toISOString();
@@ -542,7 +546,7 @@ router.post('/createPost', async (req, res) => {
         if (validAuthor[0].count == 0) {
             return res.status(500).json({message: `User does not exists`});
         }
-        await db1.insert_items(`INSERT INTO posts (author, content, image, date_posted, num_likes, timstamp) VALUES ("${author}", "${content}", "${image_url}", "${date_posted}", 0, "${timstamp}")`);
+        await db1.insert_items(`INSERT INTO posts (author, content, image, num_likes, timstamp) VALUES ("${author}", "${content}", "${image_url}", 0, "${timstamp}")`);
         const x = await db1.send_sql('SELECT LAST_INSERT_ID() AS id');
         for (const hashtag of hashtags) {
             await db1.insert_items(`INSERT INTO hashtagPosts (name, hashID) VALUES ("${hashtag}", ${x[0].id})`);
@@ -660,11 +664,6 @@ router.get('/numLikes', async (req, res) => {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
     };
-});
-
-
-router.get('/', (req, res) => {
-    // res.send(JSON.stringify(kafka_messages));
 });
 
 router.post('/joinChat', async (req, res) => {

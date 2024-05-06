@@ -30,8 +30,8 @@ const Login = () => {
       }
       const response = await axios.post('localhost:8080/login', formData);
       console.log(response.data);
-      document.cookie = `user_id=${response.data.user_id}; path=localhost:8080/`;
-      document.cookie = `username=${response.data.username}; path=localhost:8080/`;
+      // document.cookie = `user_id=${response.data.user_id}; path=localhost:8080/`;
+      // document.cookie = `username=${response.data.username}; path=localhost:8080/`;
       navigate('/');
     } catch (error) {
       setError(error.response.data.error || 'An error occurred');

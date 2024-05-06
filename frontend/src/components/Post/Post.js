@@ -41,6 +41,7 @@ function Post() {
         fileName: imageFile.name,
         fileType: imageFile.type
       });
+      console.log(signedUrlResponse.data);
       const presignedUrl = signedUrlResponse.data.url;
 
       await fetch(presignedUrl, {
@@ -61,13 +62,27 @@ function Post() {
   };
 
   return (
-    <div>
-      <h2>Create Post</h2>
-      <form onSubmit={handleSubmit}>
-        <textarea value={content} onChange={handleContentChange} placeholder="Enter post content"></textarea>
-        <input type="file" accept="image/*" onChange={handleImageChange} />
-        <button type="submit">Submit</button>
-      </form>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '100px' }}>
+      <div style={{ width: '400px', textAlign: 'center', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', padding: '20px', borderRadius: '8px' }}>
+        <h2>Create Post</h2>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <textarea 
+            value={content}
+            onChange={handleContentChange}
+            placeholder="Enter caption and hashtags"
+            style={{ width: '100%', padding: '10px', borderRadius: '4px', resize: 'none', height: '100px' }}
+          ></textarea>
+          <input 
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            style={{ display: 'block', width: '100%' }}
+          />
+          <button type="submit" style={{ padding: '10px 0', borderRadius: '4px', border: 'none', color: 'white', backgroundColor: 'blue', cursor: 'pointer' }}>
+            Submit
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

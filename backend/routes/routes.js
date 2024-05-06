@@ -168,7 +168,7 @@ router.post('/sendComment', async (req, res) => { // needs to be debugged
         }
 
     } catch (error) {
-        console.error(error);
+        console.error(error); 
         res.status(500).json({ message: 'Internal server error' });
     }
 });
@@ -1021,13 +1021,20 @@ router.get('/getUserName', async (req, res) => {
         }
         
       
-        var data = await db1.send_sql(`
+        var data1 = await db1.send_sql(`
         SELECT users.id 
         FROM users 
         WHERE users.username = "${username}"
         `);
-        console.log(data);
-        return res.status(200).json({data});
+        var data;
+        
+        if (data1.length === 0) {
+            return res.status(200).json({ data: { id: -1 } });
+        } else {
+             data = data1[0];
+            return res.status(200).json({ data });
+        }
+       
  
     } catch (error) {
         console.error(error);

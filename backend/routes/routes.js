@@ -908,7 +908,9 @@ router.get('/getCommentThreads', async (req, res) => {
 
 router.post('/postMessage', async (req, res) => {
     try {
-        var { author, content, chat_id } = req.body; // Assuming you also need chat_id for posting a message
+        var author = req.body.author;
+        var content = req.body.content;
+        var chat_id = req.body.chat_id;
         if (!author || !content || !chat_id) {
             return res.status(400).json({ error: 'Missing required arguments' });
         }

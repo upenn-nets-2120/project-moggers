@@ -850,7 +850,7 @@ router.get('/getMessages', async (req, res) => {
         FROM messages
         JOIN chats ON messages.chat_id = chats.id 
         WHERE chats.id = "${chatid}"
-        ORDER BY messages.timstamp DESC;
+        ORDER BY messages.timstamp ASC;
         `);
         return res.status(200).json({data});
  

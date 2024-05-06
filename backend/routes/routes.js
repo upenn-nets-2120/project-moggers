@@ -970,21 +970,21 @@ router.get('/getProfile', async (req, res) => {
         }
 
 
-        var data = await db1.send_sql(
+        var data = await db1.send_sql(`
         SELECT username, firstName, lastName, affiliation, profilePhoto, hashtags, birthday, interests
         FROM users
         WHERE users.id = "${userid}" 
-        );
-        var posts = await db1.send_sql(
+        `);
+        var posts = await db1.send_sql(`
         SELECT id, content, date_posted, num_likes, timstamp
         FROM posts
         WHERE posts.author = "${userid}" 
-        );
-        var followers = await db1.send_sql(SELECT COUNT(*) FROM friends WHERE followed = "${userid}");
-        var following = await db1.send_sql(SELECT COUNT(*) FROM friends WHERE follower = "${userid}");
+        `);
+        var followers = await db1.send_sql(`SELECT COUNT(*) FROM friends WHERE followed = "${userid}"`);
+        var following = await db1.send_sql(`SELECT COUNT(*) FROM friends WHERE follower = "${userid}"`);
         const y1 = followers[0]['COUNT()'];
         const y2 = following[0]['COUNT()'];
-        var status1 = await db1.send_sql(SELECT status FROM users WHERE id = "${userid}");
+        var status1 = await db1.send_sql(`SELECT status FROM users WHERE id = "${userid}"`);
 
 
 

@@ -8,8 +8,6 @@ export default function Conversation({conversation}) {
     const [latestTimestamp, setLatestTimestamp] = useState(null);
 
     useEffect(() => {
-
-     
         const chat_id = conversation.chat_id;
         const chat_name = conversation.chat_name;
         const latest_timestamp = conversation.latest_timestamp;

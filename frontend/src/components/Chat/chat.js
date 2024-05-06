@@ -76,12 +76,6 @@ const Chat = () => {
 
         ////////////////////////////////////////////////////////////////// OLD STUFF////////////
 
-
-
-
-
-
-
     const rootURL = config.serverRootURL;
 
     const [currUserId, setCurrUserId] = useState(4);
@@ -101,11 +95,13 @@ const Chat = () => {
     useEffect(() => {
         const setCurrUser = async () => {
             try {
-                console.log("km3s");
+                console.log("km3s");                
                 const res = await axios.get(`${rootURL}/`);
 
                 const user_id = res.data.user_id;
                 const username = res.data.username;
+                console.log(user_id);
+                console.log(username);
 
                 if (!user_id) {
                     setCurrUserId(user_id);
@@ -187,7 +183,7 @@ const Chat = () => {
     const sendMessage = () => {
         // Here, you can use the `message` state variable to access the text
         const send = async () => {
-            if (newMessage.length == 0) {
+            if (newMessage.length === 0) {
                 console.log("Trying to send an empty message");
             } else if (!currentChatId) {
                 console.log("Currently not in a chat");
@@ -210,60 +206,62 @@ const Chat = () => {
     const handleNewInvite = () => {
         const helper = async () => {
             try {
-                // first see if the person is online or not.
-                // get id of newFriendChatInvite
-                const res = await axios.get(`${rootURL}/getUserName`, { params: { username: newFriendChatInvite } });
-                const friend_id = res.data.data.id;
-
-                if (friend_id === -1) {
-                    // could not friend's id
-                    setInputPlaceholder("Could not find friend. Type exact username.");
+                if (newFriendChatInvite === currUsername) {
+                    setInputPlaceholder("You can't chat with yourself.");
                     setChatMenuInputClass("chatMenuInputError");
                     setNewFriendChatInvite("");
-                    return;
-                }
+                } else {
+                    // first see if the person is online or not.
+                    // get id of newFriendChatInvite
+                    const res = await axios.get(`${rootURL}/getUserName`, { params: { username: newFriendChatInvite } });
+                    const friend_id = res.data.data.id;
 
-                // then get status of id and if they are offline then don't make
-                const res1 = await axios.get(`${rootURL}/getStatus`, { params: { user_id: friend_id } });
+                    if (friend_id === -1) {
+                        // could not friend's id
+                        setInputPlaceholder("Could not find friend. Type exact username.");
+                        setChatMenuInputClass("chatMenuInputError");
+                        setNewFriendChatInvite("");
+                        return;
+                    }
 
-                const friend_status = res1.data.data[0].status;
-                console.log(friend_status);
-                if (!friend_status) {
-                    setInputPlaceholder("Friend is not online currently, try again later.");
-                    setChatMenuInputClass("chatMenuInputError");
-                    setNewFriendChatInvite("");
-                    return;
-                }
-                console.log("hi!");
-                console.log(currUserId);
+                    // then get status of id and if they are offline then don't make
+                    const res1 = await axios.get(`${rootURL}/getStatus`, { params: { user_id: friend_id } });
+
+                    const friend_status = res1.data.data[0].status;
+                    console.log(friend_status);
+                    if (!friend_status) {
+                        setInputPlaceholder("Friend is not online currently, try again later.");
+                        setChatMenuInputClass("chatMenuInputError");
+                        setNewFriendChatInvite("");
+                        return;
+                    }
+                    console.log("hi!");
+                    console.log(currUserId);
                 
+                    // otherwise check if they are already in a 1 on 1 chat then just change the chatMenuInput placeholder text to "already have convo"
+                    const res2 = await axios.get(`${rootURL}/chatAlreadyExists`, { params: { user_id1: currUserId , user_id2: friend_id} });
+                    const already_exists = res2.data.status;
+                    if (already_exists) {
+                        setInputPlaceholder("You already have a chat with this person.");
+                        setChatMenuInputClass("chatMenuInputError");
+                        setNewFriendChatInvite("");
+                        return;
+                    }
 
-//////////////////////////////////
+                    // check if you already sent a chat req with this person
+                    const res3 = await axios.get(`${rootURL}/alreadySent`, { params: { user_id1: currUserId , user_id2: friend_id} });
+                    const already_sent = res3.data.status;
+                    if (already_sent) {
+                        setInputPlaceholder("You sent an invite to this person.");
+                        setChatMenuInputClass("chatMenuInputError");
+                        setNewFriendChatInvite("");
+                        return;
+                    }
 
-
-                // otherwise check if they are already in a 1 on 1 chat then just change the chatMenuInput placeholder text to "already have convo"
-                const res2 = await axios.get(`${rootURL}/chatAlreadyExists`, { params: { user_id1: currUserId , user_id2: friend_id} });
-                const already_exists = res2.data.status;
-                if (already_exists) {
-                    setInputPlaceholder("You already have a chat with this person.");
-                    setChatMenuInputClass("chatMenuInputError");
-                    setNewFriendChatInvite("");
-                    return;
+                    // otherwise just send a chat req
+                    sendNewChatReq(currUserId, friend_id);
+                    console.log("sent chat request");
                 }
-
-                // check if you already sent a chat req with this person
-                const res3 = await axios.get(`${rootURL}/alreadySent`, { params: { user_id1: currUserId , user_id2: friend_id} });
-                const already_sent = res3.data.status;
-                if (already_sent) {
-                    setInputPlaceholder("You sent an invite to this person.");
-                    setChatMenuInputClass("chatMenuInputError");
-                    setNewFriendChatInvite("");
-                    return;
-                }
-
-                // otherwise just send a chat req
-                sendNewChatReq(currUserId, friend_id);
-                console.log("sent chat request");
             } catch (error) {
                 console.log(error);
             }            

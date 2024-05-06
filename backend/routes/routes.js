@@ -490,30 +490,34 @@ router.post('/acceptFriendRequest', async (req, res) => {
 // POST /login
 router.post('/login', async (req, res) => {
     try {
+        console.log("xsjhdgfahj");
         const { username, password } = req.body;
 
         if (!username || !password) {
             return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
         }
         const user = await db1.send_sql(`SELECT * FROM users WHERE username = "${username}"`);
+        console.log(user);
         if (user.length === 0) {
             return res.status(401).json({error: 'Username and/or password are invalid.'});
         }
-      
-        const user_id = user[0].user_id;
+        console.log("ok are we here?");
+        const user_id = user[0].id;
         const hashed_password = user[0].password;
         bcrypt.compare(password, hashed_password, (err, result) => {
             if (result) {
+                console.log("did we set here!");
+                console.log(user_id);
                 req.session.user_id = user_id;
                 req.session.username = username;
-                res.status(200).json({username: username});
+                return res.status(200).json({username: username});
             } else {
-                res.status(401).json({error: 'Username and/or password are invalid.'});
+                return res.status(401).json({error: 'Username and/or password are invalid.'});
             }
         });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ message: 'Internal server error' });
     }
 });
 
@@ -1005,6 +1009,32 @@ router.get('/getProfile', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     };
 });
+
+
+router.get('/getUserName', async (req, res) => {
+    try {
+       
+        const username = req.query.username;
+
+        if (!username) {
+            return res.status(400).json({error: 'Missing username.'});
+        }
+        
+      
+        var data = await db1.send_sql(`
+        SELECT users.id 
+        FROM users 
+        WHERE users.username = "${username}"
+        `);
+        console.log(data);
+        return res.status(200).json({data});
+ 
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    };
+});
+
 
 
 const run = async () => {

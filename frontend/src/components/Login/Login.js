@@ -28,13 +28,16 @@ const Login = () => {
           return;
         }
       }
-      const response = await axios.post('localhost:8080/login', formData);
-      console.log(response.data);
-      // document.cookie = `user_id=${response.data.user_id}; path=localhost:8080/`;
-      // document.cookie = `username=${response.data.username}; path=localhost:8080/`;
+      console.log(formData);
+      console.log("jhghjjjjjjj");
+      const response = await axios.post('http://localhost:8080/login', formData);
+      console.log(response.username);
+      document.cookie = `user_id=${response.data.user_id}; path=http://localhost:8080/`;
+      document.cookie = `username=${response.data.username}; path=http://localhost:8080/`;
       navigate('/');
     } catch (error) {
-      setError(error.response.data.error || 'An error occurred');
+      console.log(error);
+      setError( 'An error occurred');
     }
   };
 

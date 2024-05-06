@@ -1041,6 +1041,29 @@ router.get('/getUserName', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     };
 });
+router.get('/getStatus', async (req, res) => {
+    try {
+       
+        const userid = req.query.user_id;
+
+        if (!userid) {
+            return res.status(400).json({error: 'Missing username.'});
+        }
+        
+      
+        var status1 = await db1.send_sql(`SELECT status FROM users WHERE id = "${userid}"`);
+        console.log(status1);
+        return res.status(200).json({ status1});
+       
+       
+ 
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    };
+});
+
+
 
 
 

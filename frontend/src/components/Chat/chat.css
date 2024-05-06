@@ -5,6 +5,8 @@
 
 .chatMenu{
     flex: 3.5;
+    padding: 10px; /* Adjust the padding value according to your preference */
+    border-right: 1px solid #ccc;
 }
 
 .chatMenuInput {

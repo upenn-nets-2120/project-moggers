@@ -925,61 +925,6 @@ router.post('/postMessage', async (req, res) => {
     }
 });
 
-
-router.get('/getProfile', async (req, res) => {
-    try {
-  
-        
-
-        const userid = req.query.user_id;
-
-        if (!userid) {
-            return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
-        }
-        
-      
-        var data = await db1.send_sql(`
-        SELECT username, firstName, lastName, affiliation, profilePhoto, hashtags, birthday, interests
-        FROM users
-        WHERE users.id = "${userid}" 
-        `);
-        var posts = await db1.send_sql(`
-        SELECT id, content, date_posted, num_likes, timstamp
-        FROM posts
-        WHERE posts.author = "${userid}" 
-        `);
-        var followers = await db1.send_sql(`SELECT COUNT(*) FROM friends WHERE followed = "${userid}"`);
-        var following = await db1.send_sql(`SELECT COUNT(*) FROM friends WHERE follower = "${userid}"`);
-        const y1 = followers[0]['COUNT(*)'];
-        const y2 = following[0]['COUNT(*)'];
-        var status1 = await db1.send_sql(`SELECT status FROM users WHERE id = "${userid}"`);
-       
-    
-
-
-        let data1 = [
-        {
-        "username": data[0].username,
-        "firstName": data[0].firstname,
-        "lastName": data[0].lastname,
-        "affiliation": data[0].affiliation,
-        "profilePhoto": data[0].profilePhoto,
-        "hashtags": data[0].hashtags,
-        "birthday": data[0].birthday,
-        "interests": data[0].interests,
-        "followers": y1,
-        "following": y2,
-        "status": status1[0].status
-        }
-        ];
-
-        return res.status(200).json({data1,posts});
- 
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
-    };
-});
 const credentials = fromIni({
     accessKeyId: config.AWS_ACCESS_KEY_ID,
     secretAccessKey: config.AWS_SECRET_ACCESS_KEY,
@@ -1013,6 +958,61 @@ router.post("/get_presigned_url", async (req, res) => {
         res.status(500).json({ error: "Error generating presigned URL" });
     }
 });
+router.get('/getProfile', async (req, res) => {
+    try {
+
+
+
+        const userid = req.query.user_id;
+
+        if (!userid) {
+            return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
+        }
+
+
+        var data = await db1.send_sql(
+        SELECT username, firstName, lastName, affiliation, profilePhoto, hashtags, birthday, interests
+        FROM users
+        WHERE users.id = "${userid}" 
+        );
+        var posts = await db1.send_sql(
+        SELECT id, content, date_posted, num_likes, timstamp
+        FROM posts
+        WHERE posts.author = "${userid}" 
+        );
+        var followers = await db1.send_sql(SELECT COUNT(*) FROM friends WHERE followed = "${userid}");
+        var following = await db1.send_sql(SELECT COUNT(*) FROM friends WHERE follower = "${userid}");
+        const y1 = followers[0]['COUNT()'];
+        const y2 = following[0]['COUNT()'];
+        var status1 = await db1.send_sql(SELECT status FROM users WHERE id = "${userid}");
+
+
+
+
+        let data1 = [
+        {
+        "username": data[0].username,
+        "firstName": data[0].firstname,
+        "lastName": data[0].lastname,
+        "affiliation": data[0].affiliation,
+        "profilePhoto": data[0].profilePhoto,
+        "hashtags": data[0].hashtags,
+        "birthday": data[0].birthday,
+        "interests": data[0].interests,
+        "followers": y1,
+        "following": y2,
+        "status": status1[0].status
+        }
+        ];
+
+        return res.status(200).json({data1,posts});
+ 
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    };
+});
+
 
 const run = async () => {
     // Consuming
@@ -1059,5 +1059,3 @@ run().catch(console.error);
 run2().catch(console.error);
 
 module.exports = router;
-
-

@@ -164,7 +164,7 @@ const Chat = () => {
     const handleInviteTextChange = (event) => {
         setInputPlaceholder("Search a friend username to invite for a new chat session");
         setNewFriendChatInvite(event.target.value);
-        setNewFriendChatInvite("");
+        
         setChatMenuInputClass("chatMenuInput");
     };
 
@@ -215,6 +215,7 @@ const Chat = () => {
                     // could not friend's id
                     setInputPlaceholder("Could not find friend. Type exact username.");
                     setChatMenuInputClass("chatMenuInputError");
+                    setNewFriendChatInvite("");
                     return;
                 }
 
@@ -224,6 +225,7 @@ const Chat = () => {
                 if (!friend_status) {
                     setInputPlaceholder("Friend is not online currently, try again later.");
                     setChatMenuInputClass("chatMenuInputError");
+                    setNewFriendChatInvite("");
                     return;
                 }
                 
@@ -237,6 +239,7 @@ const Chat = () => {
                 if (already_exists) {
                     setInputPlaceholder("You already have a chat with this person.");
                     setChatMenuInputClass("chatMenuInputError");
+                    setNewFriendChatInvite("");
                     return;
                 }
 
@@ -246,6 +249,7 @@ const Chat = () => {
                 if (already_sent) {
                     setInputPlaceholder("You sent an invite to this person.");
                     setChatMenuInputClass("chatMenuInputError");
+                    setNewFriendChatInvite("");
                     return;
                 }
 

@@ -970,6 +970,31 @@ router.get('/getComments', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     };
 });
+
+router.get('/getCommentThreads', async (req, res) => {
+    try {
+  
+        console.log(req.query);
+
+        const postcommentid = req.query.postCommentId;
+
+        if (!postcommentid) {
+            return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
+        }
+        
+      
+        var data = await db1.send_sql(`
+        SELECT comments.id AS comment_id, comments.author AS author, comments.timstamp AS timestamp, comments.content AS content 
+        FROM comments
+        WHERE comments.parent_post = "${postcommentid}" 
+        `);
+        return res.status(200).json({data});
+ 
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    };
+});
 router.post('/postMessage', async (req, res) => {
     try {
         var { author, content, chat_id } = req.body; // Assuming you also need chat_id for posting a message

@@ -526,13 +526,13 @@ router.get('/logout', (req, res) => {
 
 router.post('/createPost', async (req, res) => {
     try {
-        var { author, content, date_posted} = req.body;
+        var { author, content, date_posted, image_url} = req.body;
         if (!author || !content || !date_posted) {
             return res.status(400).json({error: 'Create post missing arguments'});
         }
         const timstamp = new Date().toISOString();
 
-        var validAuthor = await db1.send_sql(` SELECT COUNT(*) AS count  FROM users  WHERE id = ${author} `);
+        var validAuthor = await db1.send_sql(` SELECT COUNT(*) AS count FROM users WHERE id = ${author} `);
         const words = content.split(' ').map(word => word.trim());
 
         const filteredHashtags = words.filter(word => word.startsWith('#') && word.length > 1).map(word => word.slice(1));
@@ -542,7 +542,7 @@ router.post('/createPost', async (req, res) => {
         if (validAuthor[0].count == 0) {
             return res.status(500).json({message: `User does not exists`});
         }
-        await db1.insert_items(`INSERT INTO posts (author, content, date_posted, num_likes, timstamp) VALUES ("${author}", "${content}", "${date_posted}", 0, "${timstamp}")`);
+        await db1.insert_items(`INSERT INTO posts (author, content, image, date_posted, num_likes, timstamp) VALUES ("${author}", "${content}", "${image_url}", "${date_posted}", 0, "${timstamp}")`);
         const x = await db1.send_sql('SELECT LAST_INSERT_ID() AS id');
         for (const hashtag of hashtags) {
             await db1.insert_items(`INSERT INTO hashtagPosts (name, hashID) VALUES ("${hashtag}", ${x[0].id})`);
@@ -960,27 +960,24 @@ router.post("/get_presigned_url", async (req, res) => {
         res.status(500).json({ error: "Error generating presigned URL" });
     }
 });
+
 router.get('/getProfile', async (req, res) => {
     try {
-
-
-
         const userid = req.query.user_id;
 
         if (!userid) {
             return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
         }
 
-
         var data = await db1.send_sql(`
-        SELECT username, firstName, lastName, affiliation, profilePhoto, hashtags, birthday, interests
-        FROM users
-        WHERE users.id = "${userid}" 
+            SELECT username, firstName, lastName, affiliation, profilePhoto, hashtags, birthday, interests
+            FROM users
+            WHERE users.id = "${userid}" 
         `);
         var posts = await db1.send_sql(`
-        SELECT id, content, date_posted, num_likes, timstamp
-        FROM posts
-        WHERE posts.author = "${userid}" 
+            SELECT id, content, date_posted, num_likes, timstamp
+            FROM posts
+            WHERE posts.author = "${userid}" 
         `);
         var followers = await db1.send_sql(`SELECT COUNT(*) FROM friends WHERE followed = "${userid}"`);
         var following = await db1.send_sql(`SELECT COUNT(*) FROM friends WHERE follower = "${userid}"`);
@@ -988,24 +985,19 @@ router.get('/getProfile', async (req, res) => {
         const y2 = following[0]['COUNT()'];
         var status1 = await db1.send_sql(`SELECT status FROM users WHERE id = "${userid}"`);
 
-
-
-
-        let data1 = [
-        {
-        "username": data[0].username,
-        "firstName": data[0].firstname,
-        "lastName": data[0].lastname,
-        "affiliation": data[0].affiliation,
-        "profilePhoto": data[0].profilePhoto,
-        "hashtags": data[0].hashtags,
-        "birthday": data[0].birthday,
-        "interests": data[0].interests,
-        "followers": y1,
-        "following": y2,
-        "status": status1[0].status
-        }
-        ];
+        let data1 = [{
+            "username": data[0].username,
+            "firstName": data[0].firstname,
+            "lastName": data[0].lastname,
+            "affiliation": data[0].affiliation,
+            "profilePhoto": data[0].profilePhoto,
+            "hashtags": data[0].hashtags,
+            "birthday": data[0].birthday,
+            "interests": data[0].interests,
+            "followers": y1,
+            "following": y2,
+            "status": status1[0].status
+        }];
 
         return res.status(200).json({data1,posts});
  

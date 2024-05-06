@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useCookies } from 'react-cookie';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import config from '../../serverConfig.json';
 import styles from './Register.module.css';
 
 const defaultTopHashtags = [
@@ -32,7 +33,6 @@ const Register = () => {
     birthday: ''
   });
   const [profilePhoto, setProfilePhoto] = useState(null);
-  const [presignedUrl, setPresignedUrl] = useState('');
   const [error, setError] = useState('');
   const [similarImages, setSimilarImages] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -52,10 +52,10 @@ const Register = () => {
       const interests = selectedHashtags.join(',');
       const formData = { ...formData, hashtags: interests, profilePhoto: s3FileName };
       
-      const response = await axios.post('localhost:8080/register', formData);
+      const response = await axios.post(`${config.serverRootURL}/register`, formData);
       console.log(response.data);
-      setCookie('user_id', response.data.user_id, { path: 'localhost:8080/' });
-      setCookie('username', response.data.username, { path: 'localhost:8080/' });
+      setCookie('user_id', response.data.user_id, { path: `${config.serverRootURL}/` });
+      setCookie('username', response.data.username, { path: `${config.serverRootURL}/` });
       navigate('/login');
     } catch (error) {
       setError(error.response.data.error || 'An error occurred');
@@ -94,7 +94,7 @@ const Register = () => {
 
   const addInterest = async (interest) => {
       try {
-          const response = await axios.post('http://localhost:8080/addInterests', { name: interest });
+          const response = await axios.post(`${config.serverRootURL}/addInterests`, { name: interest });
           console.log(response.data);
       } catch (error) {
           console.error('Error adding interest:', error);
@@ -105,9 +105,8 @@ const Register = () => {
     e.preventDefault();
     try {
       console.log(profilePhoto.name);
-      const signedUrlResponse = await axios.post('http://localhost:8080/get_presigned_url', { fileName: profilePhoto.name, fileType: profilePhoto.type});
+      const signedUrlResponse = await axios.post(`${config.serverRootURL}/get_presigned_url`, { fileName: profilePhoto.name, fileType: profilePhoto.type});
       console.log(signedUrlResponse.data);
-      setPresignedUrl(signedUrlResponse.data.url);
       console.log(signedUrlResponse.data.url);
       setS3FileName(signedUrlResponse.data.fileName);
       const updatedProfilePhoto = new File([profilePhoto], signedUrlResponse.data.fileName, 
@@ -124,7 +123,7 @@ const Register = () => {
         console.error('Error uploading profile photo:', error);
       };
 
-      const response = await axios.post('http:localhost:8080/find_similar', {
+      const response = await axios.post(`${config.serverRootURL}/find_similar`, {
         fileName: signedUrlResponse.data.fileName
       });
       console.log(response.data);

@@ -84,8 +84,8 @@ const Chat = () => {
 
     const rootURL = config.serverRootURL;
 
-    const [currUserId, setCurrUserId] = useState(2);
-    const [currUsername, setCurrUsername] = useState("mts");
+    const [currUserId, setCurrUserId] = useState(4);
+    const [currUsername, setCurrUsername] = useState("a");
     const [conversations, setConversations] = useState([]);
     const [currentChatId, setCurrentChatId] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -121,7 +121,10 @@ const Chat = () => {
     useEffect(() => {
         const getConversations = async () => {
             try {
+                console.log(currUserId);
+                console.log("spongebob");
                 const res = await axios.post(`${rootURL}/getConvos`, {user_id: currUserId});
+                console.log(res.data.data);
 
                 setConversations(res.data.data);
             } catch (error) {

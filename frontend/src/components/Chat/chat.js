@@ -98,11 +98,14 @@ const Chat = () => {
         const setCurrUser = async () => {
             try {
                 const res = await axios.get(`${rootURL}/`);
-
+                console.log("?????did we get called here");
                 const user_id = res.data.user_id;
                 const username = res.data.username;
+                console.log(user_id);
+                console.log(username);
 
                 if (user_id !== -1) {
+                    console.log("ok! are we here!");
                     setCurrUserId(user_id);
                     setCurrUsername(username);
                 }
@@ -172,7 +175,7 @@ const Chat = () => {
     const sendMessage = () => {
         // Here, you can use the `message` state variable to access the text
         const send = async () => {
-            if (newMessage.length == 0) {
+            if (newMessage.length === 0) {
                 console.log("Trying to send an empty message");
             } else if (!currentChatId) {
                 console.log("Currently not in a chat");

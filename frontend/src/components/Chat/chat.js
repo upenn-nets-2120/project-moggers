@@ -101,12 +101,13 @@ const Chat = () => {
     useEffect(() => {
         const setCurrUser = async () => {
             try {
+                console.log("km3s");
                 const res = await axios.get(`${rootURL}/`);
 
                 const user_id = res.data.user_id;
                 const username = res.data.username;
 
-                if (user_id !== -1) {
+                if (!user_id) {
                     setCurrUserId(user_id);
                     setCurrUsername(username);
                 }
@@ -221,13 +222,17 @@ const Chat = () => {
 
                 // then get status of id and if they are offline then don't make
                 const res1 = await axios.get(`${rootURL}/getStatus`, { params: { user_id: friend_id } });
-                const friend_status = res1.data.data.status;
+
+                const friend_status = res1.data.data[0].status;
+                console.log(friend_status);
                 if (!friend_status) {
                     setInputPlaceholder("Friend is not online currently, try again later.");
                     setChatMenuInputClass("chatMenuInputError");
                     setNewFriendChatInvite("");
                     return;
                 }
+                console.log("hi!");
+                console.log(currUserId);
                 
 
 //////////////////////////////////

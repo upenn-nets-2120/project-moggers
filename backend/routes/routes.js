@@ -49,7 +49,9 @@ router.get('/', (req, res) => {
     var user_id = 0;
     
     var username ="lmfao";
-    if (typeof req.session !== null && typeof req.session.user_id !== null) {
+    console.log("kmmmmmm");
+    if (typeof req.session !== 'undefined' && typeof req.session.user_id !== 'undefined') {
+        console.log('x!');
         user_id = req.session.user_id;
         username = req.session.username;
     } else {
@@ -1045,6 +1047,7 @@ router.get('/getStatus', async (req, res) => {
     try {
        
         const userid = req.query.user_id;
+        console.log(userid);
 
         if (!userid) {
             return res.status(400).json({error: 'Missing username.'});
@@ -1068,6 +1071,7 @@ router.get('/chatAlreadyExists', async (req, res) => {
     try {
        
         const userid1 = req.query.user_id1;
+        console.log(userid1);
         const userid2 = req.query.user_id2;
 
         if (!userid1 || !userid2) {

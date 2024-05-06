@@ -89,6 +89,7 @@ const Chat = () => {
     const [conversations, setConversations] = useState([]);
     const [currentChatId, setCurrentChatId] = useState(null);
     const [messages, setMessages] = useState([]);
+    const [newMessage, setNewMessage] = useState('');
 
     useEffect(() => {
         const setCurrUser = async () => {
@@ -112,12 +113,6 @@ const Chat = () => {
     useEffect(() => {
         const getConversations = async () => {
             try {
-                const requestBody = {
-                    params: {
-                        user_id: currUserId
-                    }
-                };
-
                 const res = await axios.post(`${rootURL}/getConvos`, {user_id: currUserId});
 
                 setConversations(res.data.data);
@@ -146,15 +141,51 @@ const Chat = () => {
     }, [currentChatId])
     console.log(messages);
 
+    const handleMessageChange = (event) => {
+        setNewMessage(event.target.value);
+    };
+
+    // const sendChat = () => {
+    //     if (inputValue.trim() !== '') {
+    //         socket.emit('chat message', {
+    //             text: inputValue.trim(),
+    //             sender: id,
+    //             room: 1
+    //         });
+
+    //         setInputValue('');
+    //     }
+    // };
+
+    const sendMessage = () => {
+        // Here, you can use the `message` state variable to access the text
+        const send = async () => {
+            if (newMessage.length == 0) {
+                console.log("Trying to send an empty message");
+            } else if (!currentChatId) {
+                console.log("Currently not in a chat");
+            } else {
+                console.log('Trying to send message:', newMessage);
+                try {
+                    const res = await axios.post(`${rootURL}/postMessage`, {author: currUserId, content:newMessage, chat_id: currentChatId});
+
+                    // reset state of message
+                    setNewMessage("");
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+        }
+        send();
+    };
+
     return (
         <>
             <div className="chat">
                 <div className="chatMenu">
                     <div className="chatMenuWrapper">
                         <input placeholder="Search friend" className="chatMenuInput"/>
-                        {
-                      
-                        conversations.map(convo => (
+                        {conversations.map(convo => (
                             <div onClick={() => setCurrentChatId(convo.chat_id)}>
                                 <Conversation conversation={convo}/>
                             </div>
@@ -171,17 +202,10 @@ const Chat = () => {
                                             <Message msgContents={msg} currUser =  {currUserId}/>
                                         </div>
                                     ))}
-                                    {/* <Message sender={2}/>
-                                    <Message sender={0}/>
-                                    <Message sender={2}/>
-                                    <Message sender={1} />
-                                    <Message sender={1}/>
-                                    <Message sender={2}/>
-                                    <Message sender={0}/> */}
                                 </div>
                                 <div className='chatBoxBottom'>
-                                    <textarea className='chatMessageInput' placeholder="Enter a message..."></textarea>
-                                    <button className='chatSubmitButton'>Send</button>
+                                    <textarea className='chatMessageInput' placeholder="Enter a message..." value={newMessage} onChange={handleMessageChange}></textarea>
+                                    <button className='chatSubmitButton' onClick={sendMessage}>Send</button>
                                 </div>
                             </> : <span className="noCurrentConvoText">
                                 Open a previous conversation or start a new one!

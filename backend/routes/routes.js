@@ -32,7 +32,7 @@ const consumer2 = kafka.consumer({
         bootstrapServers: config.bootstrapServers});
 
 var kafka_messages_federated_posts = [];
-var kafka_messages1 = [];
+var kafka_message1 = [];
 router.get('/getKafka', (req, res) => {
     res.send(JSON.stringify(kafka_messages_federated_posts));
 });
@@ -158,11 +158,19 @@ router.post('/sendComment', async (req, res) => { // needs to be debugged
         const date_posted = new Date().toISOString().split('T')[0];
         const timestampString = timestamp.toISOString();
 
-        // Construct the SQL query string with template literals
-        const query = `INSERT INTO comments (post_id, parent_post, author, content, date_posted, timestamp) 
-                       VALUES (${post_id}, ${parent_post}, ${author}, "${content}", "${date_posted}", "${timestampString}")`;
-        await db1.insert_items(query);
-        res.status(200).json({ message: 'Comment sent successfully', comment_id: results.insertId });
+        if (!parent_post) {
+            const query = `INSERT INTO comments (post_id, author, content, date_posted, timstamp) 
+                       VALUES (${post_id},  ${author}, "${content}", "${date_posted}", "${timestampString}")`;
+            await db1.insert_items(query);
+            return res.status(200).json({ message: 'Comment sent successfully'});
+        } else {
+            const query = `INSERT INTO comments (post_id, parent_post, author, content, date_posted, timstamp) 
+            VALUES (${post_id}, ${parent_post}, ${author}, "${content}", "${date_posted}", "${timestampString}")`;
+            await db1.insert_items(query);
+            return res.status(200).json({ message: 'Comment sent successfully'});
+
+        }
+       
 
       
     } catch (error) {
@@ -930,6 +938,32 @@ router.get('/getMessages', async (req, res) => {
         `);
         return res.status(200).json({data});
         
+ 
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    };
+});
+
+
+router.get('/getComments', async (req, res) => {
+    try {
+  
+        console.log(req.query);
+
+        const postid = req.query.postId;
+
+        if (!postid) {
+            return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
+        }
+        
+      
+        var data = await db1.send_sql(`
+        SELECT comments.id AS comment_id, comments.author AS author, comments.timstamp AS timestamp, comments.content AS content 
+        FROM comments
+        WHERE comments.post_id = "${postid}" AND comments.parent_post IS NULL
+        `);
+        return res.status(200).json({data});
  
     } catch (error) {
         console.error(error);

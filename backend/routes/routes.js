@@ -1032,7 +1032,7 @@ const run2 = async () => {
 
     await consumer2.run({
         eachMessage: async ({ topic, partition, message }) => {
-            kafka_messages_federated_posts.push({
+            kafka_message1.push({
                 value: message.value.toString(),
             });
             console.log({

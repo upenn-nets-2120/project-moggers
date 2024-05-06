@@ -164,6 +164,7 @@ const Chat = () => {
     const handleInviteTextChange = (event) => {
         setInputPlaceholder("Search a friend username to invite for a new chat session");
         setNewFriendChatInvite(event.target.value);
+        setNewFriendChatInvite("");
         setChatMenuInputClass("chatMenuInput");
     };
 

@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
 const {S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const { fromIni } = require("@aws-sdk/credential-provider-ini");
 
 var db = require('../models/create_tables.js');
 const db1 = require('../models/db_access');
@@ -39,12 +40,7 @@ const {  CompressionTypes, CompressionCodecs } = require('kafkajs')
 const SnappyCodec = require('kafkajs-snappy');
 const { LexRuntimeV2 } = require('aws-sdk');
  
-CompressionCodecs[CompressionTypes.Snappy] = SnappyCodec
-
-
-
-// all functions for handling data, calling the database, post/get requests, etc.
-
+CompressionCodecs[CompressionTypes.Snappy] = SnappyCodec;
 
 
 
@@ -68,14 +64,19 @@ router.get('/', (req, res) => {
 router.get('/hi', (req, res) => {
     res.status(200).json({message: 'Hello World!'});
 });
+
 // POST /register
 router.post('/register', async (req, res) => {
   
     try {
-        var { username, password, firstName, lastName, email, affiliation, birthday } = req.body;
-
-        const profilePhoto = "";
-        const hashtags = "";
+        var { username, password, firstName, lastName, email, affiliation, birthday, hashtags, profilePhoto } = req.body;
+        
+        if (!profilePhoto) {
+            profilePhoto = "";
+        }
+        if (!hashtags) {
+            hashtags = "";
+        }
         
         if (!username || !password || !firstName || !lastName || !email || !affiliation || !birthday) {
             return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
@@ -128,13 +129,10 @@ router.post('/goOnline', async (req, res) => {
     try {
         var username = req.body.username;
 
-        
-        
         if (!username) {
             return res.status(400).json({error: 'Missing username'});
         }
        
-        
         var existingUser = await db1.send_sql(`SELECT * FROM users WHERE username = "${username}"`);
       
         if (existingUser.length == 0) {
@@ -174,7 +172,6 @@ router.post('/sendComment', async (req, res) => { // needs to be debugged
 });
 
 router.post('/goOffline', async (req, res) => {
-  
     try {
         var username = req.body.username;
         
@@ -182,7 +179,6 @@ router.post('/goOffline', async (req, res) => {
             return res.status(400).json({error: 'Missing username'});
         }
        
-        
         var existingUser = await db1.send_sql(`SELECT * FROM users WHERE username = "${username}"`);
       
         if (existingUser.length == 0) {
@@ -450,8 +446,8 @@ router.get('/getTopTenHashtags', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
 router.get('/getFeed', async (req, res) => {
-  
     try {
         // const curr_id = req.session.user_id
         const curr_id = 3;
@@ -471,41 +467,31 @@ router.get('/getFeed', async (req, res) => {
             return res.status(500).json({message: 'Could not find ID in users or found more than one.'});
         }
 
-
         var following = await db1.send_sql(`SELECT followed FROM friends WHERE follower = "${curr_id}"`);
         const followedUserIds = following.map(entry => entry.followed);
         followedUserIds.push(curr_id);
         const feed = await db1.send_sql(`
-        SELECT posts.content, posts.date_posted, posts.timstamp, users.username, users.firstName, users.lastName, users.profilePhoto,  (
-            SELECT COUNT(*) 
-            FROM likes 
-            WHERE post_id = posts.id
-        ) AS like_count
-        FROM posts 
-        JOIN users ON posts.author = users.id
-        WHERE posts.author IN (${followedUserIds.join(', ')})
-       
-    `);
+            SELECT posts.content, posts.image, posts.date_posted, posts.timstamp, users.username, users.firstName, users.lastName, users.profilePhoto,  (
+                SELECT COUNT(*) 
+                FROM likes 
+                WHERE post_id = posts.id
+            ) AS like_count
+            FROM posts 
+            JOIN users ON posts.author = users.id
+            WHERE posts.author IN (${followedUserIds.join(', ')})
+        `);
    
         return res.status(200).json({results: feed});
 
-
-        
-        } catch (error) {
+    } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
 
-
-
-
 router.post('/acceptFriendRequest', async (req, res) => {
-  
     try {
-
         var {follower, followed} = req.body;
-        
         
         if (!follower || ! followed) {
             return res.status(400).json({error: 'Missing friend request input'});
@@ -524,8 +510,6 @@ router.post('/acceptFriendRequest', async (req, res) => {
             return res.status(500).json({message: 'Could not find followed ID in users or found more than one.'});
         }
 
-           
-       
         var existingFriendRequest = await db1.send_sql(` SELECT COUNT(*) AS count  FROM friendRequests  WHERE follower = ${follower} AND followed = ${followed};  `);
         if (existingFriendRequest[0].count == 0) {
             return res.status(500).json({message: `Friend request does not exist`});
@@ -544,7 +528,6 @@ router.post('/acceptFriendRequest', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 });
-
 
 
 // POST /login
@@ -970,7 +953,14 @@ router.post('/postMessage', async (req, res) => {
     }
 });
 
-const s3Client = new S3Client({ region: config.awsRegion });
+const credentials = fromIni({
+    accessKeyId: config.AWS_ACCESS_KEY_ID,
+    secretAccessKey: config.AWS_SECRET_ACCESS_KEY,
+    sessionToken: config.SESSION_TOKEN
+});
+
+// Initialize the S3 client with your region
+const s3Client = new S3Client({region: config.awsRegion, credentials: credentials });
 // gets an S3 presigned URL for uploading a file
 router.post("/get_presigned_url", async (req, res) => {
     try {

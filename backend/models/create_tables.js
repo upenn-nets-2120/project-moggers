@@ -52,6 +52,7 @@ async function create_tables(db) {
         id INT AUTO_INCREMENT PRIMARY KEY,
         author INT NOT NULL,
         content TEXT NOT NULL,
+        image VARCHAR(255) NOT NULL,
         date_posted DATE NOT NULL,
         num_likes INT NOT NULL,
         timstamp TIMESTAMP NOT NULL,

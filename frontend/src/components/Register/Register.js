@@ -48,6 +48,10 @@ const Register = () => {
     e.preventDefault();
     setError('');
     try {
+      // combine selected hashtags into comma separated string and add to formData
+      const interests = selectedHashtags.join(',');
+      const formData = { ...formData, hashtags: interests, profilePhoto: s3FileName };
+      
       const response = await axios.post('localhost:8080/register', formData);
       console.log(response.data);
       setCookie('user_id', response.data.user_id, { path: 'localhost:8080/' });

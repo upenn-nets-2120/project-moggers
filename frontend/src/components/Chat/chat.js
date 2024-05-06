@@ -91,6 +91,8 @@ const Chat = () => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
 
+    const [sentMessage, setSentMessage] = useState(false);
+
     useEffect(() => {
         const setCurrUser = async () => {
             try {
@@ -132,13 +134,14 @@ const Chat = () => {
                 const res = await axios.get(`${rootURL}/getMessages`, { params: { chatId: currentChatId } });
 
                 setMessages(res.data.data);
+                setSentMessage(false);
             } catch (error) {
                 console.log(error);
             }
             
         } 
         getMsgs();
-    }, [currentChatId])
+    }, [currentChatId, sentMessage])
     console.log(messages);
 
     const handleMessageChange = (event) => {
@@ -171,6 +174,7 @@ const Chat = () => {
 
                     // reset state of message
                     setNewMessage("");
+                    setSentMessage(true);
                 } catch (error) {
                     console.log(error);
                 }

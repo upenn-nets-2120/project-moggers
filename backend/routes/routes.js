@@ -1051,9 +1051,9 @@ router.get('/getStatus', async (req, res) => {
         }
         
       
-        var status1 = await db1.send_sql(`SELECT status FROM users WHERE id = "${userid}"`);
-        console.log(status1);
-        return res.status(200).json({ status1});
+        var data = await db1.send_sql(`SELECT status FROM users WHERE id = "${userid}"`);
+        console.log(data);
+        return res.status(200).json({ data});
        
        
  

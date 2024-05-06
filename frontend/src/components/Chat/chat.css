@@ -16,6 +16,15 @@
     border-bottom: 1px solid gray;
 }
 
+.chatMenuInputError {
+    width: 90%;
+    padding: 10px 0;
+    border: none;
+    border-bottom: 1px solid gray;
+    background-color: lightcoral;
+    color: darkred;
+}
+
 .chatBox {
     flex: 5.5;
 }

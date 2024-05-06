@@ -90,22 +90,23 @@ const Chat = () => {
     const [currentChatId, setCurrentChatId] = useState(null);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
+    const [chatMenuInputClass, setChatMenuInputClass] = useState('chatMenuInput');
 
     const [sentMessage, setSentMessage] = useState(false);
+    const [newFriendChatInvite, setNewFriendChatInvite] = useState("");
+    const [inputPlaceholder, setInputPlaceholder] = useState("Search a friend username to invite for a new chat session");
+
     const chatBoxRef = useRef(null);
 
     useEffect(() => {
         const setCurrUser = async () => {
             try {
                 const res = await axios.get(`${rootURL}/`);
-                console.log("?????did we get called here");
+
                 const user_id = res.data.user_id;
                 const username = res.data.username;
-                console.log(user_id);
-                console.log(username);
 
                 if (user_id !== -1) {
-                    console.log("ok! are we here!");
                     setCurrUserId(user_id);
                     setCurrUsername(username);
                 }
@@ -160,6 +161,12 @@ const Chat = () => {
         setNewMessage(event.target.value);
     };
 
+    const handleInviteTextChange = (event) => {
+        setInputPlaceholder("Search a friend username to invite for a new chat session");
+        setNewFriendChatInvite(event.target.value);
+        setChatMenuInputClass("chatMenuInput");
+    };
+
     // const sendChat = () => {
     //     if (inputValue.trim() !== '') {
     //         socket.emit('chat message', {
@@ -175,7 +182,7 @@ const Chat = () => {
     const sendMessage = () => {
         // Here, you can use the `message` state variable to access the text
         const send = async () => {
-            if (newMessage.length === 0) {
+            if (newMessage.length == 0) {
                 console.log("Trying to send an empty message");
             } else if (!currentChatId) {
                 console.log("Currently not in a chat");
@@ -195,18 +202,82 @@ const Chat = () => {
         send();
     };
 
+    const handleNewInvite = () => {
+        const helper = async () => {
+            try {
+                // first see if the person is online or not.
+                // get id of newFriendChatInvite
+                const res = await axios.get(`${rootURL}/getUserName`, { params: { username: newFriendChatInvite } });
+                const friend_id = res.data.data.id;
+
+                if (friend_id === -1) {
+                    // could not friend's id
+                    setInputPlaceholder("Could not find friend. Type exact username.");
+                    setChatMenuInputClass("chatMenuInputError");
+                    return;
+                }
+
+                // then get status of id and if they are offline then don't make
+                const res1 = await axios.get(`${rootURL}/getStatus`, { params: { user_id: friend_id } });
+                const friend_status = res1.data.data.status;
+                if (!friend_status) {
+                    setInputPlaceholder("Friend is not online currently, try again later.");
+                    setChatMenuInputClass("chatMenuInputError");
+                    return;
+                }
+                
+
+//////////////////////////////////
+
+
+                // otherwise check if they are already in a 1 on 1 chat then just change the chatMenuInput placeholder text to "already have convo"
+                const res2 = await axios.get(`${rootURL}/chatAlreadyExists`, { params: { user_id1: currUserId , user_id2: friend_id} });
+                const already_exists = res2.data.status;
+                if (already_exists) {
+                    setInputPlaceholder("You already have a chat with this person.");
+                    setChatMenuInputClass("chatMenuInputError");
+                    return;
+                }
+
+                // check if you already sent a chat req with this person
+                const res3 = await axios.get(`${rootURL}/alreadySent`, { params: { user_id1: currUserId , user_id2: friend_id} });
+                const already_sent = res3.data.status;
+                if (already_sent) {
+                    setInputPlaceholder("You sent an invite to this person.");
+                    setChatMenuInputClass("chatMenuInputError");
+                    return;
+                }
+
+                // otherwise just send a chat req
+                sendNewChatReq(currUserId, friend_id);
+                console.log("sent chat request");
+            } catch (error) {
+                console.log(error);
+            }            
+        }
+
+        helper();
+    };
+
+
+    // final step in handleNewInvite
+    function sendNewChatReq(userId, friendId) {
+
+    }
+
     return (
         <>
             <div className="chat">
                 <div className="chatMenu">
                     <div className="chatMenuWrapper">
-                        <input placeholder="Search friend" className="chatMenuInput"/>
+                        <input placeholder={inputPlaceholder} className={chatMenuInputClass} value={newFriendChatInvite} onChange={handleInviteTextChange}/>
                         {conversations.map(convo => (
                             <div onClick={() => setCurrentChatId(convo.chat_id)}>
                                 <Conversation conversation={convo}/>
                             </div>
                         ))}
                     </div>
+                    <button className="newChatButton" onClick={handleNewInvite}>Create New Chat</button>
                 </div>
                 <div className="chatBox">
                     <div className="chatBoxWrapper">
@@ -228,42 +299,7 @@ const Chat = () => {
                             </span>}
                     </div>
                 </div>
-                {/* <div className="chatOnline">
-                    <div className="chatMenuWrapper">
-                        online
-                    </div>
-                </div> */}
             </div>
-
-            {/* <div className="chat">
-                <div>
-                    <ul id="messages">
-                        {messages.map((msg, index) => (
-                            <li key={index} className={id === msg.sender ? 'me' : 'other'}>
-                                {msg.text}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-                <div style={{ height: '20px' }}></div>
-                <form id="message-form">
-                    <div id="form-message">
-                        <input
-                            className="form-control"
-                            id="input"
-                            autoComplete="off"
-                            placeholder="Enter your message..."
-                            onFocus={() => setInputValue('')}
-                            onBlur={() => setInputValue('Enter your message...')}
-                            value={inputValue}
-                            onChange={(e) => setInputValue(e.target.value)}
-                        />
-                        <button type="button" id="send_btn" className="btn btn-light" onClick={sendChat}>
-                            Send
-                        </button>
-                    </div>
-                </form>
-            </div> */}
         </>
     );
 };

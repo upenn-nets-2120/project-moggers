@@ -5,6 +5,7 @@ import config from '../../serverConfig.json';
 function Home() {
   const [feed, setFeed] = useState([]);
   const [currUserId, setCurrUserId] = useState(2);
+  const [currUsername, setCurrUsername] = useState(2);
 
   const rootURL = config.serverRootURL;
 

@@ -203,7 +203,7 @@ router.post('/addInterests', async (req, res) => {
         // count INT,
         // PRIMARY KEY (name)
         // var username = req.body.username;
-        console.log(name);
+      
         if (!name) {
             return res.status(400).json({error: 'Missing interest name'});
         }
@@ -233,7 +233,7 @@ router.post('/addHashtag', async (req, res) => {
         }
     
         const existingHashtag = await db1.send_sql(`SELECT * FROM hashtags  WHERE name = "${name}"AND user_id = ${user_id};  `);
-        console.log(existingHashtag)
+       
         if (existingHashtag.length != 0) {
             return res.status(400).json({ error: 'Hashtag already exists' });
         }
@@ -242,7 +242,7 @@ router.post('/addHashtag', async (req, res) => {
         res.status(200).json({ message: `Added a new hashtag` });
 
         } catch (error) {
-        console.error(error);
+    
         res.status(500).json({ message: 'Internal server error' });
     }
 });
@@ -429,7 +429,7 @@ router.get('/getTopTenHashtags', async (req, res) => {
 });
 
 router.get('/getFeed', async (req, res) => {
-    console.log("hi userID: ", req.session.userId, "username: ", req.session.username);
+    
     try {
         // const curr_id = req.session.user_id
         // const curr_id = 3;
@@ -475,7 +475,7 @@ router.get('/getFeed', async (req, res) => {
 // POST /login
 router.post('/login', async (req, res) => {
     try {
-        console.log("xsjhdgfahj");
+       
         const { username, password } = req.body;
 
         if (!username || !password) {
@@ -486,13 +486,12 @@ router.post('/login', async (req, res) => {
         if (user.length === 0) {
             return res.status(401).json({error: 'Username and/or password are invalid.'});
         }
-        console.log("ok are we here?");
+ 
         const user_id = user[0].id;
         const hashed_password = user[0].password;
         bcrypt.compare(password, hashed_password, (err, result) => {
             if (result) {
-                console.log("did we set here!");
-                console.log(user_id);
+               
                 req.session.user_id = user_id;
                 req.session.username = username;
                 return res.status(200).json({user_id: user_id, username: username});
@@ -520,7 +519,7 @@ router.get('/logout', (req, res) => {
 router.post('/createPost', async (req, res) => {
     try {
         var { author, content, image_url} = req.body;
-        console.log(req.body);
+        
         if (!author || !content || !image_url) {
             return res.status(400).json({error: 'Create post missing arguments'});
         }
@@ -762,7 +761,10 @@ router.post('/postChats', async (req, res) => {
  
         await db1.insert_items(`INSERT INTO user_chats (user_id, chat_id) VALUES (${user1}, ${new_chat_id})`);
         await db1.insert_items(`INSERT INTO user_chats (user_id, chat_id) VALUES (${user2}, ${new_chat_id})`);
-      
+        var content = 'Chat created.';
+        const timestamp = new Date().toISOString(); 
+        await db1.insert_items(`INSERT INTO messages (author, content, chat_id, timstamp) VALUES ("${9}", "${content}", "${new_chat_id}", "${timestamp}")`);
+        
         res.status(200).json({message: "Chat made."});
     } catch (error) {
         console.error(error);
@@ -772,32 +774,27 @@ router.post('/postChats', async (req, res) => {
 
 router.post('/getConvos', async (req, res) => {
     try {
-        console.log("ok!!!!");
-        if (typeof req.body.user_id === 'undefined') {
-            console.log("we failed here");
-        }
+   
+        
         const user1 = req.body.user_id;
       
         if (!user1) {
-            console.log("3");
+         
             return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
         }
 
-        console.log("4");
         
-        console.log(user1);
         
-        console.log(`SELECT COUNT(*) FROM users WHERE id = ${user1}`);
         var count2 = await db1.send_sql(`SELECT COUNT(*) FROM users`);
-        console.log("AWTFF");
+      
         var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = ${user1}`);
-        console.log(count1);
+        
         var count1res = count1[0]['COUNT(*)'];
-        console.log("5");
+       
         if (count1res != 1) {
             return res.status(500).json({message: 'Could not find user1 ID in users or found more than one.'});
         }
-        console.log("6");
+     
         var data = await db1.send_sql(`
         SELECT uc.chat_id AS chat_id, 
                c.name AS chat_name, 
@@ -809,13 +806,12 @@ router.post('/getConvos', async (req, res) => {
         GROUP BY uc.chat_id, c.name
         ORDER BY m.timstamp DESC
         `);
-        console.log(data);
+    
         
         return res.status(200).json({data});
  
     } catch (error) {
-        console.log("xxxxx?");
-        console.error(error);
+       
         res.status(500).json({ message: 'Internal server error' });
     };
 });
@@ -823,16 +819,14 @@ router.post('/getConvos', async (req, res) => {
 
 router.get('/getMessages', async (req, res) => {
     try {
-        console.log("x999999");
-  
-        console.log(req.query);
+     
         const chatid = req.query.chatId;
 
         if (!chatid) {
-            console.log("x3");
+        
             return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
         }
-        console.log("x2");
+      
       
         var data = await db1.send_sql(`
         SELECT messages.id AS message_id, messages.author AS author, messages.timstamp AS timestamp, messages.chat_id AS chat_id, messages.content AS content, chats.name AS chat_name
@@ -844,14 +838,14 @@ router.get('/getMessages', async (req, res) => {
         return res.status(200).json({data});
  
     } catch (error) {
-        console.error(error);
+        
         res.status(500).json({ message: 'Internal server error' });
     };
 });
 
 router.get('/getComments', async (req, res) => {
     try {
-        console.log(req.query);
+     
 
         const postid = req.query.postId;
 
@@ -874,7 +868,7 @@ router.get('/getComments', async (req, res) => {
 
 router.get('/getCommentThreads', async (req, res) => {
     try {
-        console.log(req.query);
+
 
         const postcommentid = req.query.postCommentId;
 
@@ -911,7 +905,7 @@ router.post('/postMessage', async (req, res) => {
         return res.status(200).json({ message: "Message posted successfully" });
     } catch (error) {
         // Handle errors
-        console.error(error);
+     
         return res.status(500).json({ message: 'Internal server error' });
     }
 });
@@ -929,8 +923,7 @@ router.post("/get_presigned_url", async (req, res) => {
     try {
         const fileName = req.body.fileName;
         const fileType = req.body.fileType;
-        console.log("file name", fileName);
-        console.log("file type", fileType)
+       
         const uniqueFileName = `${uuidv4()}_${fileName}`;
         const params = {
             Bucket: config.s3BucketName,
@@ -953,7 +946,7 @@ router.post("/get_presigned_url", async (req, res) => {
 router.get('/getProfile', async (req, res) => {
     try {
         const userid = req.query.user_id;
-        console.log("userid: ", userid);
+       
         if (!userid) {
             return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
         }
@@ -986,9 +979,7 @@ router.get('/getProfile', async (req, res) => {
             "following": y2,
             "status": status1[0].status
         }];
-        console.log("asdfdsfds");
-        console.log(data1);
-        console.log(data1[0].firstName);
+       
         return res.status(200).json({ data1, posts });
  
     } catch (error) {
@@ -1021,7 +1012,7 @@ router.get('/getUserName', async (req, res) => {
         }
        
     } catch (error) {
-        console.error(error);
+       
         res.status(500).json({ message: 'Internal server error' });
     };
 });
@@ -1029,14 +1020,14 @@ router.get('/getStatus', async (req, res) => {
     try {
        
         const userid = req.query.user_id;
-        console.log(userid);
+      
 
         if (!userid) {
             return res.status(400).json({error: 'Missing username.'});
         }
       
         var data = await db1.send_sql(`SELECT status FROM users WHERE id = "${userid}"`);
-        console.log(data);
+     
         return res.status(200).json({ data});
  
     } catch (error) {
@@ -1048,7 +1039,7 @@ router.get('/getStatus', async (req, res) => {
 router.get('/chatAlreadyExists', async (req, res) => {
     try {
         const userid1 = req.query.user_id1;
-        console.log(userid1);
+      
         const userid2 = req.query.user_id2;
 
         if (!userid1 || !userid2) {
@@ -1061,11 +1052,11 @@ router.get('/chatAlreadyExists', async (req, res) => {
         WHERE user_id = "${userid1}" OR user_id = "${userid2}"
         GROUP BY chat_id
         HAVING COUNT(DISTINCT user_id) = 2`);
-        console.log(status1);
+   
         const chatIds = status1.map(item => item.chat_id);
 
         const inClause = chatIds.join(',');
-        console.log(inClause);
+   
       
 
         var status2 = await db1.send_sql(`
@@ -1102,7 +1093,7 @@ router.get('/alreadySent', async (req, res) => {
         FROM chatRequests
         WHERE sender = "${userid1}" OR receiver = "${userid2}"
         `);
-        console.log(status1);
+       
      
         if (status1.length === 0) {
             return res.status(200).json({ status: false});
@@ -1111,7 +1102,7 @@ router.get('/alreadySent', async (req, res) => {
         }
        
     } catch (error) {
-        console.error(error);
+
         res.status(500).json({ message: 'Internal server error' });
     };
 });

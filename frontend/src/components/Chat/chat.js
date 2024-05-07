@@ -87,10 +87,12 @@ const Chat = () => {
     const [sentMessage, setSentMessage] = useState(false);
     const [newFriendChatInvite, setNewFriendChatInvite] = useState("");
     const [inputPlaceholder, setInputPlaceholder] = useState("Search a friend username to invite for a new chat session");
-    
-    var socket = io();
-    var room = false; // whether or not the client is in a room
 
+    // var socket = io.connect();
+    var socket = io("ws://localhost:3000");
+    var room = false; // whether or not the client is in a room
+  
+    
 
     // whenever someone sends a chat message
     socket.on("chat message", obj => {
@@ -110,8 +112,9 @@ const Chat = () => {
         const getConversations = async () => {
             try {
                 console.log(currUserId);
-                console.log("spongebob");
+                console.log("spongebobeeee");
                 const res = await axios.post(`${rootURL}/getConvos`, {user_id: currUserId});
+                console.log(res);
                 console.log(res.data.data);
 
                 setConversations(res.data.data);

@@ -43,7 +43,7 @@ export default function Message({msgContents, currUser}) {
     let messageClass;
     if (currUser === sender) {
         messageClass = 'message own';
-    } else if (sender === -1) {
+    } else if (sender === 9) {
         messageClass = 'message system';
     } else {
         messageClass = 'message';

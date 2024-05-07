@@ -39,11 +39,11 @@ const Login = () => {
       ReactSession.set("username", response.data.username);
       console.log(ReactSession.get("user_id"));
       console.log(ReactSession.get("username"));
-      navigate('/');
+      navigate('/profile');
       window.location.reload();
     } catch (error) {
       console.log(error);
-      setError( 'An error occurred');
+      setError( 'An error occurred. Please try again.');
     }
   };
 

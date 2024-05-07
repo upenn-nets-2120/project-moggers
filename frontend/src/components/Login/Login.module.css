@@ -51,6 +51,6 @@ input[type="password"] {
 .body {
     width: 100%;
     height: 120vh;
-    background: url('https://moggers-image-uploads.s3.amazonaws.com/penn4.jpg') no-repeat center center fixed;
+    background: url('https://moggers-image-uploads.s3.amazonaws.com/penn1.jpg') no-repeat center center fixed;
     background-size: cover;
 }

@@ -31,13 +31,13 @@ const NavBar = () => {
         </Link>
         <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
           <ul className="navbar-nav">
-            <li className="nav-item">
-              <Link className="nav-link" to="/">
-                Home
-              </Link>
-            </li>
             {userId !== -1 && (
               <>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/">
+                    Home
+                  </Link>
+                </li>
                 <li className="nav-item">
                   <Link className="nav-link" to="/chat">
                     Chat

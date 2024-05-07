@@ -208,6 +208,7 @@ const Register = () => {
               <input type="date" id="birthday" name="birthday" value={formData.birthday} onChange={handleChange} />
             </div>
             <button type="submit" className={styles.registerbtn}>Next</button>
+            <p style={{ 'textAlign': 'center', marginTop: '10px'}}>Have an account already? <a href="/login">Sign in</a></p>
           </form></div>
         );
       case 2:

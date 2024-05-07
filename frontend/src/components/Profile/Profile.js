@@ -9,6 +9,7 @@ function Profile() {
   const [profileData, setProfileData] = useState(null);
   const [currUserId, setCurrUserId] = useState(null);
   const [currUsername, setCurrUsername] = useState(null);
+  const [profilePhoto, setProfilePhoto] = useState("https://www.pngitem.com/pimgs/m/146-1468479_my-profile-icon-blank-profile-picture-circle-hd.png");
 
   useEffect(() => {
     // const setCurrUser = async () => {
@@ -39,8 +40,12 @@ function Profile() {
         }
         const response = await axios.get(`${config.serverRootURL}/getProfile`, {
           params: { user_id: ReactSession.get("user_id") }
+          // params: {user_id: 2}
         });
         setProfileData(response.data);
+        if (response.data.data1[0].profilePhoto) {
+          setProfilePhoto(response.data.data1[0].profilePhoto);
+        }
       } catch (error) {
         console.error('Error fetching profile:', error);
       }
@@ -52,36 +57,53 @@ function Profile() {
     return <div style={{textAlign: "center"}}>Loading...</div>;
   }
 
+  const formatDate = (date) => {
+    const options = { month: 'short', day: 'numeric' };
+    return new Date(date).toLocaleDateString('en-US', options);
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.profileInfo}>
-        <h1 style={{textAlign: "center"}}><b>Profile</b></h1>
-        <p><b>Username</b>: {profileData.data1[0].username}</p>
-        <p><b>First Name</b>: {profileData.data1[0].firstName}</p>
-        <p><b>Last Name</b>: {profileData.data1[0].lastName}</p>
-        <p><b>Affiliation</b>: {profileData.data1[0].affiliation}</p>
-        <p><b>Profile Photo</b>: {profileData.data1[0].profilePhoto}</p>
-        <p><b>Hashtags</b>: {profileData.data1[0].hashtags}</p>
-        <p><b>Birthday</b>: {profileData.data1[0].birthday}</p>
-        <p><b>Interests</b>: {profileData.data1[0].interests}</p>
-        <p><b>Followers</b>: <Link to="/friends">{profileData.data1[0].followers}</Link></p>
-        <p><b>Following</b>: <Link to="/friends">{profileData.data1[0].following}</Link></p>
+        <h1>Welcome, {profileData.data1[0].username}</h1>
+        <div className={styles.profileHeader}>
+          <div className={styles.profileLeft}>
+            <img src={profileData.data1[0].profilePhoto || profilePhoto} alt="Profile" className={styles.profilePic} />
+            <div>
+              <h3>{profileData.data1[0].firstName} {profileData.data1[0].lastName}</h3>
+            </div>
+          </div>
+          <div className={styles.profileRight}>
+            <div className={styles.profileRightTop}>
+              <p><b>Posts</b>: <Link to="/" className={styles.link}>{profileData.posts.length}</Link></p>
+              <p><b>Followers</b>: <Link to="/friends" className={styles.link}>{profileData.data1[0].followers}</Link></p>
+              <p><b>Following</b>: <Link to="/friends" className={styles.link}>{profileData.data1[0].following}</Link></p>
+            </div>
+            <div className={styles.profileRightBottom}>
+              <p><b>Birthday</b>: {formatDate(profileData.data1[0].birthday)}</p>
+              <p><b>Affiliation</b>: {profileData.data1[0].affiliation}</p>
+            </div>
+            <div className={styles.profileRightBottom}>
+              <p><b>Interests</b>: {profileData.data1[0].interests}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Render posts */}
-      <h1>Posts</h1>
+      <hr></hr>
       <div className={styles.postsGrid}>
-        {/* Display posts in a grid */}
         {profileData.posts.map(post => (
-        <div key={post.id} className="post">
+          <div key={post.id} className={styles.post}>
             <p>Content: {post.content}</p>
-            <p>Date Posted: {post.timstamp}</p>
+            {post.image && <img src={post.image} alt="Post" style={{ width: '100%', height: 'auto' }} />}
+            <p>Date Posted: {formatDate(post.timstamp)}</p>
             <p>Number of Likes: {post.num_likes}</p>
-        </div>
+          </div>
         ))}
       </div>
     </div>
   );
-}
+};
 
 export default Profile;

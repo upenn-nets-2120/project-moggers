@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import config from '../../serverConfig.json';
 import { useNavigate } from 'react-router-dom';
-import './Home.module.css';
+import styles from './Home.module.css';
 import ReactSession from '../../ReactSession.js';
 
 function Home() {
@@ -41,9 +41,8 @@ function Home() {
       console.log("currUserId: ", currUserId);
       console.log(ReactSession.get("user_id"));
       try {
-        if (currUserId === -1) {
-          setErrorMessage('Please log in to view feed');
-          return;
+        if (currUserId === -1 || currUserId === null) {
+          navigate('/login');
         } else {
           const response = await axios.get(`${rootURL}/getFeed`, { params: { userId: currUserId } } );
           setFeed(response.data.results);
@@ -74,51 +73,45 @@ function Home() {
   };
 
   return (
-    <div>
+    <div className={styles.container}>
       {errorMessage ? (
-        <div>
-          <h1 style={{ marginTop: "30px", textAlign: "center" }}>{errorMessage}</h1>
-        </div>
+        <h1 style={{ textAlign: "center" }}>{errorMessage}</h1>
       ) : (
-        <div>
-          <h1 style={{ marginTop: "30px", textAlign: "center" }}>Feed</h1>
-          {feed && feed.length > 0 && (
-            <div>
-              {feed.map(post => (
-                <div key={post.id} className="post">
-                  <h3>{post.username}</h3>
-                  <p>{post.content}</p>
-                  {post.image && <img src={post.image} alt="Post" />}
-                  <p>Likes: {post.like_count}</p>
-                  <p>Posted on: {post.timstamp}</p>
-                  <button onClick={() => handleGetComments(post.id)}>See Comments</button>
-                  {comments[post.id] && comments[post.id].length > 0 && (
-                    <div>
-                      {comments[post.id].map(comment => (
-                        <div key={comment.comment_id} className="comment">
-                          <p>{comment.content}</p>
-                          <button onClick={() => handleGetCommentThreads(comment.comment_id)}>See More</button>
-                          {commentThreads[comment.comment_id] && (
-                            <div>
-                              {commentThreads[comment.comment_id].map(thread => (
-                                <div key={thread.comment_id} className="comment-thread">
-                                  <p>{thread.content}</p>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      ))}
+        <div className={styles.feed}>
+          <h1 style={{ textAlign: "center" }}>Feed</h1>
+          {feed.length > 0 ? (
+            feed.map(post => (
+              <div key={post.id} className={styles.post}>
+                <h3>{post.username}</h3>
+                <p>{post.content}</p>
+                {post.image && <img src={post.image} alt="Post" />}
+                <p>Likes: {post.like_count}</p>
+                <p>Posted on: {new Date(post.timstamp).toLocaleDateString()}</p>
+                <button onClick={() => handleGetComments(post.id)}>See Comments</button>
+                {comments[post.id] && comments[post.id].length > 0 && (
+                  comments[post.id].map(comment => (
+                    <div key={comment.comment_id} className={styles.comment}>
+                      <p>{comment.content}</p>
+                      <button onClick={() => handleGetCommentThreads(comment.comment_id)}>See More</button>
+                      {commentThreads[comment.comment_id] && (
+                        commentThreads[comment.comment_id].map(thread => (
+                          <div key={thread.comment_id} className={styles.commentThread}>
+                            <p>{thread.content}</p>
+                          </div>
+                        ))
+                      )}
                     </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                  ))
+                )}
+              </div>
+            ))
+          ) : (
+            <p>No posts to display.</p>
           )}
         </div>
       )}
     </div>
-  );  
+  );
 }
 
 export default Home;

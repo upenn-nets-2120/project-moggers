@@ -976,7 +976,7 @@ router.get('/getProfile', async (req, res) => {
             WHERE users.id = "${userid}" 
         `);
         var posts = await db1.send_sql(`
-            SELECT id, content, num_likes, timstamp
+            SELECT id, content, image, num_likes, timstamp
             FROM posts
             WHERE posts.author = "${userid}" 
         `);

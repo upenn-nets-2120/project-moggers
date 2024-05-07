@@ -48,8 +48,9 @@ const Login = () => {
   };
 
   return (
+    <div className={styles.body}>
     <div className={styles.login}>
-      <h1 style={{ 'textAlign': 'center'}}>Login</h1>
+      <h2 style={{ 'textAlign': 'center', marginTop: '10px'}}>Login</h2>
       {error && <div className={styles.error}>{error}</div>}
       <form onSubmit={handleSubmit} className={styles.loginform}>
         <div className={styles.formgroup}>
@@ -61,7 +62,9 @@ const Login = () => {
           <input type="password" id="password" name="password" value={formData.password} onChange={handleChange} />
         </div>
         <button type="submit" className={styles.loginbtn}>Login</button>
+        <p style={{ 'textAlign': 'center'}}>Don't have an account? <a href="/register">Sign up</a></p>
       </form>
+    </div>
     </div>
   );
 };

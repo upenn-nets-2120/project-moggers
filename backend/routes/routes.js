@@ -249,13 +249,6 @@ router.post('/addHashtag', async (req, res) => {
 
 router.post('/sendFriendRequest', async (req, res) => {
     try {
-        // let q13= db.create_tables(`CREATE TABLE IF NOT EXISTS friendRequests (
-        //     follower INT NOT NULL,
-        //     followed INT NOT NULL,
-        //     PRIMARY KEY (follower, followed),
-        //     FOREIGN KEY (follower) REFERENCES users(id),
-        //     FOREIGN KEY (followed) REFERENCES users(id)
-        // )`);
         var {follower, followed} = req.body;
         
         if (!follower || ! followed) {
@@ -295,14 +288,7 @@ router.post('/sendFriendRequest', async (req, res) => {
 
 router.get('/getFriendRequests', async (req, res) => {
     try {
-        // let q13= db.create_tables(`CREATE TABLE IF NOT EXISTS friendRequests (
-        //     follower INT NOT NULL,
-        //     followed INT NOT NULL,
-        //     PRIMARY KEY (follower, followed),
-        //     FOREIGN KEY (follower) REFERENCES users(id),
-        //     FOREIGN KEY (followed) REFERENCES users(id)
-        // )`);
-        var id = req.body.id; 
+        var id = req.query.id; 
         
         if (!id) {
             return res.status(400).json({error: 'Missing id for friend request'});
@@ -315,13 +301,13 @@ router.get('/getFriendRequests', async (req, res) => {
             return res.status(500).json({message: 'Could not find follower ID in users or found more than one.'});
         }
         var friendRequests = await db1.send_sql(`
-            SELECT u.id, u.username, u.firstName, u.lastName 
+            SELECT u.id, u.username, u.firstName, u.lastName, u.profilePhoto
             FROM users u 
             JOIN friendRequests f ON u.id = f.follower 
             WHERE f.followed = "${id}"
         `);
-        var followerIds = friendRequests.map(row => row.follower);
-       return res.status(200).json({ requests: followerIds });    
+        // var followerIds = friendRequests.map(row => row.follower);
+       return res.status(200).json({ friendRequests });    
         
     } catch (error) {
         console.error(error);
@@ -344,13 +330,13 @@ router.get('/getFollowers', async (req, res) => {
             return res.status(500).json({message: 'Could not find ID in users or found more than one.'});
         }
         var followers = await db1.send_sql(`
-            SELECT u.id, u.username, u.firstName, u.lastName 
+            SELECT u.id, u.username, u.firstName, u.lastName, u.profilePhoto
             FROM users u 
             JOIN friends f ON u.id = f.follower 
             WHERE f.followed = "${id}"
         `);
-        var followerIds = followers.map(row => row.follower);
-        return res.status(200).json({ followers: followerIds });
+        // var followerIds = followers.map(row => row.follower);
+        return res.status(200).json({ followers });
         
     } catch (error) {
         console.error(error);
@@ -372,13 +358,13 @@ router.get('/getFollowing', async (req, res) => {
             return res.status(500).json({message: 'Could not find ID in users or found more than one.'});
         }
         var following = await db1.send_sql(`
-            SELECT u.id, u.username, u.firstName, u.lastName 
+            SELECT u.id, u.username, u.firstName, u.lastName, u.profilePhoto
             FROM users u 
             JOIN friends f ON u.id = f.followed 
             WHERE f.follower = "${id}"
         `);
-        var followingIds = following.map(row => row.followed);
-       return res.status(200).json({ following: followingIds });
+        // var followingIds = following.map(row => row.followed);
+       return res.status(200).json({ following});
         
     } catch (error) {
         console.error(error);
@@ -406,7 +392,8 @@ router.get('/getFeed', async (req, res) => {
     console.log("hi userID: ", req.session.userId, "username: ", req.session.username);
     try {
         // const curr_id = req.session.user_id
-        const curr_id = 3;
+        // const curr_id = 3;
+        var curr_id = req.query.userId;
 
         if (curr_id == null) 
             return res.status(403).json({error: 'Not logged in.'}
@@ -477,9 +464,9 @@ router.post('/acceptFriendRequest', async (req, res) => {
         }
         await db1.send_sql(`DELETE FROM friendRequests WHERE follower = ${follower} AND followed = ${followed};`);
         await db1.insert_items(`INSERT INTO friends (follower, followed) VALUES ("${follower}", "${followed}")`);
-        return res.status(500).json({message: `Request accepted`});
+        return res.status(200).json({message: `Request accepted`});
         
-        } catch (error) {
+    } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
     }
@@ -533,6 +520,7 @@ router.get('/logout', (req, res) => {
 router.post('/createPost', async (req, res) => {
     try {
         var { author, content, image_url} = req.body;
+        console.log(req.body);
         if (!author || !content || !image_url) {
             return res.status(400).json({error: 'Create post missing arguments'});
         }

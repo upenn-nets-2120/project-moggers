@@ -41,10 +41,10 @@ function Home() {
       console.log("currUserId: ", currUserId);
       console.log(ReactSession.get("user_id"));
       try {
-        if (currUserId === -1 || currUserId === null) {
+        if (ReactSession.get("user_id") === -1 || ReactSession.get("user_id") === null) {
           navigate('/login');
         } else {
-          const response = await axios.get(`${rootURL}/getFeed`, { params: { userId: currUserId } } );
+          const response = await axios.get(`${rootURL}/getFeed`, { params: { userId: ReactSession.get("user_id") } } );
           setFeed(response.data.results);
         }
       } catch (error) {
@@ -80,7 +80,7 @@ function Home() {
         <div className={styles.feed}>
           <h1 style={{ textAlign: "center" }}>Feed</h1>
           {feed.length > 0 ? (
-            feed.map(post => (
+            feed.slice().reverse().map(post => (
               <div key={post.id} className={styles.post}>
                 <h3>{post.username}</h3>
                 <p>{post.content}</p>

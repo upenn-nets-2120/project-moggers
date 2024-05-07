@@ -1,0 +1,39 @@
+.friends-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-start;
+}
+
+.column {
+    flex: 1;
+    margin: 0 20px;
+    margin-top: 20px;
+    padding: 20px;
+    border-right: 2px solid #ccc;
+    box-sizing: border-box; 
+}
+
+.column:last-child {
+    border-right: none;
+}
+
+.section {
+    margin-bottom: 20px;
+}
+
+.section:last-child {
+    margin-bottom: 0;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.user-action-container {
+    display: flex;
+    align-items: center; 
+    justify-content: space-between;
+    margin-bottom: 10px; 
+}

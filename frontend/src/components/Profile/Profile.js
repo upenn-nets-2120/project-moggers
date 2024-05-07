@@ -1,45 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
 import config from '../../serverConfig.json';
 import styles from './Profile.module.css';
 import ReactSession from '../../ReactSession';
 
 function Profile() {
+  var { user_id } = useParams();
+  if (!user_id || user_id === -1 || user_id === "undefined") { 
+    user_id = ReactSession.get("user_id");
+  }
   const [profileData, setProfileData] = useState(null);
-  const [currUserId, setCurrUserId] = useState(null);
-  const [currUsername, setCurrUsername] = useState(null);
   const [profilePhoto, setProfilePhoto] = useState("https://www.pngitem.com/pimgs/m/146-1468479_my-profile-icon-blank-profile-picture-circle-hd.png");
 
   useEffect(() => {
-    // const setCurrUser = async () => {
-    //     try {
-            // const res = await axios.get(`${config.serverRootURL}/`);
-            // const user_id = res.data.user_id;
-            // const username = res.data.username;
-
-            // if (user_id !== -1) {
-            //   setCurrUserId(user_id);
-            //   setCurrUsername(username);
-            // }
-    //         setCurrUserId(ReactSession.get("user_id"));
-    //         setCurrUsername(ReactSession.get("username"));
-    //     } catch (error) {
-    //         console.log(error);
-    //     }
-    // }
-    // setCurrUser();
     const fetchProfile = async () => {
       try {
-        await setCurrUserId(ReactSession.get("user_id"));
-        await setCurrUsername(ReactSession.get("username"));
-        console.log("currUserId: ", currUserId);
         if (ReactSession.get("user_id") === -1) {
           console.error('Please log in to view profile');
           return;
         }
         const response = await axios.get(`${config.serverRootURL}/getProfile`, {
-          params: { user_id: ReactSession.get("user_id") }
+          params: { user_id: user_id }
           // params: {user_id: 2}
         });
         setProfileData(response.data);
@@ -93,12 +75,12 @@ function Profile() {
       {/* Render posts */}
       <hr></hr>
       <div className={styles.postsGrid}>
-        {profileData.posts.map(post => (
+        {profileData.posts.slice().reverse().map(post => (
           <div key={post.id} className={styles.post}>
-            <p>Content: {post.content}</p>
+            <p>{formatDate(post.timstamp)}</p>
             {post.image && <img src={post.image} alt="Post" style={{ width: '100%', height: 'auto' }} />}
-            <p>Date Posted: {formatDate(post.timstamp)}</p>
-            <p>Number of Likes: {post.num_likes}</p>
+            <p># of Likes: {post.num_likes}</p>
+            <p>{post.content}</p>
           </div>
         ))}
       </div>

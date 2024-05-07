@@ -19,7 +19,8 @@ function App() {
         <NavBar />
         <Routes>
           <Route path="/" element = {<Home/>}/>
-          <Route path="/profile" element={<Profile/>}/>
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/:user_id" element={<Profile />} />
           <Route path="/post" element={<Post/>}/>
           <Route path= "/chat" element ={<Chat/>}/>
           <Route path= "/friends" element={<Friends />} />

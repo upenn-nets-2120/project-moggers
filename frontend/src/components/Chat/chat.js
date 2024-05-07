@@ -84,11 +84,24 @@ const Chat = () => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [chatMenuInputClass, setChatMenuInputClass] = useState('chatMenuInput');
-
     const [sentMessage, setSentMessage] = useState(false);
     const [newFriendChatInvite, setNewFriendChatInvite] = useState("");
     const [inputPlaceholder, setInputPlaceholder] = useState("Search a friend username to invite for a new chat session");
     
+    var socket = io();
+    var room = false; // whether or not the client is in a room
+
+
+    // whenever someone sends a chat message
+    socket.on("chat message", obj => {
+        console.log("client received socket chat message");
+
+        // change in order to call the hook
+        setCurrentChatId(true);
+        setCurrentChatId(false);
+    })
+
+
     var currUserId = ReactSession.get("user_id");
     var currUsername = ReactSession.get("username");
     const chatBoxRef = useRef(null);
@@ -174,6 +187,11 @@ const Chat = () => {
                     // reset state of message
                     setNewMessage("");
                     setSentMessage(true);
+                    socket.emit("chat message", {
+                        text : newMessage,
+                        sender: currUserId,
+                        room : currentChatId
+                    });
                 } catch (error) {
                     console.log(error);
                 }
@@ -255,6 +273,23 @@ const Chat = () => {
 
     }
 
+    function handleSelectChat(chatId) {
+        const oldChatId = currentChatId;
+        setCurrentChatId(convo.chat_id);
+        const rooms = Object.keys(socket.rooms); // Get an array of room names
+        const isInRoom = rooms.length > 1; // If the socket is in any room other than its own room
+
+        if (!isInRoom) {
+            console.log('Socket is not currently in a room');
+            socket.emit("leave room", {
+                room : oldChatId
+            })
+        } 
+        socket.emit("join room", {
+            room : currentChatId
+        });
+    }
+
     return (
         <div className="chat">
             <div className="chatMenu">
@@ -268,7 +303,7 @@ const Chat = () => {
                     <button className="newChatButton" onClick={handleNewInvite}>Create Chat</button>
                 </div>
                 {conversations.map(convo => (
-                    <div key={convo.chat_id} onClick={() => setCurrentChatId(convo.chat_id)}>
+                    <div key={convo.chat_id} onClick={() => handleSelectChat(convo.chat_id)}>
                         <Conversation conversation={convo} />
                     </div>
                 ))}

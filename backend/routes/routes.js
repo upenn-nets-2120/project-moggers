@@ -404,6 +404,7 @@ router.get('/getTopTenHashtags', async (req, res) => {
 });
 
 router.get('/getFeed', async (req, res) => {
+    console.log("userID: ", req.session.userId, "username: ", req.session.username);
     if (req.session.userId && req.session.username) {
         try {
             // const curr_id = req.session.user_id
@@ -428,7 +429,7 @@ router.get('/getFeed', async (req, res) => {
             const followedUserIds = following.map(entry => entry.followed);
             followedUserIds.push(curr_id);
             const feed = await db1.send_sql(`
-                SELECT posts.id, posts.content, posts.image, posts.date_posted, posts.timstamp, users.username, users.firstName, users.lastName, users.profilePhoto, (
+                SELECT posts.id, posts.content, posts.image, posts.timstamp, users.username, users.firstName, users.lastName, users.profilePhoto, (
                     SELECT COUNT(*) 
                     FROM likes 
                     WHERE post_id = posts.id
@@ -445,7 +446,7 @@ router.get('/getFeed', async (req, res) => {
             res.status(500).json({ message: 'Internal server error' });
         }
     } else {
-        res.send('Please login to view this page.');
+        res.status(200).json({results: 'Please login to view this page.'});
     }
 });
 
@@ -981,7 +982,7 @@ router.get('/getProfile', async (req, res) => {
             WHERE users.id = "${userid}" 
         `);
         var posts = await db1.send_sql(`
-            SELECT id, content, date_posted, num_likes, timstamp
+            SELECT id, content, num_likes, timstamp
             FROM posts
             WHERE posts.author = "${userid}" 
         `);
@@ -1005,7 +1006,7 @@ router.get('/getProfile', async (req, res) => {
             "status": status1[0].status
         }];
 
-        return res.status(200).json({data1,posts});
+        return res.status(200).json({ data1, posts });
  
     } catch (error) {
         console.error(error);
@@ -1157,40 +1158,40 @@ const run = async () => {
     // Consuming
     
     console.log(`Following topic FederatedPosts`);
-    await  consumer.connect();
+    // await  consumer.connect();
     
-    await consumer.subscribe({ topic: 'FederatedPosts', fromBeginning: true });
+    // await consumer.subscribe({ topic: 'FederatedPosts', fromBeginning: true });
 
-    await consumer.run({
-        eachMessage: async ({ topic, partition, message }) => {
-            kafka_messages_federated_posts.push({
-                value: message.value.toString(),
-            });
-            console.log({
-                value: message.value.toString(),
-            });
-        },
-    });
+    // await consumer.run({
+    //     eachMessage: async ({ topic, partition, message }) => {
+    //         kafka_messages_federated_posts.push({
+    //             value: message.value.toString(),
+    //         });
+    //         console.log({
+    //             value: message.value.toString(),
+    //         });
+    //     },
+    // });
 };
 
 const run2 = async () => {
     // Consuming
    
     console.log(`Following topic Twitter-Kafka`);
-    await consumer2.connect();
+    // await consumer2.connect();
 
-    await consumer2.subscribe({ topic: 'Twitter-Kafka', fromBeginning: true });
+    // await consumer2.subscribe({ topic: 'Twitter-Kafka', fromBeginning: true });
 
-    await consumer2.run({
-        eachMessage: async ({ topic, partition, message }) => {
-            kafka_message1.push({
-                value: message.value.toString(),
-            });
-            console.log({
-                value: message.value.toString(),
-            });
-        },
-    });
+    // await consumer2.run({
+    //     eachMessage: async ({ topic, partition, message }) => {
+    //         kafka_message1.push({
+    //             value: message.value.toString(),
+    //         });
+    //         console.log({
+    //             value: message.value.toString(),
+    //         });
+    //     },
+    // });
 };
 
 

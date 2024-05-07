@@ -297,7 +297,7 @@ const Chat = () => {
                                 <div className='chatBoxTop' ref={chatBoxRef}>
                                     {messages.map(msg => (
                                         <div>
-                                            <Message msgContents={msg} currUser =  {currUserId}/>
+                                            <Message msgContents={msg} currUser = {currUserId}/>
                                         </div>
                                     ))}
                                 </div>

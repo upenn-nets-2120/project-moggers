@@ -66,9 +66,8 @@ function Profile() {
         {profileData.posts.map(post => (
         <div key={post.id} className="post">
             <p>Content: {post.content}</p>
-            <p>Date Posted: {post.date_posted}</p>
+            <p>Date Posted: {post.timstamp}</p>
             <p>Number of Likes: {post.num_likes}</p>
-            <p>Timestamp: {post.timestamp}</p>
         </div>
         ))}
       </div>

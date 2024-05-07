@@ -50,7 +50,7 @@ const Register = () => {
     try {
       // combine selected hashtags into comma separated string and add to formData
       const interests = selectedHashtags.join(',');
-      const formData = { ...formData, hashtags: interests, profilePhoto: s3FileName };
+      const formData = { ...formData, hashtags: interests, profilePhoto: `https://moggers-image-uploads.s3.amazonaws.com/${s3FileName}` };
       
       const response = await axios.post(`${config.serverRootURL}/register`, formData);
       console.log(response.data);

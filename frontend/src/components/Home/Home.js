@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import config from '../../serverConfig.json';
+import { useNavigate } from 'react-router-dom';
 import styles from './Home.module.css';
 
 function Home() {
@@ -9,6 +10,7 @@ function Home() {
   const [currUsername, setCurrUsername] = useState('abc');
   const [comments, setComments] = useState({});
   const [commentThreads, setCommentThreads] = useState({});
+  const navigate = useNavigate();
 
   const rootURL = config.serverRootURL;
 
@@ -32,6 +34,11 @@ function Home() {
     const fetchFeed = async () => {
       try {
         const response = await axios.get(`${rootURL}/getFeed`, { params: { userId: currUserId } } );
+        if (response.data.results === 'Please login to view this page.') {
+          console.log('Please login to view this page.');
+          navigate('/login');
+          return;
+        }
         setFeed(response.data.results);
       } catch (error) {
         console.error('Error fetching feed:', error);
@@ -61,37 +68,39 @@ function Home() {
   return (
     <div>
       <h1 style={{marginTop: "30px", textAlign: "center"}}>Feed</h1>
-      <div>
-        {feed.map(post => (
-          <div key={post.id} className="post">
-            <h3>{post.username}</h3>
-            <p>{post.content}</p>
-            {post.image && <img src={post.image} alt="Post" />}
-            <p>Likes: {post.like_count}</p>
-            <p>Posted on: {post.date_posted}</p>
-            <button onClick={() => handleGetComments(post.id)}>See Comments</button>
-            {comments[post.id] && (
-              <div>
-                {comments[post.id].map(comment => (
-                  <div key={comment.comment_id} className="comment">
-                    <p>{comment.content}</p>
-                    <button onClick={() => handleGetCommentThreads(comment.comment_id)}>See More</button>
-                    {commentThreads[comment.comment_id] && (
-                      <div>
-                        {commentThreads[comment.comment_id].map(thread => (
-                          <div key={thread.comment_id} className="comment-thread">
-                            <p>{thread.content}</p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
+      {feed && feed.length > 0 && (
+        <div>
+          {feed.map(post => (
+            <div key={post.id} className="post">
+              <h3>{post.username}</h3>
+              <p>{post.content}</p>
+              {post.image && <img src={post.image} alt="Post" />}
+              <p>Likes: {post.like_count}</p>
+              <p>Posted on: {post.timstamp}</p>
+              <button onClick={() => handleGetComments(post.id)}>See Comments</button>
+              {comments[post.id] && comments[post.id].length > 0 && (
+                <div>
+                  {comments[post.id].map(comment => (
+                    <div key={comment.comment_id} className="comment">
+                      <p>{comment.content}</p>
+                      <button onClick={() => handleGetCommentThreads(comment.comment_id)}>See More</button>
+                      {commentThreads[comment.comment_id] && (
+                        <div>
+                          {commentThreads[comment.comment_id].map(thread => (
+                            <div key={thread.comment_id} className="comment-thread">
+                              <p>{thread.content}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
       </div>
+      )}
     </div>
   );
 }

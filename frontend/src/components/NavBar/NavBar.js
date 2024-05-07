@@ -1,12 +1,13 @@
 import React from "react";
 import axios from 'axios';
 import { Link, useNavigate } from "react-router-dom";
+import config from '../../serverConfig.json';
 
 const NavBar = () => {
   const navigate = useNavigate();
   const handleLogout = async () => {
     try {
-      await axios.get("/logout");
+      await fetch(`${config.serverRootURL}/logout`, {method: 'GET'});
       navigate('/login');
     } catch (error) {
       console.error("Error logging out:", error);

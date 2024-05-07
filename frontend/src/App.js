@@ -20,8 +20,8 @@ function App() {
           <Route path="/profile" element={<Profile/>}/>
           <Route path="/post" element={<Post/>}/>
           <Route path= "/chat" element ={<Chat/>}/>
-          <Route path="/friends" element={<Friends />} />
-          <Route path="/register" element={<Register />}/>
+          <Route path= "/friends" element={<Friends />} />
+          <Route path= "/register" element={<Register />}/>
           <Route path = "/login" element ={<Login />} />
         </Routes>
       </React.Fragment>

@@ -1000,13 +1000,11 @@ router.get('/getProfile', async (req, res) => {
 
 router.get('/getUserName', async (req, res) => {
     try {
-       
         const username = req.query.username;
 
         if (!username) {
             return res.status(400).json({error: 'Missing username.'});
         }
-        
       
         var data1 = await db1.send_sql(`
         SELECT users.id 
@@ -1022,7 +1020,6 @@ router.get('/getUserName', async (req, res) => {
             return res.status(200).json({ data });
         }
        
- 
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
@@ -1037,13 +1034,10 @@ router.get('/getStatus', async (req, res) => {
         if (!userid) {
             return res.status(400).json({error: 'Missing username.'});
         }
-        
       
         var data = await db1.send_sql(`SELECT status FROM users WHERE id = "${userid}"`);
         console.log(data);
         return res.status(200).json({ data});
-       
-       
  
     } catch (error) {
         console.error(error);
@@ -1051,10 +1045,8 @@ router.get('/getStatus', async (req, res) => {
     };
 });
 
-
 router.get('/chatAlreadyExists', async (req, res) => {
     try {
-       
         const userid1 = req.query.user_id1;
         console.log(userid1);
         const userid2 = req.query.user_id2;
@@ -1062,8 +1054,6 @@ router.get('/chatAlreadyExists', async (req, res) => {
         if (!userid1 || !userid2) {
             return res.status(400).json({error: 'Missing id.'});
         }
-        
-        
       
         var status1 = await db1.send_sql(`
         SELECT DISTINCT chat_id
@@ -1089,10 +1079,7 @@ router.get('/chatAlreadyExists', async (req, res) => {
             return res.status(200).json({ status: false});
         } else {
             return res.status(200).json({ status: true});
-        }
-       
-       
-       
+        }   
  
     } catch (error) {
         console.error(error);
@@ -1103,15 +1090,12 @@ router.get('/chatAlreadyExists', async (req, res) => {
 
 router.get('/alreadySent', async (req, res) => {
     try {
-       
         const userid1 = req.query.user_id1;
         const userid2 = req.query.user_id2;
 
         if (!userid1 || !userid2) {
             return res.status(400).json({error: 'Missing id.'});
         }
-        
-        
       
         var status1 = await db1.send_sql(`
         SELECT *
@@ -1126,15 +1110,11 @@ router.get('/alreadySent', async (req, res) => {
             return res.status(200).json({ status: true});
         }
        
- 
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
     };
 });
-
-
-
 
 
 const run = async () => {

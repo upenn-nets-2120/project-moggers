@@ -7,44 +7,24 @@ import ReactSession from '../../ReactSession.js';
 
 function Home() {
   const [feed, setFeed] = useState([]);
-  const [currUserId, setCurrUserId] = useState(null);
-  const [currUsername, setCurrUsername] = useState(null);
   const [comments, setComments] = useState({});
   const [commentThreads, setCommentThreads] = useState({});
   const [errorMessage, setErrorMessage] = useState(null);
   const navigate = useNavigate();
+  var currUserId = ReactSession.get("user_id");
+  var currUsername = ReactSession.get("username");
 
   const rootURL = config.serverRootURL;
 
   useEffect(() => {
-    // const setCurrUser = async () => {
-        // try {
-            // const res = await axios.get(`${rootURL}/`);
-            // const user_id = res.data.user_id;
-            // const username = res.data.username;
-
-            // if (user_id !== -1) {
-            //     setCurrUserId(user_id);
-            //     setCurrUsername(username);
-            // }
-    //         setCurrUserId(ReactSession.get("user_id"));
-    //         setCurrUsername(ReactSession.get("username"));
-    //         console.log("currUserId: ", currUserId);
-    //     } catch (error) {
-    //         console.log(error);
-    //     }
-    // }
-    
     const fetchFeed = async () => {
-      setCurrUserId(ReactSession.get("user_id"));
-      setCurrUsername(ReactSession.get("username"));
-      console.log("currUserId: ", currUserId);
-      console.log(ReactSession.get("user_id"));
+      currUserId = ReactSession.get("user_id");
+      currUsername = ReactSession.get("username");
       try {
-        if (ReactSession.get("user_id") === -1 || ReactSession.get("user_id") === null) {
+        if (currUserId === -1 || currUserId === null) {
           navigate('/login');
         } else {
-          const response = await axios.get(`${rootURL}/getFeed`, { params: { userId: ReactSession.get("user_id") } } );
+          const response = await axios.get(`${rootURL}/getFeed`, { params: { userId: currUserId } } );
           setFeed(response.data.results);
         }
       } catch (error) {
@@ -53,6 +33,21 @@ function Home() {
     };
     fetchFeed();
   }, []);
+
+  const toggleLike = async (postId, hasLiked) => {
+    const endpoint = hasLiked ? '/removeLike' : '/addLike';
+    try {
+      await axios.post(`${rootURL}${endpoint}`, {
+        post_id: postId,
+        user_id: currUserId
+      });
+      const updatedFeed = await axios.get(`${rootURL}/getFeed`, { params: { userId: currUserId } });
+      setFeed(updatedFeed.data.results);
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      setErrorMessage('Error processing your like. Please try again.');
+    }
+  };
 
   const handleGetComments = async (postId) => {
     try {
@@ -82,10 +77,16 @@ function Home() {
           {feed.length > 0 ? (
             feed.slice().reverse().map(post => (
               <div key={post.id} className={styles.post}>
-                <h3>{post.username}</h3>
+                <div className={styles.postHeader}>
+                  <h3>{post.username}</h3>
+                  <button className={post.hasLiked ? styles.likedHeart : styles.heart} 
+                    onClick={() => toggleLike(post.id, post.hasLiked)}>
+                    {post.hasLiked ? '♥' : '♡'}
+                  </button>
+                </div>
                 <p>{post.content}</p>
                 {post.image && <img src={post.image} alt="Post" />}
-                <p>Likes: {post.like_count}</p>
+                <p style={{fontSize: '20px'}}>♥ {post.like_count}</p>
                 <p>Posted on: {new Date(post.timstamp).toLocaleDateString()}</p>
                 <button onClick={() => handleGetComments(post.id)}>See Comments</button>
                 {comments[post.id] && comments[post.id].length > 0 && (

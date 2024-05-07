@@ -82,6 +82,7 @@
 .noCurrentConvoText {
     position: absolute;
     top: 20%;
+    left: 5%;
     font-size: 40px;
     color: darkgray;
     text-align: center;

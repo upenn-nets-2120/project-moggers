@@ -79,8 +79,6 @@ const Chat = () => {
 
     const rootURL = config.serverRootURL;
 
-    const [currUserId, setCurrUserId] = useState(4);
-    const [currUsername, setCurrUsername] = useState("a");
     const [conversations, setConversations] = useState([]);
     const [currentChatId, setCurrentChatId] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -90,33 +88,10 @@ const Chat = () => {
     const [sentMessage, setSentMessage] = useState(false);
     const [newFriendChatInvite, setNewFriendChatInvite] = useState("");
     const [inputPlaceholder, setInputPlaceholder] = useState("Search a friend username to invite for a new chat session");
-
+    
+    var currUserId = ReactSession.get("user_id");
+    var currUsername = ReactSession.get("username");
     const chatBoxRef = useRef(null);
-
-    useEffect(() => {
-        const setCurrUser = async () => {
-            try {
-                console.log("km3s");                
-                // const res = await axios.get(`${rootURL}/`);
-
-                // const user_id = res.data.user_id;
-                // const username = res.data.username;
-                // console.log(user_id);
-                // console.log(username);
-
-                // if (!user_id) {
-                //     setCurrUserId(user_id);
-                //     setCurrUsername(username);
-                // }
-                setCurrUserId(ReactSession.get("user_id"));
-                setCurrUsername(ReactSession.get("username"));
-                console.log(currUserId);
-            } catch (error) {
-                console.log(error);
-            }
-        }
-        setCurrUser();
-    }, [])
 
     useEffect(() => {
         const getConversations = async () => {

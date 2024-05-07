@@ -7,12 +7,12 @@ import ReactSession from '../../ReactSession';
 
 function Profile() {
   const [profileData, setProfileData] = useState(null);
-  const [currUserId, setCurrUserId] = useState(-1);
-  const [currUsername, setCurrUsername] = useState('abc');
+  const [currUserId, setCurrUserId] = useState(null);
+  const [currUsername, setCurrUsername] = useState(null);
 
   useEffect(() => {
-    const setCurrUser = async () => {
-        try {
+    // const setCurrUser = async () => {
+    //     try {
             // const res = await axios.get(`${config.serverRootURL}/`);
             // const user_id = res.data.user_id;
             // const username = res.data.username;
@@ -21,17 +21,24 @@ function Profile() {
             //   setCurrUserId(user_id);
             //   setCurrUsername(username);
             // }
-            setCurrUserId(ReactSession.get("user_id"));
-            setCurrUsername(ReactSession.get("username"));
-        } catch (error) {
-            console.log(error);
-        }
-    }
-    setCurrUser();
+    //         setCurrUserId(ReactSession.get("user_id"));
+    //         setCurrUsername(ReactSession.get("username"));
+    //     } catch (error) {
+    //         console.log(error);
+    //     }
+    // }
+    // setCurrUser();
     const fetchProfile = async () => {
       try {
+        await setCurrUserId(ReactSession.get("user_id"));
+        await setCurrUsername(ReactSession.get("username"));
+        console.log("currUserId: ", currUserId);
+        if (ReactSession.get("user_id") === -1) {
+          console.error('Please log in to view profile');
+          return;
+        }
         const response = await axios.get(`${config.serverRootURL}/getProfile`, {
-          params: { user_id: currUserId }
+          params: { user_id: ReactSession.get("user_id") }
         });
         setProfileData(response.data);
       } catch (error) {

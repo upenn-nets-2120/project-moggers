@@ -38,7 +38,9 @@ const Login = () => {
       ReactSession.set("user_id", response.data.user_id);
       ReactSession.set("username", response.data.username);
       console.log(ReactSession.get("user_id"));
+      console.log(ReactSession.get("username"));
       navigate('/');
+      window.location.reload();
     } catch (error) {
       console.log(error);
       setError( 'An error occurred');

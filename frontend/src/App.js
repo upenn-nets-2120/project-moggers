@@ -14,7 +14,7 @@ import ReactSession from './ReactSession.js';
 
 function App() {
   return (
-      ReactSession.setStoreType("localStorage"),
+      ReactSession,
       <React.Fragment>
         <NavBar />
         <Routes>

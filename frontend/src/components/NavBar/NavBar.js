@@ -15,8 +15,9 @@ const NavBar = () => {
     try {
       await fetch(`${config.serverRootURL}/logout`, {method: 'GET'});
       ReactSession.set("user_id", -1);
-      ReactSession.set("username", ""); 
+      ReactSession.set("username", "");
       navigate('/login');
+      window.location.reload();
     } catch (error) {
       console.error("Error logging out:", error);
     }

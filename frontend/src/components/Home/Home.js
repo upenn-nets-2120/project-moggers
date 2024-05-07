@@ -7,8 +7,8 @@ import ReactSession from '../../ReactSession.js';
 
 function Home() {
   const [feed, setFeed] = useState([]);
-  const [currUserId, setCurrUserId] = useState(-1);
-  const [currUsername, setCurrUsername] = useState('abc');
+  const [currUserId, setCurrUserId] = useState(null);
+  const [currUsername, setCurrUsername] = useState(null);
   const [comments, setComments] = useState({});
   const [commentThreads, setCommentThreads] = useState({});
   const [errorMessage, setErrorMessage] = useState(null);
@@ -17,8 +17,8 @@ function Home() {
   const rootURL = config.serverRootURL;
 
   useEffect(() => {
-    const setCurrUser = async () => {
-        try {
+    // const setCurrUser = async () => {
+        // try {
             // const res = await axios.get(`${rootURL}/`);
             // const user_id = res.data.user_id;
             // const username = res.data.username;
@@ -27,16 +27,19 @@ function Home() {
             //     setCurrUserId(user_id);
             //     setCurrUsername(username);
             // }
-            setCurrUserId(ReactSession.get("user_id"));
-            setCurrUsername(ReactSession.get("username"));
-            console.log("currUserId: ", currUserId);
-        } catch (error) {
-            console.log(error);
-        }
-    }
-    setCurrUser();
+    //         setCurrUserId(ReactSession.get("user_id"));
+    //         setCurrUsername(ReactSession.get("username"));
+    //         console.log("currUserId: ", currUserId);
+    //     } catch (error) {
+    //         console.log(error);
+    //     }
+    // }
     
     const fetchFeed = async () => {
+      setCurrUserId(ReactSession.get("user_id"));
+      setCurrUsername(ReactSession.get("username"));
+      console.log("currUserId: ", currUserId);
+      console.log(ReactSession.get("user_id"));
       try {
         if (currUserId === -1) {
           setErrorMessage('Please log in to view feed');

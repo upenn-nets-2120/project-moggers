@@ -277,42 +277,53 @@ const Chat = () => {
     }
 
     return (
-        <>
-            <div className="chat">
-                <div className="chatMenu">
-                    <div className="chatMenuWrapper">
-                        <input placeholder={inputPlaceholder} className={chatMenuInputClass} value={newFriendChatInvite} onChange={handleInviteTextChange}/>
-                        {conversations.map(convo => (
-                            <div onClick={() => setCurrentChatId(convo.chat_id)}>
-                                <Conversation conversation={convo}/>
-                            </div>
-                        ))}
-                    </div>
-                    <button className="newChatButton" onClick={handleNewInvite}>Create New Chat</button>
+        <div className="chat">
+            <div className="chatMenu">
+                <div className="chatMenuWrapper">
+                    <input style={{width: "75%", marginLeft: "10px"}}
+                        placeholder={inputPlaceholder}
+                        className={chatMenuInputClass}
+                        value={newFriendChatInvite}
+                        onChange={handleInviteTextChange}
+                    />
+                    <button className="newChatButton" onClick={handleNewInvite}>Create Chat</button>
                 </div>
-                <div className="chatBox">
-                    <div className="chatBoxWrapper">
-                        {currentChatId ? 
-                            <>
-                                <div className='chatBoxTop' ref={chatBoxRef}>
-                                    {messages.map(msg => (
-                                        <div>
-                                            <Message msgContents={msg} currUser = {currUserId}/>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className='chatBoxBottom'>
-                                    <textarea className='chatMessageInput' placeholder="Enter a message..." value={newMessage} onChange={handleMessageChange}></textarea>
-                                    <button className='chatSubmitButton' onClick={sendMessage}>Send</button>
-                                </div>
-                            </> : <span className="noCurrentConvoText">
-                                Open a previous conversation or start a new one!
-                            </span>}
+                {conversations.map(convo => (
+                    <div key={convo.chat_id} onClick={() => setCurrentChatId(convo.chat_id)}>
+                        <Conversation conversation={convo} />
                     </div>
+                ))}
+            </div>
+            <div className="chatBox">
+                <div className="chatBoxWrapper">
+                    {currentChatId ? (
+                        <>
+                            <div className="chatBoxTop" ref={chatBoxRef}>
+                                {messages.map(msg => (
+                                    <div key={msg.message_id}>
+                                        <Message msgContents={msg} currUser={currUserId} />
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="chatBoxBottom">
+                                <textarea
+                                    className="chatMessageInput"
+                                    placeholder="Enter a message..."
+                                    value={newMessage}
+                                    onChange={handleMessageChange}
+                                />
+                                <button className="chatSubmitButton" onClick={sendMessage}>Send</button>
+                            </div>
+                        </>
+                    ) : (
+                        <span className="noCurrentConvoText">
+                            Open a previous conversation or start a new one!
+                        </span>
+                    )}
                 </div>
             </div>
-        </>
-    );
+        </div>
+    );    
 };
 
 export default Chat;

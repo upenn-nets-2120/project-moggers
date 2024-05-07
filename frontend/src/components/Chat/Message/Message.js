@@ -28,6 +28,9 @@ export default function Message({msgContents, currUser}) {
     var sender = msgContents.author;    
     const contents = msgContents.content;
     const timestamp = msgContents.timestamp;
+    const options = { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' };
+    const formattedTimestamp = new Date(timestamp).toLocaleString(undefined, options);
+ 
     let messageClass;
     if (currUser === sender) {
         messageClass = 'message own';
@@ -48,7 +51,7 @@ export default function Message({msgContents, currUser}) {
                     {contents}
                 </p>
             </div>
-            <div className="messageBottom">{timestamp}</div>
+            <div className="messageBottom">{formattedTimestamp}</div>
         </div>
     )
 }

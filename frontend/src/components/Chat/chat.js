@@ -270,7 +270,7 @@ const Chat = () => {
 
     // final step in handleNewInvite
     function sendNewChatReq(userId, friendId) {
-
+        
     }
 
     function handleSelectChat(chatId) {

@@ -315,6 +315,46 @@ router.get('/getFriendRequests', async (req, res) => {
     }
 });
 
+router.post('/acceptFriendRequest', async (req, res) => {
+    try {
+        var {follower, followed} = req.body;
+        
+        if (!follower || ! followed) {
+            return res.status(400).json({error: 'Missing friend request input'});
+        }
+
+        var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${follower}"`)
+        var count1res = count1[0]['COUNT(*)'];
+    
+        if (count1res != 1) {
+            return res.status(500).json({message: 'Could not find follower ID in users or found more than one.'});
+        }
+        var count2 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${followed}"`)
+        var count2res = count2[0]['COUNT(*)'];
+    
+        if (count2res != 1) {
+            return res.status(500).json({message: 'Could not find followed ID in users or found more than one.'});
+        }
+
+        var existingFriendRequest = await db1.send_sql(` SELECT COUNT(*) AS count  FROM friendRequests  WHERE follower = ${follower} AND followed = ${followed};  `);
+        if (existingFriendRequest[0].count == 0) {
+            return res.status(500).json({message: `Friend request does not exist`});
+        }
+        var existingFriends = await db1.send_sql(` SELECT COUNT(*) AS count  FROM friends  WHERE follower = ${follower} AND followed = ${followed};  `);
+        
+        if (existingFriends[0].count != 0) {
+            return res.status(500).json({message: `User is already followed`});
+        }
+        await db1.send_sql(`DELETE FROM friendRequests WHERE follower = ${follower} AND followed = ${followed};`);
+        await db1.insert_items(`INSERT INTO friends (follower, followed) VALUES ("${follower}", "${followed}")`);
+        return res.status(200).json({message: `Request accepted`});
+        
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 router.get('/getFollowers', async (req, res) => {
     try {
         var id = req.query.user_id;
@@ -426,46 +466,6 @@ router.get('/getFeed', async (req, res) => {
     
         return res.status(200).json({results: feed});
 
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-});
-
-router.post('/acceptFriendRequest', async (req, res) => {
-    try {
-        var {follower, followed} = req.body;
-        
-        if (!follower || ! followed) {
-            return res.status(400).json({error: 'Missing friend request input'});
-        }
-
-        var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${follower}"`)
-        var count1res = count1[0]['COUNT(*)'];
-    
-        if (count1res != 1) {
-            return res.status(500).json({message: 'Could not find follower ID in users or found more than one.'});
-        }
-        var count2 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${followed}"`)
-        var count2res = count2[0]['COUNT(*)'];
-    
-        if (count2res != 1) {
-            return res.status(500).json({message: 'Could not find followed ID in users or found more than one.'});
-        }
-
-        var existingFriendRequest = await db1.send_sql(` SELECT COUNT(*) AS count  FROM friendRequests  WHERE follower = ${follower} AND followed = ${followed};  `);
-        if (existingFriendRequest[0].count == 0) {
-            return res.status(500).json({message: `Friend request does not exist`});
-        }
-        var existingFriends = await db1.send_sql(` SELECT COUNT(*) AS count  FROM friends  WHERE follower = ${follower} AND followed = ${followed};  `);
-        
-        if (existingFriends[0].count != 0) {
-            return res.status(500).json({message: `User is already followed`});
-        }
-        await db1.send_sql(`DELETE FROM friendRequests WHERE follower = ${follower} AND followed = ${followed};`);
-        await db1.insert_items(`INSERT INTO friends (follower, followed) VALUES ("${follower}", "${followed}")`);
-        return res.status(200).json({message: `Request accepted`});
-        
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
@@ -1114,6 +1114,130 @@ router.get('/alreadySent', async (req, res) => {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
     };
+});
+
+router.post('/sendChatRequest', async (req, res) => {
+    try {
+        var {sender, receiver} = req.body;
+        
+        if (!sender || ! receiver) {
+            return res.status(400).json({error: 'Missing chat request input'});
+        }
+
+        var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${sender}"`)
+        var count1res = count1[0]['COUNT(*)'];
+    
+        if (count1res != 1) {
+            return res.status(500).json({message: 'Could not find sender ID in users or found more than one.'});
+        }
+        var count2 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${receiver}"`)
+        var count2res = count2[0]['COUNT(*)'];
+    
+        if (count2res != 1) {
+            return res.status(500).json({message: 'Could not find receiver ID in users or found more than one.'});
+        }
+           
+        var existingRequest = await db1.send_sql(` SELECT COUNT(*) AS count FROM chatRequests  WHERE sender = ${sender} AND receiver = ${receiver};  `);
+        
+        if (existingRequest[0].count != 0) {
+            return res.status(500).json({message: `Chat request is already sent`});
+        }
+
+
+        var existingRequest2 = await db1.send_sql(` SELECT COUNT(*) AS count FROM chatRequests  WHERE sender = ${receiver} AND receiver = ${sender};  `);
+        
+        if (existingRequest2[0].count != 0) {
+            return res.status(500).json({message: `Your friend already sent you a request, please accept.`});///////////////////
+        }
+
+
+
+
+        // var existingChatRequest = await db1.send_sql(` SELECT COUNT(*) AS count FROM chatRequests  WHERE sender = ${follower} AND followed = ${followed};  `);
+        // if (existingChatRequest[0].count != 0) {
+        //     return res.status(500).json({message: `Request Exist`});
+        // }
+        await db1.insert_items(`INSERT INTO chatRequests (sender, receiver) VALUES ("${sender}", "${receiver}")`);
+        return res.status(200).json({message: `Request sent`});
+        
+        } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+router.get('/getChatRequests', async (req, res) => {
+    try {
+        var id = req.query.id; 
+        
+        if (!id) {
+            return res.status(400).json({error: 'Missing id for friend request'});
+        }
+
+        var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${id}"`)
+        var count1res = count1[0]['COUNT(*)'];
+    
+        if (count1res != 1) {
+            return res.status(500).json({message: 'Could not find user ID in users or found more than one.'});
+        }
+        var chatRequests = await db1.send_sql(`
+            SELECT u.id, u.username, u.firstName, u.lastName, u.profilePhoto
+            FROM users u 
+            JOIN chatRequests f ON u.id = f.sender 
+            WHERE f.receiver = "${id}"
+        `);
+
+        // var followerIds = friendRequests.map(row => row.follower);
+       return res.status(200).json({ chatRequests });    
+        
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+router.post('/acceptChatRequest', async (req, res) => {
+    try {
+        var {sender, receiver} = req.body;
+        
+        if (!sender || ! receiver) {
+            return res.status(400).json({error: 'Missing chat request input'});
+        }
+
+        var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${sender}"`)
+        var count1res = count1[0]['COUNT(*)'];
+    
+        if (count1res != 1) {
+            return res.status(500).json({message: 'Could not find user ID in users or found more than one.'});
+        }
+        var count2 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${sender}"`)
+        var count2res = count2[0]['COUNT(*)'];
+    
+        if (count2res != 1) {
+            return res.status(500).json({message: 'Could not find user ID in users or found more than one.'});
+        }
+
+        var existingChatRequest = await db1.send_sql(` SELECT COUNT(*) AS count  FROM chatRequests  WHERE sender = ${sender} AND receiver = ${receiver};  `);
+        if (existingChatRequest[0].count == 0) {
+            return res.status(500).json({message: `Friend request does not exist`});
+        }
+        // var existingFriends = await db1.send_sql(` SELECT COUNT(*) AS count  FROM chatRequests  WHERE sender = ${sender} AND receiver = ${receiver};  `);
+        
+        // if (existingFriends[0].count != 0) {
+        //     return res.status(500).json({message: `User is already followed`});
+        // }
+        await db1.send_sql(`DELETE FROM chatRequests WHERE sender = ${sender} AND receiver = ${receiver};`);
+        
+        await db1.insert_items(`INSERT INTO chats (name) VALUES ("${sender}/${receiver} Chat")`);
+        const new_chat_id = -1;//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        await db1.insert_items(`INSERT INTO user_chats (user_id, chat_id) VALUES ("${sender}", "${new_chat_id}")`);
+        await db1.insert_items(`INSERT INTO user_chats (user_id, chat_id) VALUES ("${receiver}", "${new_chat_id}")`);
+        return res.status(200).json({message: `Request accepted`});
+        
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
 });
 
 

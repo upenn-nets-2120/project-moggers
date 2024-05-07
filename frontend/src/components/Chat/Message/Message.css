@@ -6,11 +6,12 @@
 }
 
 .messageTop {
-    display:flex;
+    display: flex;
+    margin-top: 0px;
     margin-bottom: 0px;
 }
 
-.messageImg{
+.messageImg {
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -25,6 +26,12 @@
     background-color : lightgray;
     color: black;
     max-width: 300px;
+    margin-bottom: 3px;
+}
+
+.messageName {
+    margin-bottom: 3px;
+    margin-top: 2px;
 }
 
 .messageBottom {
@@ -33,7 +40,7 @@
     margin-bottom: 8px;
 }
 
-.message.own{
+.message.own {
     align-items: flex-end;
 }
 
@@ -42,8 +49,7 @@
     color: white;
 }
 
-
-.message.system{
+.message.system {
     display: flex;
     justify-content: center; 
     align-items: center;

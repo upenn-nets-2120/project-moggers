@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCookies } from 'react-cookie';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import config from '../../serverConfig.json';
 import styles from './Register.module.css';
+import ReactSession from '../../ReactSession';
 
 const defaultTopHashtags = [
   'nature',
@@ -22,7 +23,7 @@ const Register = () => {
   const [step, setStep] = useState(1);
   const [selectedHashtags, setSelectedHashtags] = useState([]);
   const [customHashtag, setCustomHashtag] = useState('');
-  const [cookies, setCookie] = useCookies(['user_id', 'username']);
+  // const [cookies, setCookie] = useCookies(['user_id', 'username']);
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -54,8 +55,11 @@ const Register = () => {
       
       const response = await axios.post(`${config.serverRootURL}/register`, formData);
       console.log(response.data);
-      setCookie('user_id', response.data.user_id, { path: `${config.serverRootURL}/` });
-      setCookie('username', response.data.username, { path: `${config.serverRootURL}/` });
+      // setCookie('user_id', response.data.user_id, { path: `${config.serverRootURL}/` });
+      // setCookie('username', response.data.username, { path: `${config.serverRootURL}/` });
+      ReactSession.set("user_id", response.data.user_id);
+      ReactSession.set("username", response.data.username);
+      console.log(ReactSession.get("user_id"));
       navigate('/login');
     } catch (error) {
       setError(error.response.data.error || 'An error occurred');

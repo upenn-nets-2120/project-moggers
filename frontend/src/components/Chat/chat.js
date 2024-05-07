@@ -9,6 +9,7 @@ import { useContext } from 'react';
 
 import Conversation from "./Conversations/Conversations.js";
 import Message from "./Message/Message.js";
+import ReactSession from "../../ReactSession.js";
 
 
 
@@ -96,17 +97,20 @@ const Chat = () => {
         const setCurrUser = async () => {
             try {
                 console.log("km3s");                
-                const res = await axios.get(`${rootURL}/`);
+                // const res = await axios.get(`${rootURL}/`);
 
-                const user_id = res.data.user_id;
-                const username = res.data.username;
-                console.log(user_id);
-                console.log(username);
+                // const user_id = res.data.user_id;
+                // const username = res.data.username;
+                // console.log(user_id);
+                // console.log(username);
 
-                if (!user_id) {
-                    setCurrUserId(user_id);
-                    setCurrUsername(username);
-                }
+                // if (!user_id) {
+                //     setCurrUserId(user_id);
+                //     setCurrUsername(username);
+                // }
+                setCurrUserId(ReactSession.get("user_id"));
+                setCurrUsername(ReactSession.get("username"));
+                console.log(currUserId);
             } catch (error) {
                 console.log(error);
             }

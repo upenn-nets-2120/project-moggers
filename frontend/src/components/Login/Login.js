@@ -3,6 +3,7 @@ import { useCookies } from 'react-cookie';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
+import ReactSession from '../../ReactSession';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -31,9 +32,12 @@ const Login = () => {
       console.log(formData);
       console.log("jhghjjjjjjj");
       const response = await axios.post('http://localhost:8080/login', formData);
-      console.log(response.username);
-      document.cookie = `user_id=${response.data.user_id}; path=http://localhost:8080/`;
-      document.cookie = `username=${response.data.username}; path=http://localhost:8080/`;
+      console.log(response);
+      // document.cookie = `user_id=${response.data.user_id}; path=http://localhost:8080/`;
+      // document.cookie = `username=${response.data.username}; path=http://localhost:8080/`;
+      ReactSession.set("user_id", response.data.user_id);
+      ReactSession.set("username", response.data.username);
+      console.log(ReactSession.get("user_id"));
       navigate('/');
     } catch (error) {
       console.log(error);

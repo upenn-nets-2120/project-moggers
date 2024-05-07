@@ -10,9 +10,11 @@ import Home from "./components/Home/Home.js";
 import Friends from "./components/Friends/Friends.js";
 import Profile from "./components/Profile/Profile.js";
 import Post from "./components/Post/Post.js";
+import ReactSession from './ReactSession.js';
 
 function App() {
   return (
+      ReactSession.setStoreType("localStorage"),
       <React.Fragment>
         <NavBar />
         <Routes>

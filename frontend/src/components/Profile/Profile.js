@@ -3,23 +3,26 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import config from '../../serverConfig.json';
 import styles from './Profile.module.css';
+import ReactSession from '../../ReactSession';
 
 function Profile() {
   const [profileData, setProfileData] = useState(null);
-  const [currUserId, setCurrUserId] = useState(2);
+  const [currUserId, setCurrUserId] = useState(-1);
   const [currUsername, setCurrUsername] = useState('abc');
 
   useEffect(() => {
     const setCurrUser = async () => {
         try {
-            const res = await axios.get(`${config.serverRootURL}/`);
-            const user_id = res.data.user_id;
-            const username = res.data.username;
+            // const res = await axios.get(`${config.serverRootURL}/`);
+            // const user_id = res.data.user_id;
+            // const username = res.data.username;
 
-            if (user_id !== -1) {
-                setCurrUserId(user_id);
-                setCurrUsername(username);
-            }
+            // if (user_id !== -1) {
+            //   setCurrUserId(user_id);
+            //   setCurrUsername(username);
+            // }
+            setCurrUserId(ReactSession.get("user_id"));
+            setCurrUsername(ReactSession.get("username"));
         } catch (error) {
             console.log(error);
         }
@@ -39,28 +42,27 @@ function Profile() {
   }, []);
 
   if (!profileData) {
-    return <div>Loading...</div>;
+    return <div style={{textAlign: "center"}}>Loading...</div>;
   }
 
   return (
     <div className={styles.container}>
       <div className={styles.profileInfo}>
-        <h1>Profile</h1>
-        <p>Username: {profileData.data1[0].username}</p>
-        <p>First Name: {profileData.data1[0].firstName}</p>
-        <p>Last Name: {profileData.data1[0].lastName}</p>
-        <p>Affiliation: {profileData.data1[0].affiliation}</p>
-        <p>Profile Photo: {profileData.data1[0].profilePhoto}</p>
-        <p>Hashtags: {profileData.data1[0].hashtags}</p>
-        <p>Birthday: {profileData.data1[0].birthday}</p>
-        <p>Interests: {profileData.data1[0].interests}</p>
-        <p>Followers: <Link to="/friends">{profileData.data1[0].followers}</Link></p>
-        <p>Following: <Link to="/friends">{profileData.data1[0].following}</Link></p>
-        <p>Status: {profileData.data1[0].status}</p>
+        <h1 style={{textAlign: "center"}}><b>Profile</b></h1>
+        <p><b>Username</b>: {profileData.data1[0].username}</p>
+        <p><b>First Name</b>: {profileData.data1[0].firstName}</p>
+        <p><b>Last Name</b>: {profileData.data1[0].lastName}</p>
+        <p><b>Affiliation</b>: {profileData.data1[0].affiliation}</p>
+        <p><b>Profile Photo</b>: {profileData.data1[0].profilePhoto}</p>
+        <p><b>Hashtags</b>: {profileData.data1[0].hashtags}</p>
+        <p><b>Birthday</b>: {profileData.data1[0].birthday}</p>
+        <p><b>Interests</b>: {profileData.data1[0].interests}</p>
+        <p><b>Followers</b>: <Link to="/friends">{profileData.data1[0].followers}</Link></p>
+        <p><b>Following</b>: <Link to="/friends">{profileData.data1[0].following}</Link></p>
       </div>
 
       {/* Render posts */}
-      <h2>Posts</h2>
+      <h1>Posts</h1>
       <div className={styles.postsGrid}>
         {/* Display posts in a grid */}
         {profileData.posts.map(post => (

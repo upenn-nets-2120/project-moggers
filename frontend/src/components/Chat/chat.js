@@ -277,14 +277,14 @@ const Chat = () => {
                 return;
             }
         };
-        sendChatRequestRequest();
+        sendChatRequest();
     }
 
    
 
     function handleSelectChat(chatId) {
         const oldChatId = currentChatId;
-        setCurrentChatId(convo.chat_id);
+        setCurrentChatId(chatId);
         const rooms = Object.keys(socket.rooms); // Get an array of room names
         const isInRoom = rooms.length > 1; // If the socket is in any room other than its own room
 

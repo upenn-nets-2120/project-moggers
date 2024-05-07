@@ -270,8 +270,17 @@ const Chat = () => {
 
     // final step in handleNewInvite
     function sendNewChatReq(userId, friendId) {
-        
+        const sendChatRequest = async () => {
+            const res = await axios.post(`${rootURL}/sendChatRequest`, { sender: userId, receiver: friendId });
+            if (res.data.message == "Your friend already sent you a request, please accept.") {
+                //////////////////////////// DO STUFF///////////////////////////////////////////////////////////////////////
+                return;
+            }
+        };
+        sendChatRequestRequest();
     }
+
+   
 
     function handleSelectChat(chatId) {
         const oldChatId = currentChatId;

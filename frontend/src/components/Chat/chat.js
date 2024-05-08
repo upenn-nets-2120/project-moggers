@@ -1,6 +1,6 @@
 import "./chat.css"
 import axios from 'axios';
-import io from 'socket.io-client';
+import {io} from 'socket.io-client';
 import config from '../../serverConfig.json';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -14,68 +14,7 @@ import ReactSession from "../../ReactSession.js";
 
 
 const Chat = () => {
-    ////////////////////////////////////////////////////////////////// OLD STUFF////////////
-    // const [socket, setSocket] = useState(null);
-    // const [id, setId] = useState(Math.random());
-    // const [room, setRoom] = useState(false);
-    // const [inputValue, setInputValue] = useState('');
-
-    // useEffect(() => {
-    //     const newSocket = io();
-    //     setSocket(newSocket);
-
-    //     return () => {
-    //         newSocket.disconnect();
-    //     };
-    // }, []);
-
-    // useEffect(() => {
-    //     if (socket) {
-    //         socket.on('chat message', (msg) => {
-    //             setMessages((prevMessages) => [...prevMessages, msg]);
-    //         });
-    //     }
-    // }, [socket]);
-
-    // const sendChat = () => {
-    //     if (inputValue.trim() !== '') {
-    //         socket.emit('chat message', {
-    //             text: inputValue.trim(),
-    //             sender: id,
-    //             room: 1
-    //         });
-
-    //         setInputValue('');
-    //     }
-    // };
-
-    // const handleRoomButtonClick = () => {
-    //     if (!room) {
-    //         axios.post('/join', { room: 1 })
-    //             .then((response) => {
-    //                 if (response.data.success) {
-    //                     setRoom(true);
-    //                     socket.emit('join room', { sender: id, room: 1 });
-    //                 }
-    //             })
-    //             .catch((error) => {
-    //                 console.error('Error joining room:', error);
-    //             });
-    //     } else {
-    //         axios.post('/leave', { room: 1 })
-    //             .then((response) => {
-    //                 if (response.data.success) {
-    //                     setRoom(false);
-    //                     socket.emit('leave room', { sender: id, room: 1 });
-    //                 }
-    //             })
-    //             .catch((error) => {
-    //                 console.error('Error leaving room:', error);
-    //             });
-    //     }
-    // };
-
-        ////////////////////////////////////////////////////////////////// OLD STUFF////////////
+  
 
     const rootURL = config.serverRootURL;
 
@@ -89,7 +28,10 @@ const Chat = () => {
     const [inputPlaceholder, setInputPlaceholder] = useState("Search a friend username to invite for a new chat session");
 
     // var socket = io.connect();
-    var socket = io("ws://localhost:3000");
+    // const socketURL = `ws://${config.serverRootURL}`;
+
+
+    var socket = io("ws://localhost:8080");
     var room = false; // whether or not the client is in a room
   
     

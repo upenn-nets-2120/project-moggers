@@ -23,13 +23,11 @@ app.use(session({
 }));
 
 app.use(userRouter);
-console.log("ok!222222222");
+
 const server = http.createServer(app); // Create an HTTP server with Express app
 
 const io = require("socket.io")(server); // Pass the HTTP server to socket.io
 
-
-console.log("ok!!!11111");
 io.on("connection", function (socket) {
   console.log("Socket: a user connected");
 
@@ -45,8 +43,6 @@ io.on("connection", function (socket) {
     socket.leave(obj.room);
   });
 });
-
-console.log("ok3333");
 
 server.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

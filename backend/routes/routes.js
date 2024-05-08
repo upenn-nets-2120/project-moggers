@@ -412,6 +412,11 @@ router.get('/getFollowing', async (req, res) => {
     }
 });
 
+// get recommendations for people to follow
+router.get('/getRecommendations', async (req, res) => {
+    return res.status(200).json({ message: 'Not implemented'}); 
+});
+
 router.get('/getTopTenHashtags', async (req, res) => {
     try {
         var topTen = await db1.send_sql(`SELECT name, COUNT(*) AS frequency

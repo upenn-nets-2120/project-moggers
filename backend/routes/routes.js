@@ -1016,6 +1016,35 @@ router.get('/getUserName', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     };
 });
+
+
+router.get('/getIdGivenUsername', async (req, res) => {
+    try {
+        const id = req.query.id;
+
+        if (!id) {
+            return res.status(400).json({error: 'Missing id.'});
+        }
+      
+        var data1 = await db1.send_sql(`
+        SELECT users.username
+        FROM users 
+        WHERE users.id = "${id}"
+        `);
+        var data;
+        
+        if (data1.length === 0) {
+            return res.status(200).json({ data: { username: 'fail' } });
+        } else {
+             data = data1[0];
+            return res.status(200).json({ data });
+        }
+       
+    } catch (error) {
+       
+        res.status(500).json({ message: 'Internal server error' });
+    };
+});
 router.get('/getStatus', async (req, res) => {
     try {
        

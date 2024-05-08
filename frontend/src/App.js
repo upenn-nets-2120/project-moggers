@@ -12,7 +12,7 @@ import Profile from "./components/Profile/Profile.js";
 import Post from "./components/Post/Post.js";
 import ReactSession from './ReactSession.js';
 import PostDetails from './components/Post/PostDetails.js';
-import ChangeProfile from "./components/ChangeProfile/ChangeProfile.js";
+import ChangeProfile from './components/ChangeProfile/ChangeProfile.js';
 
 
 function App() {
@@ -23,7 +23,7 @@ function App() {
         <Routes>
           <Route path="/" element = {<Home/>}/>
           <Route path="/profile" element={<Profile />} />
-          <Route path="changeProfile" element {<ChangeProfile />} />
+          <Route path="changeProfile" element={<ChangeProfile />} />
           <Route path="/profile/:user_id" element={<Profile />} />
           <Route path="/post/:postId" element={<PostDetails />} />
           <Route path="/post" element={<Post/>}/>

@@ -127,7 +127,7 @@ const Register = () => {
         console.error('Error uploading profile photo:', error);
       };
 
-      const response = await axios.post(`${config.serverRootURL}/find_similar`, {
+      const response = await axios.post(`${config.serverRootURL}/findMatches`, {
         fileName: signedUrlResponse.data.fileName
       });
       console.log(response.data);

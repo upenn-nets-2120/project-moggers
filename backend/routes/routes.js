@@ -56,16 +56,17 @@ const fs = require('fs');
 const tf = require('@tensorflow/tfjs-node');
 const faceapi = require('@vladmandic/face-api');
 const axios = require('axios');
+let collection;
 
 
 initializeFaceModels().then(async () => {
 
-  const collection = await client.getOrCreateCollection({
-    name: "face-api",
-    embeddingFunction: null,
-    // L2 here is squared L2, not Euclidean distance
-    metadata: { "hnsw:space": "l2" },
-  });
+    collection = await client.getOrCreateCollection({
+        name: "face-api",
+        embeddingFunction: null,
+        // L2 here is squared L2, not Euclidean distance
+        metadata: { "hnsw:space": "l2" },
+    });
 
   console.info("Looking for files");
   const promises = [];

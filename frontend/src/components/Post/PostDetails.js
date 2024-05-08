@@ -201,7 +201,7 @@ function PostDetails({ post, onClose }) {
                     </div>
                 ))
             )}
-            <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', position: 'absolute', top: '93%', width: '95%'}}>
+            <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', position: 'absolute', top: '90%', width: '95%'}}>
                 <input type="text" value={comment} onChange={handleCommentChange}
                     placeholder="Enter your comment..."
                     className={styles.commentInput}/>

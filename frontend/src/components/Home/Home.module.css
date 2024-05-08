@@ -51,6 +51,18 @@ img {
   justify-content: space-between;
 }
 
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0; 
+}
+
+.backArrow {
+  cursor: pointer;
+  margin-right: 10px; 
+}
+
 /* .postContent {
   display: flex;
   align-items: left;

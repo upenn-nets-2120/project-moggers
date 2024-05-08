@@ -101,6 +101,8 @@
     justify-content: center;
     margin-bottom: 0;
     margin-top: 0;
+    margin-left: 20px;
+    padding: 5px;
     padding-bottom: 0;
   }
 
@@ -111,7 +113,7 @@
     offset: 50%;
     width: 50%;
     height: 85%;
-    background-color: rgba(0, 0, 0, 0.5); 
+    background-color: None; 
     border-radius: 8px;
     display: flex;
     justify-content: center;

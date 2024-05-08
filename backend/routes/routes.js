@@ -5,7 +5,8 @@ const { v4: uuidv4 } = require('uuid');
 const {S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { fromIni } = require("@aws-sdk/credential-provider-ini");
-require('dotenv').config();
+const openai = require('openai');
+const dotenv = require('dotenv').config();
 
 var db = require('../models/create_tables.js');
 const db1 = require('../models/db_access');
@@ -101,8 +102,6 @@ initializeFaceModels().then(async () => {
 
 });
 
-
-
 router.post('/findMatches', async (req, res) => {
     try {
         
@@ -116,10 +115,6 @@ router.post('/findMatches', async (req, res) => {
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
-  
-
-
-
 
 // all functions for handling data, calling the database, post/get requests, etc.
 router.get('/', (req, res) => {
@@ -585,6 +580,78 @@ router.get('/getFeed', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
+router.get('/searchPosts', async (req, res) => {
+    try {
+        const query = req.query.q;
+
+        const relevantPosts = await filterPostsByQuery(query);
+
+        res.status(200).json({ results: relevantPosts });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+async function filterPostsByQuery(query) {
+    try {
+        const allPosts = await db1.send_sql(`
+            SELECT posts.id, posts.content, posts.image, posts.timstamp, users.username, users.firstName, users.lastName, users.profilePhoto, (
+                SELECT COUNT(*) 
+                FROM likes 
+                WHERE post_id = posts.id
+            ) AS like_count
+            FROM posts 
+            JOIN users ON posts.author = users.id
+        `);
+        const filteredPosts = []; 
+        for (const post of allPosts) {
+            const isRelevant = await isPostRelevant(post.content, query);
+            if (isRelevant) {
+                filteredPosts.push(post);
+            }
+        }
+        return filteredPosts;
+    } catch (error) {
+        console.error('Error filtering posts:', error);
+        return [];
+    };
+}
+
+async function isPostRelevant(postContent, query) {
+    try {
+        const openaiApiKey = process.env.OPENAI_API_KEY;
+        const openaiClient = new openai.OpenAI(openaiApiKey);
+        const completion = await openaiClient.chat.completions.create({
+            messages: [{ role: "system", content: `You are a helpful assistant. Respond with 1 if the given post content is relevant to the given query, and respond with 0 if the given post content is not relevant to given query. Do not give any other response. If you do not know what the post content means, just respond with 0.` }],
+            messages: [{ role: "user", content: ` Respond with 1 if the given post content is relevant to the given query, and respond with 0 if the given post content is not relevant to given query. Do not give any other response. If you do not know what the post content means, just respond with 0. Post content: ${postContent}. Query: ${query}` }],
+            model: "gpt-4-turbo-preview",
+        });
+
+        console.log(completion.choices[0]);
+
+        // if 1 is in the response, then the post is relevant
+        if (completion.choices[0].message.content.includes('1')) {
+            return true;
+        } else {   
+            return false;
+        }
+
+        // const response = await openaiClient.search({
+        //     documents: [postContent], 
+        //     query: query,
+        //     max_rerank: 1
+        // });
+
+        // const relevantPosts = filteredPosts.data;
+
+        // return relevantPosts;
+    } catch (error) {
+        console.error('Error checking if post is relevant:', error);
+        return false;
+    }
+}
 
 // POST /login
 router.post('/login', async (req, res) => {
@@ -1377,9 +1444,6 @@ router.post('/sendChatRequest', async (req, res) => {
             return res.status(200).json({message: `Your friend already sent you a request, please accept.`});///////////////////
         }
 
-
-
-
         // var existingChatRequest = await db1.send_sql(` SELECT COUNT(*) AS count FROM chatRequests  WHERE sender = ${follower} AND followed = ${followed};  `);
         // if (existingChatRequest[0].count != 0) {
         //     return res.status(500).json({message: `Request Exist`});
@@ -1387,7 +1451,7 @@ router.post('/sendChatRequest', async (req, res) => {
         await db1.insert_items(`INSERT INTO chatRequests (sender, receiver) VALUES ("${sender}", "${receiver}")`);
         return res.status(200).json({message: `Request sent`});
         
-        } catch (error) {
+    } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
     }

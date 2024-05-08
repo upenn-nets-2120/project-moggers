@@ -1,0 +1,8 @@
+edu/upenn/cis/nets2120/hw3/livy/SocialRankJob.class
+edu/upenn/cis/nets2120/hw3/livy/MyPair.class
+edu/upenn/cis/nets2120/config/Config.class
+edu/upenn/cis/nets2120/hw3/SparkJob.class
+edu/upenn/cis/nets2120/hw3/ComputeRanks.class
+edu/upenn/cis/nets2120/engine/SparkConnector.class
+edu/upenn/cis/nets2120/hw3/livy/ComputeRanksLivy.class
+edu/upenn/cis/nets2120/hw3/local/ComputeRanksLocal.class

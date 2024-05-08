@@ -1,0 +1,8 @@
+/nets2120/project-moggers/backend/socialrank/src/main/java/edu/upenn/cis/nets2120/hw3/livy/SocialRankJob.java
+/nets2120/project-moggers/backend/socialrank/src/main/java/edu/upenn/cis/nets2120/config/Config.java
+/nets2120/project-moggers/backend/socialrank/src/main/java/edu/upenn/cis/nets2120/hw3/SparkJob.java
+/nets2120/project-moggers/backend/socialrank/src/main/java/edu/upenn/cis/nets2120/hw3/local/ComputeRanksLocal.java
+/nets2120/project-moggers/backend/socialrank/src/main/java/edu/upenn/cis/nets2120/hw3/ComputeRanks.java
+/nets2120/project-moggers/backend/socialrank/src/main/java/edu/upenn/cis/nets2120/hw3/livy/ComputeRanksLivy.java
+/nets2120/project-moggers/backend/socialrank/src/main/java/edu/upenn/cis/nets2120/engine/SparkConnector.java
+/nets2120/project-moggers/backend/socialrank/src/main/java/edu/upenn/cis/nets2120/hw3/livy/MyPair.java

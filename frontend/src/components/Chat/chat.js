@@ -261,6 +261,8 @@ const Chat = () => {
     
     // When you click on an invite anywhere calls below
     function handleClickInvite() {
+        console.log("this is invites");
+        console.log(invites);
         setClickedInvite(!clickedInvite);
     }
 
@@ -270,12 +272,11 @@ const Chat = () => {
         const getInvites = async () => {
             try {
                 const res = await axios.get(`${rootURL}/getInvites`, { params: { userId: currUserId } });
-                console.log("alicia2");
+          
                 console.log(res);
                 console.log("aliica");
                 console.log(res.data.data);
                 setInvites(res.data.data);
-                console.log(invites);
             } catch (error) {
                 console.log(error);
             }
@@ -289,7 +290,7 @@ const Chat = () => {
                 <div className="chatInviteBar">
                     {invites.map(inv => (
                         <div key={(inv.sender, inv.receiver)} onClick={() => handleClickInvite()}>
-                            <Invite senderId={inv.sender} receiverId={inv.receiver} parentFunction={handleClickInvite} />
+                            <Invite senderId={inv.sender} receiverId={inv.receiver}  />
                         </div>
                     ))}
 

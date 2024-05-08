@@ -1119,6 +1119,49 @@ router.post('/postMessage', async (req, res) => {
     }
 });
 
+
+router.post('/declineChatInvite', async (req, res) => {
+    try {
+  
+        var sender = req.body.senderId;
+        var receiver = req.body.receiverId;
+       
+        if (!sender || !receiver) {
+            return res.status(400).json({ error: 'Missing required arguments' });
+        }
+       
+        await db1.send_sql(`DELETE FROM chatRequests WHERE sender = ${sender} AND receiver = ${receiver};`);
+
+        return res.status(200).json({ message: "Declined chat invite" });
+    } catch (error) {
+       
+     
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+
+router.get('/getCommentThreads', async (req, res) => {
+    try {
+
+
+        const id = req.query.userId;
+
+        if (!id) {
+            return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
+        }
+         
+        var data = await db1.send_sql(`
+        SELECT * FROM chatRequests WHERE receiver = "${id}" 
+        `);
+        return res.status(200).json({data});
+ 
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    };
+});
+
 const credentials = fromIni({
     accessKeyId: config.AWS_ACCESS_KEY_ID,
     secretAccessKey: config.AWS_SECRET_ACCESS_KEY,

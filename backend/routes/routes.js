@@ -159,93 +159,109 @@ async function findTopKMatches(collection, image, k) {
   return ret;
 }
 
-// /**
-//  * Example: Compare two images in files directly using FaceAPI
-//  * 
-//  * @param {*} file1 
-//  * @param {*} file2 
-//  */
-// async function compareImages(file1, file2) {
-//   console.log('Comparing images:', file1, file2); // eslint-disable-line no-console
+/**
+ * Example: Compare two images in files directly using FaceAPI
+ * 
+ * @param {*} file1 
+ * @param {*} file2 
+ */
+async function compareImages(file1, file2) {
+  console.log('Comparing images:', file1, file2); // eslint-disable-line no-console
 
-//   const desc1 = await getEmbeddings(file1);
-//   const desc2 = await getEmbeddings(file2);
+  const desc1 = await getEmbeddings(file1);
+  const desc2 = await getEmbeddings(file2);
 
-//   // Euclidean distance or L2 distance between two face descriptors
-//   const distance = faceapi.euclideanDistance(desc1[0], desc2[0]); // only compare first found face in each image
-//   console.log('L2 distance between most prominent detected faces:', distance); // eslint-disable-line no-console
-//   console.log('Similarity between most prominent detected faces:', 1 - distance); // eslint-disable-line no-console
-// };
+  // Euclidean distance or L2 distance between two face descriptors
+  const distance = faceapi.euclideanDistance(desc1[0], desc2[0]); // only compare first found face in each image
+  console.log('L2 distance between most prominent detected faces:', distance); // eslint-disable-line no-console
+  console.log('Similarity between most prominent detected faces:', 1 - distance); // eslint-disable-line no-console
+};
 
-// ////////////////////////
-// // Main
+////////////////////////
+// Main
 
-// const client = new ChromaClient();
-// initializeFaceModels()
-// .then(async () => {
+const client = new ChromaClient();
+initializeFaceModels()
+.then(async () => {
 
-//   const collection = await client.getOrCreateCollection({
-//     name: "face-api",
-//     embeddingFunction: null,
-//     // L2 here is squared L2, not Euclidean distance
-//     metadata: { "hnsw:space": "l2" },
-//   });
+  const collection = await client.getOrCreateCollection({
+    name: "face-api",
+    embeddingFunction: null,
+    // L2 here is squared L2, not Euclidean distance
+    metadata: { "hnsw:space": "l2" },
+  });
 
-//   console.info("Looking for files");
-//   const promises = [];
-//   // Loop through all the files in the images directory
-//   fs.readdir("images", function (err, files) {
-//     if (err) {
-//       console.error("Could not list the directory.", err);
-//       process.exit(1);
-//     }
-//   console.info("Looking for files");
-//   const promises = [];
-//   // Loop through all the files in the images directory
-//   fs.readdir("images", function (err, files) {
-//     if (err) {
-//       console.error("Could not list the directory.", err);
-//       process.exit(1);
-//     }
+  console.info("Looking for files");
+  const promises = [];
+  // Loop through all the files in the images directory
+  fs.readdir("images", function (err, files) {
+    if (err) {
+      console.error("Could not list the directory.", err);
+      process.exit(1);
+    }
+  console.info("Looking for files");
+  const promises = [];
+  // Loop through all the files in the images directory
+  fs.readdir("images", function (err, files) {
+    if (err) {
+      console.error("Could not list the directory.", err);
+      process.exit(1);
+    }
 
-//     files.forEach(function (file, index) {
-//       console.info("Adding task for " + file + " to index.");
-//       promises.push(indexAllFaces(path.join("images", file), file, collection));
-//     });
-//     console.info("Done adding promises, waiting for completion.");
-//     Promise.all(promises)
-//     .then(async (results) => {
-//       console.info("All images indexed.");
+    files.forEach(function (file, index) {
+      console.info("Adding task for " + file + " to index.");
+      promises.push(indexAllFaces(path.join("images", file), file, collection));
+    });
+    console.info("Done adding promises, waiting for completion.");
+    Promise.all(promises)
+    .then(async (results) => {
+      console.info("All images indexed.");
   
-//       const search = 'query.jpg';
-//       const search = 'query.jpg';
+     
+      const search = 'query.jpg';
   
-//       console.log('\nTop-k indexed matches to ' + search + ':');
-//       for (var item of await findTopKMatches(collection, search, 5)) {
-//         for (var i = 0; i < item.ids[0].length; i++) {
-//           console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
-//         }
-//       }
-//       console.log('\nTop-k indexed matches to ' + search + ':');
-//       for (var item of await findTopKMatches(collection, search, 5)) {
-//         for (var i = 0; i < item.ids[0].length; i++) {
-//           console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
-//         }
-//       }
+      console.log('\nTop-k indexed matches to ' + search + ':');
+      for (var item of await findTopKMatches(collection, search, 5)) {
+        for (var i = 0; i < item.ids[0].length; i++) {
+          console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
+        }
+      }
+      console.log('\nTop-k indexed matches to ' + search + ':');
+      for (var item of await findTopKMatches(collection, search, 5)) {
+        for (var i = 0; i < item.ids[0].length; i++) {
+          console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
+        }
+      }
     
-//     })
-//     .catch((err) => {
-//       console.error("Error indexing images:", err);
-//     });
-//     });
-//     })
-//     .catch((err) => {
-//       console.error("Error indexing images:", err);
-//     });
-//     });
+    })
+    .catch((err) => {
+      console.error("Error indexing images:", err);
+    });
+    });
+    })
+    .catch((err) => {
+      console.error("Error indexing images:", err);
+    });
+    });
 
-// });
-// });
+    router.get('/getEmbedding', async (req, res) => {
+        try {
+           
+            const imagePath = req.query.imagePath;
+    
+            initializeFaceModels();
+            const c =  await indexAllFaces(pathName, image, collection); //
+            const embeddings = await findTopKMatches(collection, imagePath, 5);
+    
+            res.status(200).json({ embeddings });
+        } catch (error) {
+            console.error('Error processing image:', error);
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    });
+    
+
+
 
 
 

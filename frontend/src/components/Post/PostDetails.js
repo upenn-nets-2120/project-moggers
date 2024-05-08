@@ -11,9 +11,14 @@ import { faPaperPlane } from '@fortawesome/free-regular-svg-icons'
 function PostDetails({ post, onClose }) {
     const [comments, setComments] = useState({});
     const [commentThreads, setCommentThreads] = useState({});
+    const [comment, setComment] = useState('');
+    const [parentComment, setParentComment] = useState(null);
+    const [liked, setLiked] = useState(post.hasLiked);
     var currUserId = ReactSession.get("user_id");
 
-    const [comment, setComment] = useState('');
+    useEffect(() => {
+        handleGetComments(post.id);
+    }, [comments]);
 
     const handleCommentChange = (event) => {
         setComment(event.target.value);
@@ -21,10 +26,10 @@ function PostDetails({ post, onClose }) {
 
     const sendComment = async () => {
         try {
-            const response = await axios.post(`${config.serverRootUrl}/sendComment`, {
+            const response = await axios.post(`${config.serverRootURL}/sendComment`, {
                 post_id: post.id,
                 parent_post: null,
-                author: post.author,
+                author: ReactSession.get("user_id"),
                 content: comment
             });
             console.log(response.data.message);
@@ -36,19 +41,33 @@ function PostDetails({ post, onClose }) {
     const toggleLike = async (postId, hasLiked) => {
         const endpoint = hasLiked ? '/removeLike' : '/addLike';
         try {
-          await axios.post(`${config.rootURL}${endpoint}`, {
+          console.log(postId, currUserId, endpoint);
+          var likeRes = await axios.post(`${config.serverRootURL}${endpoint}`, {
             post_id: postId,
             user_id: currUserId
           });
+          console.log(likeRes);
+          
+          if (endpoint === '/addLike') {
+            post.hasLiked = true;
+            setLiked(true);
+            post.like_count += 1;
+          } else {
+            post.hasLiked = false;
+            setLiked(false);
+            post.like_count -= 1;
+          }
         } catch (error) {
           console.error('Error toggling like:', error);
         }
-    };
+      };
 
     const handleGetComments = async (postId) => {
         try {
-          const response = await axios.get(`${config.rootURL}/getComments`, { params: { postId } });
+          const response = await axios.get(`${config.serverRootURL}/getComments`, { params: { postId } });
+          console.log(comments);
           setComments({ ...comments, [postId]: response.data.data });
+          console.log("new comments", comments);
         } catch (error) {
           console.error('Error fetching comments:', error);
         }
@@ -56,7 +75,7 @@ function PostDetails({ post, onClose }) {
 
     const handleGetCommentThreads = async (postCommentId) => {
         try {
-          const response = await axios.get(`${config.rootURL}/getCommentThreads`, { params: { postCommentId } });
+          const response = await axios.get(`${config.serverRootURL}/getCommentThreads`, { params: { postCommentId } });
           setCommentThreads({ ...commentThreads, [postCommentId]: response.data.data });
         } catch (error) {
           console.error('Error fetching comment threads:', error);
@@ -87,7 +106,7 @@ function PostDetails({ post, onClose }) {
                 </div>
                 {post.image && <img src={post.image} alt="Post" />}
                 <div className={styles.postContent}>
-                  <button className={post.hasLiked ? styles.likedHeart : styles.heart} 
+                  <button className={liked ? styles.likedHeart : styles.heart} 
                       onClick={() => toggleLike(post.id, post.hasLiked)}>
                       {post.hasLiked ? '♥' : '♡'} {post.like_count}
                   </button>
@@ -97,21 +116,22 @@ function PostDetails({ post, onClose }) {
                 </div>
                 <p style={{ whiteSpace: 'pre-wrap' }}>{post.content}</p>
               </div>
-            {/* {comments[post.id] && comments[post.id].length > 0 && (
+            {comments[post.id] && comments[post.id].length > 0 && (
                   comments[post.id].map(comment => (
                     <div key={comment.comment_id} className={styles.comment}>
+                        <p style={{fontSize: '15px', left: '0'}}><b>{comment.author_username}</b> {new Date(comment.timestamp).toLocaleDateString()}</p>
                         <p>{comment.content}</p>
-                        <button onClick={() => handleGetCommentThreads(comment.comment_id)}>See More</button>
+                        {/* <button onClick={() => handleGetCommentThreads(comment.comment_id)}>See More</button>
                         {commentThreads[comment.comment_id] && (
                             commentThreads[comment.comment_id].map(thread => (
                             <div key={thread.comment_id} className={styles.commentThread}>
                                 <p>{thread.content}</p>
                             </div>
                             ))
-                        )}`
+                        )}` */}
                     </div>
                 ))
-            )} */}
+            )}
             <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', position: 'absolute', top: '93%', width: '95%'}}>
                 <input type="text" value={comment} onChange={handleCommentChange}
                     placeholder="Enter your comment..."

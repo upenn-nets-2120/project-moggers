@@ -102,7 +102,7 @@
 
   .overlay {
     position: fixed;
-    top: 7%;
+    top: 8%;
     left: 25%;
     offset: 50%;
     width: 50%;
@@ -121,5 +121,8 @@
     width: 100%;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     overflow-y: auto;
-    max-height: 100%;
+  }
+
+  .postdetails {
+    height: 100%;
   }

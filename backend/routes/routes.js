@@ -1054,18 +1054,26 @@ router.get('/getMessages', async (req, res) => {
 
 router.get('/getComments', async (req, res) => {
     try {
-     
-
         const postid = req.query.postId;
 
         if (!postid) {
             return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
         }
     
+        // var data = await db1.send_sql(`
+        // SELECT comments.id AS comment_id, comments.author AS author, comments.timstamp AS timestamp, comments.content AS content 
+        // FROM comments
+        // WHERE comments.post_id = "${postid}" AND comments.parent_post IS NULL
+        // `);
         var data = await db1.send_sql(`
-        SELECT comments.id AS comment_id, comments.author AS author, comments.timstamp AS timestamp, comments.content AS content 
-        FROM comments
-        WHERE comments.post_id = "${postid}" AND comments.parent_post IS NULL
+            SELECT comments.id AS comment_id, 
+                   comments.author AS author_id, 
+                   users.username AS author_username, 
+                   comments.timstamp AS timestamp, 
+                   comments.content AS content 
+            FROM comments
+            JOIN users ON comments.author = users.id
+            WHERE comments.post_id = "${postid}" AND comments.parent_post IS NULL
         `);
         return res.status(200).json({data});
  

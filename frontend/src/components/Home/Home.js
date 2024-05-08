@@ -28,29 +28,24 @@ function Home() {
         } else {
           const response = await axios.get(`${rootURL}/getFeed`, { params: { userId: currUserId } } );
           setFeed(response.data.results);
+          console.log(feed);
+          console.log(response.data.results);
+          const postIds = response.data.results.map(post => post.id);
+          const likeresponse = await axios.post(`${rootURL}/checkLikes`, { postIds, userId: currUserId });
+          const likes = likeresponse.data;
+          console.log(postIds, likes)
+          const updatedFeed = response.data.results.map(post => ({
+            ...post,
+            hasLiked: likes[post.id]
+          }));
+    
+          setFeed(updatedFeed);
         }
       } catch (error) {
         console.error('Error fetching feed:', error);
       }
     };
     fetchFeed();
-    const fetchLikes = async () => {
-      try {
-        const postIds = feed.map(post => post.id);
-        const response = await axios.post(`${rootURL}/checkLikes`, { postIds, userId: currUserId });
-        const likes = response.data;
-  
-        const updatedFeed = feed.map(post => ({
-          ...post,
-          hasLiked: likes[post.id]
-        }));
-  
-        setFeed(updatedFeed);
-      } catch (error) {
-        console.error('Error fetching likes:', error);
-      }
-    };
-    fetchLikes();
   }, [currUserId]);
 
   const toggleLike = async (postId, hasLiked) => {
@@ -77,7 +72,6 @@ function Home() {
       });
     } catch (error) {
       console.error('Error toggling like:', error);
-      setErrorMessage('Error processing your like. Please try again.');
     }
   };
 

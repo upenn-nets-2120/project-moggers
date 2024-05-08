@@ -34,6 +34,13 @@ const Chat = () => {
     useEffect(() => {
         try {
             socket.current = io('http://localhost:8080');
+            socket.current.on("chat message", obj => {
+                console.log("client received socket chat message");
+        
+                // change in order to call the hook
+                setIncomingMessage(true);
+            })
+
             console.log('Socket connection established successfully.');
         } catch (error) {
             console.error('Error establishing socket connection:', error);
@@ -46,12 +53,7 @@ const Chat = () => {
     
 
     // whenever someone sends a chat message
-    socket.current.on("chat message", obj => {
-        console.log("client received socket chat message");
-
-        // change in order to call the hook
-        setIncomingMessage(true);
-    })
+    
 
 
     var currUserId = ReactSession.get("user_id");
@@ -141,11 +143,12 @@ const Chat = () => {
                     // reset state of message
                     setNewMessage("");
                     setSentMessage(true);
-                    socket.current.emit("chat message", {
-                        text : newMessage,
-                        sender: currUserId,
-                        room : currentChatId
-                    });
+                    // socket.current.emit("chat message", {
+                    //     text : newMessage,
+                    //     sender: currUserId,
+                    //     room : currentChatId
+                    // });
+                    setSendMessageDummy(true);
                 } catch (error) {
                     console.log(error);
                 }
@@ -153,6 +156,15 @@ const Chat = () => {
         }
         send();
     };
+    const [sendMessageDummy, setSendMessageDummy] = useState(false);
+    useEffect(() => {
+        socket.current.emit("chat message", {
+            text : newMessage,
+            sender: currUserId,
+            room : currentChatId
+        });
+        setSendMessageDummy(false);
+    }, [sendMessageDummy])
 
     const handleNewInvite = () => {
         const helper = async () => {
@@ -234,23 +246,33 @@ const Chat = () => {
         sendChatRequest();
     }
 
-   
+    const [convoMapDummy, setConvoMapDummy] = useState(false);
+    const [convoChatId, setConvoChatId] = useState(null);
 
+    useEffect(() => {
+        function dummy2() {
+            const oldChatId = currentChatId;
+            setCurrentChatId(convoChatId);
+            const rooms = Object.keys(socket.current.rooms); // Get an array of room names
+            const isInRoom = rooms.length > 1; // If the socket is in any room other than its own room
+    
+            if (!isInRoom) {
+                console.log('Socket is not currently in a room');
+                socket.current.emit("leave room", {
+                    room : oldChatId
+                })
+            } 
+            socket.current.emit("join room", {
+                room : currentChatId
+            });
+        }
+        dummy2();
+        setConvoMapDummy(false);
+    }, [convoMapDummy, convoChatId])
+    
     function handleSelectChat(chatId) {
-        const oldChatId = currentChatId;
-        setCurrentChatId(chatId);
-        const rooms = Object.keys(socket.current.rooms); // Get an array of room names
-        const isInRoom = rooms.length > 1; // If the socket is in any room other than its own room
-
-        if (!isInRoom) {
-            console.log('Socket is not currently in a room');
-            socket.current.emit("leave room", {
-                room : oldChatId
-            })
-        } 
-        socket.current.emit("join room", {
-            room : currentChatId
-        });
+        setConvoMapDummy(true);
+        setConvoChatId(chatId);
     }
 
     return (

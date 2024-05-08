@@ -539,7 +539,6 @@ router.post('/createPost', async (req, res) => {
         const x = await db1.send_sql('SELECT LAST_INSERT_ID() AS id');
         for (const hashtag of hashtags) {
             await db1.insert_items(`INSERT INTO hashtagPosts (name, hashID) VALUES ("${hashtag}", ${x[0].id})`);
-         
         }
         const username1 = await db1.send_sql(` SELECT username FROM users WHERE id = ${author} `);
     

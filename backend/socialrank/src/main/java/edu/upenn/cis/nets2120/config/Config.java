@@ -26,10 +26,10 @@ public class Config {
     // these will be set via environment variables
     public static String ACCESS_KEY_ID = System.getenv("AWS_ACCESS_KEY_ID");
     public static String SECRET_ACCESS_KEY = System.getenv("AWS_SECRET_ACCESS_KEY");
-    public static String SESSION_TOKEN = System.getenv("AWS_SESSION_TOKEN");
+    public static String SESSION_TOKEN = System.getenv("AUTH_TOKEN");
 
     // RDS database connection
-    public static String DATABASE_CONNECTION = "jdbc:mysql://localhost:3306/imdbdatabase";
+    public static String DATABASE_CONNECTION = "jdbc:mysql://localhost:3306/moggersdb";
     public static String DATABASE_USERNAME = "admin";
     public static String DATABASE_PASSWORD = "rds-password";
 

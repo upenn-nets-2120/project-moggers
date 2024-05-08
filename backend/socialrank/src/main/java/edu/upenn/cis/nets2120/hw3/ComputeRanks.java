@@ -21,7 +21,7 @@ import scala.Tuple2;
 import java.util.*;
 import java.lang.Math;
 
-public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
+public class ComputeRanks extends SparkJob<List<Tuple2<String, Tuple2<String, Double>>>> {
     /**
      * The basic logger
      */
@@ -92,7 +92,7 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
      * @throws IOException          if there is an error reading the social network data
      * @throws InterruptedException if the execution is interrupted
      */
-    public List<Tuple2<String, Double>> run(boolean debug) throws IOException, InterruptedException {
+    public List<Tuple2<String, Tuple2<String, Double>>> run(boolean debug) throws IOException, InterruptedException {
 
         // Estbalish connection to database
         Connection conn; 
@@ -119,6 +119,7 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
                 friendsEdgesList.add(new Tuple2<>(follower, followed));
             }
             friendsEdges = context.parallelizePairs(friendsEdgesList).mapToPair(x -> new Tuple2<>(x._1(), x._2()));
+            // friendsEdges.foreach(x -> System.out.println(x._1() + " " + x._2()));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -138,6 +139,7 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
                 likesEdgesList.add(new Tuple2<>(user, post));
             }
             likesEdges = context.parallelizePairs(likesEdgesList);
+            // likesEdges.foreach(x -> System.out.println(x._1() + " " + x._2()));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -157,6 +159,7 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
                 userhashtagsEdgesList.add(new Tuple2<>(user, hashtag));
             }
             userhashtagsEdges = context.parallelizePairs(userhashtagsEdgesList);
+            // userhashtagsEdges.foreach(x -> System.out.println(x._1() + " " + x._2()));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -181,6 +184,7 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
                 posthashtagsEdgesList.add(new Tuple2<>(post, hashtag));
             }
             posthashtagsEdges = context.parallelizePairs(posthashtagsEdgesList);
+            // posthashtagsEdges.foreach(x -> System.out.println(x._1() + " " + x._2()));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -193,6 +197,8 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
                                                                 .union(userhashtagsEdgeWeights)
                                                                 .union(hashtaguserEdgeWeights)
                                                                 .union(posthashtagsEdgeWeights);
+
+        // edges.foreach(x -> System.out.println(x._1() + " " + x._2()._1() + " " + x._2()._2()));
 
         // users
         JavaPairRDD<String, Tuple2<String, Double>> nodes = userhashtagsCounts.mapToPair(x -> new Tuple2<>(x._1(), new Tuple2<>(x._1(), 1.0)));
@@ -232,8 +238,10 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
 
         nodes = nodes.join(posthashtagsEdges).mapToPair(x -> new Tuple2<>(x._1(), new Tuple2<>(x._2()._1()._1(), x._2()._1()._2())));
         nodes = nodes.mapToPair(x -> new Tuple2<>(x._1(), new Tuple2<>(x._2()._1(), x._2()._2())));
-        writeToTable(nodes);
-        return new ArrayList<>();
+        // writeToTable(nodes);
+        List<Tuple2<String, Tuple2<String, Double>>> output = new ArrayList<>(); 
+        nodes.foreach(x -> output.add(new Tuple2<>(x._1(), new Tuple2<>(x._2()._1(), x._2()._2()))));
+        return output;
     }
 
     void writeToTable(JavaPairRDD<String, Tuple2<String, Double>> results) {
@@ -260,7 +268,7 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
     void initializeTables() throws SQLException {
         try (Connection conn = DriverManager.getConnection(Config.DATABASE_CONNECTION, Config.DATABASE_USERNAME, Config.DATABASE_PASSWORD)) {
             Statement stmt = conn.createStatement();
-            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS adsorption (user_id INT, post_id INT, weight DOUBLE, PRIMARY KEY (user_id, post_id)");
+            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS adsorption (user_id INT, post_id INT, weight DOUBLE, PRIMARY KEY (user_id, post_id))");
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -119,8 +119,18 @@ function PostDetails({ post, onClose }) {
             {comments[post.id] && comments[post.id].length > 0 && (
                   comments[post.id].map(comment => (
                     <div key={comment.comment_id} className={styles.comment}>
-                        <p style={{fontSize: '15px', left: '0'}}><b>{comment.author_username}</b> {new Date(comment.timestamp).toLocaleDateString()}</p>
-                        <p>{comment.content}</p>
+                        <div className={styles.userInfo}>
+                            <img
+                                src={comment.author_profile_photo || "https://www.pngitem.com/pimgs/m/146-1468479_my-profile-icon-blank-profile-picture-circle-hd.png"}
+                                alt="Profile pic"
+                                className={styles.commentProfilePic}
+                            />
+                            <div style={{marginBottom: '0px'}}>
+                                <p style={{fontSize: '15px', marginBottom: '0'}}><b>{comment.author_username}</b> {new Date(comment.timestamp).toLocaleDateString()}</p>
+                                <p style={{fontSize: '17px', marginTop: '5px'}}>{comment.content}</p>
+                            </div>
+                        </div>
+                        <hr style={{marginBottom: '0px', marginTop: '0px'}}></hr>
                         {/* <button onClick={() => handleGetCommentThreads(comment.comment_id)}>See More</button>
                         {commentThreads[comment.comment_id] && (
                             commentThreads[comment.comment_id].map(thread => (

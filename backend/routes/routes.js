@@ -367,10 +367,9 @@ router.post('/sendFriendRequest', async (req, res) => {
         if (!follower || ! followed) {
             return res.status(400).json({error: 'Missing friend request input'});
         }
-
         var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${follower}"`)
         var count1res = count1[0]['COUNT(*)'];
-    
+        
         if (count1res != 1) {
             return res.status(500).json({message: 'Could not find follower ID in users or found more than one.'});
         }
@@ -380,20 +379,20 @@ router.post('/sendFriendRequest', async (req, res) => {
         if (count2res != 1) {
             return res.status(500).json({message: 'Could not find followed ID in users or found more than one.'});
         }
-           
-        var existingFriends = await db1.send_sql(` SELECT COUNT(*) AS count  FROM friends  WHERE follower = ${follower} AND followed = ${followed};  `);
+        var existingFriends = await db1.send_sql(` SELECT COUNT(*) AS count FROM friends WHERE follower = ${follower} AND followed = ${followed};  `);
         
         if (existingFriends[0].count != 0) {
             return res.status(500).json({message: `User is already followed`});
         }
-        var existingFriendRequest = await db1.send_sql(` SELECT COUNT(*) AS count  FROM friendRequests  WHERE follower = ${follower} AND followed = ${followed};  `);
+        var existingFriendRequest = await db1.send_sql(` SELECT COUNT(*) AS count FROM friendRequests  WHERE follower = ${follower} AND followed = ${followed};  `);
         if (existingFriendRequest[0].count != 0) {
-            return res.status(500).json({message: `Request Exist`});
+            return res.status(500).json({message: `Request Exists`});
         }
         await db1.insert_items(`INSERT INTO friendRequests (follower, followed) VALUES ("${follower}", "${followed}")`);
-        return res.status(500).json({message: `Request sent`});
+        await db1.send_sql(`DELETE FROM recommendations WHERE person = ${follower} AND recommendation = ${followed};`)
+        return res.status(200).json({message: `Request sent`});
         
-        } catch (error) {
+    } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
     }
@@ -519,6 +518,41 @@ router.get('/getFollowing', async (req, res) => {
         // var followingIds = following.map(row => row.followed);
        return res.status(200).json({ following});
         
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// get recommendations for people to follow
+router.get('/recommendations', async (req, res) => {
+    try {
+        var id = req.query.user_id;
+        // var id = 3;
+
+        if (!id) {
+            return res.status(400).json({error: 'Missing id for get following'});
+        }
+        console.log("id: ", id );
+
+        var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${id}"`)
+        var count1res = count1[0]['COUNT(*)'];
+        if (count1res != 1) {
+            return res.status(500).json({message: 'Could not find ID in users or found more than one.'});
+        }
+            
+        var recommendations = await db1.send_sql(`
+            SELECT u.id, u.username, u.firstName, u.lastName, u.profilePhoto
+            FROM users u 
+            JOIN recommendations r 
+            ON u.id = r.recommendation
+            WHERE r.person = "${id}"
+            ORDER BY r.strength DESC
+        `);
+        
+        // debug print
+        console.log(recommendations);
+        return res.status(200).json({ recommendations });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });

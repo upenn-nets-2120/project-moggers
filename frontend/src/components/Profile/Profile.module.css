@@ -11,12 +11,22 @@ h1 {
 .profileInfo {
   margin-bottom: 20px;
   width: 100%;
+  position: relative;
 }
 
 .profileHeader {
   display: flex;
   align-items: center;
   width: 100%;
+}
+
+.settingsButton {
+  position: absolute;
+  top: 7px;
+  right: 10px;
+  font-size: 28px;
+  color: #555; 
+  text-decoration: none;
 }
 
 .profileRightTop {

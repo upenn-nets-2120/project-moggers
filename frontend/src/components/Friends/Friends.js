@@ -32,15 +32,18 @@ function Friends() {
             setFriendRequests(friendRequestsRes.data.friendRequests);
         }
         console.log(followers);
-        // const recommendationsRes = await axios.get(`${config.serverRootURL}/recommendations?user_id=${currUserId}`);
-        // if (recommendationsRes.data.recommendations !== 'undefined') {
-        //     setRecommendations(recommendationsRes.data.recommendations);
-        // }
+        console.log(currUserId);
+        const recommendationsRes = await axios.get(`${config.serverRootURL}/recommendations?user_id=${currUserId}`);
+        console.log(recommendationsRes.data.recommendations);
+        if (recommendationsRes.data.recommendations !== 'undefined') {
+            setRecommendations(recommendationsRes.data.recommendations);
+        }
     };
 
     const sendFriendRequest = async (followedId) => {
         await axios.post(`${config.serverRootURL}/sendFriendRequest`, { follower: currUserId, followed: followedId });
-        recommendations = recommendations.filter(recommendation => recommendation.id !== followedId);
+        setRecommendations(recommendations.filter(recommendation => recommendation.id !== followedId));
+        fetchData();
     };
 
     const acceptFriendRequest = async (followerId) => {
@@ -100,7 +103,8 @@ function Friends() {
                     {recommendations.length ? recommendations.map(recommendation => (
                         <div key={recommendation.id} className="user-action-container">
                             <UserDisplay user={recommendation} />
-                            <button onClick={() => sendFriendRequest(recommendation.id)}>Send Friend Request</button>
+                            <button style={{borderRadius: '5px', backgroundColor: 'blue', color: 'white', marginRight: '20px', marginBottom: '10px'}}
+                            onClick={() => sendFriendRequest(recommendation.id)}>Request</button>
                         </div>
                     )) : "No Recommendations"}
                 </div>

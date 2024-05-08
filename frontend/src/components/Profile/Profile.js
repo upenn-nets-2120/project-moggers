@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCog } from '@fortawesome/free-solid-svg-icons';
 import config from '../../serverConfig.json';
 import styles from './Profile.module.css';
 import ReactSession from '../../ReactSession';
@@ -70,6 +72,9 @@ function Profile() {
             </div>
           </div>
         </div>
+        <Link to="/changeProfile" className={styles.settingsButton}>
+          <FontAwesomeIcon icon={faCog} />
+        </Link>
       </div>
 
       {/* Render posts */}

@@ -50,11 +50,6 @@ const NavBar = () => {
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link" to="/changeProfile">
-                    Update Profile
-                  </Link>
-                </li>
-                <li className="nav-item">
                   <Link className="nav-link" to="/friends">
                     Friends
                   </Link>

@@ -42,7 +42,7 @@ function Post() {
             body: imageFile
         });
 
-        console.log("image url: ", `https://moggers-image-uploads.s3.amazonaws.com/${signedUrlResponse.data.key}`)
+        console.log("image url: ", `https://moggers-image-uploads.s3.amazonaws.com/${signedUrlResponse.data.fileName}`)
         await axios.post(`${config.serverRootURL}/createPost`, {
             author: ReactSession.get("user_id"),
             content: content,

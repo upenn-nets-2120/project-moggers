@@ -199,6 +199,14 @@ async function findTopKMatches(collection, image, k) {
 //       console.error("Could not list the directory.", err);
 //       process.exit(1);
 //     }
+//   console.info("Looking for files");
+//   const promises = [];
+//   // Loop through all the files in the images directory
+//   fs.readdir("images", function (err, files) {
+//     if (err) {
+//       console.error("Could not list the directory.", err);
+//       process.exit(1);
+//     }
 
 //     files.forEach(function (file, index) {
 //       console.info("Adding task for " + file + " to index.");
@@ -210,7 +218,14 @@ async function findTopKMatches(collection, image, k) {
 //       console.info("All images indexed.");
   
 //       const search = 'query.jpg';
+//       const search = 'query.jpg';
   
+//       console.log('\nTop-k indexed matches to ' + search + ':');
+//       for (var item of await findTopKMatches(collection, search, 5)) {
+//         for (var i = 0; i < item.ids[0].length; i++) {
+//           console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
+//         }
+//       }
 //       console.log('\nTop-k indexed matches to ' + search + ':');
 //       for (var item of await findTopKMatches(collection, search, 5)) {
 //         for (var i = 0; i < item.ids[0].length; i++) {
@@ -223,7 +238,13 @@ async function findTopKMatches(collection, image, k) {
 //       console.error("Error indexing images:", err);
 //     });
 //     });
+//     })
+//     .catch((err) => {
+//       console.error("Error indexing images:", err);
+//     });
+//     });
 
+// });
 // });
 
 
@@ -1069,6 +1090,7 @@ router.get('/Ts', async (req, res) => {
             SELECT comments.id AS comment_id, 
                    comments.author AS author_id, 
                    users.username AS author_username, 
+                   users.profilePhoto AS author_profile_photo,
                    comments.timstamp AS timestamp, 
                    comments.content AS content 
             FROM comments

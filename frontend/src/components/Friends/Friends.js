@@ -11,31 +11,32 @@ function Friends() {
     const [following, setFollowing] = useState([]);
     const [friendRequests, setFriendRequests] = useState([]);
     const [recommendations, setRecommendations] = useState([]);
-    //   const currUserId = ReactSession.get("user_id"); 
-    const currUserId = 4;
+    var currUserId = ReactSession.get("user_id"); 
+    // const currUserId = 4;
 
     useEffect(() => {
-        const fetchData = async () => {
-            var followersRes = await axios.get(`${config.serverRootURL}/getFollowers?user_id=${currUserId}`);
-            if (followersRes.data.followers !== 'undefined') {
-                setFollowers(followersRes.data.followers);
-            }
-            var followingRes = await axios.get(`${config.serverRootURL}/getFollowing?user_id=${currUserId}`);
-            if (followingRes.data.following !== 'undefined') {
-                setFollowing(followingRes.data.following);
-            }
-            var friendRequestsRes = await axios.get(`${config.serverRootURL}/getFriendRequests?id=${currUserId}`);
-            if (friendRequestsRes.data.friendRequests !== 'undefined') {
-                setFriendRequests(friendRequestsRes.data.friendRequests);
-            }
-            console.log(followers);
-            // const recommendationsRes = await axios.get(`${config.serverRootURL}/recommendations?user_id=${currUserId}`);
-            // if (recommendationsRes.data.recommendations !== 'undefined') {
-            //     setRecommendations(recommendationsRes.data.recommendations);
-            // }
-        };
         fetchData();
     }, []);
+
+    const fetchData = async () => {
+        var followersRes = await axios.get(`${config.serverRootURL}/getFollowers?user_id=${currUserId}`);
+        if (followersRes.data.followers !== 'undefined') {
+            setFollowers(followersRes.data.followers);
+        }
+        var followingRes = await axios.get(`${config.serverRootURL}/getFollowing?user_id=${currUserId}`);
+        if (followingRes.data.following !== 'undefined') {
+            setFollowing(followingRes.data.following);
+        }
+        var friendRequestsRes = await axios.get(`${config.serverRootURL}/getFriendRequests?id=${currUserId}`);
+        if (friendRequestsRes.data.friendRequests !== 'undefined') {
+            setFriendRequests(friendRequestsRes.data.friendRequests);
+        }
+        console.log(followers);
+        // const recommendationsRes = await axios.get(`${config.serverRootURL}/recommendations?user_id=${currUserId}`);
+        // if (recommendationsRes.data.recommendations !== 'undefined') {
+        //     setRecommendations(recommendationsRes.data.recommendations);
+        // }
+    };
 
     const sendFriendRequest = async (followedId) => {
         await axios.post(`${config.serverRootURL}/sendFriendRequest`, { follower: currUserId, followed: followedId });
@@ -44,7 +45,8 @@ function Friends() {
 
     const acceptFriendRequest = async (followerId) => {
         await axios.post(`${config.serverRootURL}/acceptFriendRequest`, { follower: followerId, followed: currUserId });
-        friendRequests = friendRequests.filter(request => request.id !== followerId);
+        setFriendRequests(friendRequests.filter(request => request.id !== followerId));
+        fetchData();
     };
 
     const UserDisplay = ({ user }) => {
@@ -88,7 +90,8 @@ function Friends() {
                     {friendRequests.length ? friendRequests.map(request => (
                         <div key={request.id} className="user-action-container">
                             <UserDisplay user={request} />
-                            <button onClick={() => acceptFriendRequest(request.id)}>Accept</button>
+                            <button style={{borderRadius: '5px', backgroundColor: 'green', color: 'white', marginRight: '20px', marginBottom: '10px'}} 
+                            onClick={() => acceptFriendRequest(request.id)}>Accept</button>
                         </div>
                     )) : "No Friend Requests"}
                 </div><hr></hr>

@@ -235,15 +235,15 @@ const Chat = () => {
         function dummy2() {
             const oldChatId = currentChatId;
             setCurrentChatId(convoChatId);
-            const rooms = Object.keys(socket.current.rooms); // Get an array of room names
-            const isInRoom = rooms.length > 1; // If the socket is in any room other than its own room
+            // const rooms = Object.keys(socket.current.rooms); // Get an array of room names
+            // const isInRoom = rooms.length > 1; // If the socket is in any room other than its own room
     
-            if (!isInRoom) {
-                console.log('Socket is not currently in a room');
+            // if (!isInRoom) {
+                // console.log('Socket is not currently in a room');
                 socket.current.emit("leave room", {
                     room : oldChatId
                 })
-            } 
+            // } 
             socket.current.emit("join room", {
                 room : currentChatId
             });

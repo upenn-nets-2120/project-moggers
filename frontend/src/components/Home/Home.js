@@ -34,17 +34,47 @@ function Home() {
       }
     };
     fetchFeed();
+    const fetchLikes = async () => {
+      try {
+        const postIds = feed.map(post => post.id);
+        const response = await axios.post(`${rootURL}/checkLikes`, { postIds, userId: currUserId });
+        const likes = response.data;
+  
+        const updatedFeed = feed.map(post => ({
+          ...post,
+          hasLiked: likes[post.id]
+        }));
+  
+        setFeed(updatedFeed);
+      } catch (error) {
+        console.error('Error fetching likes:', error);
+      }
+    };
+    fetchLikes();
   }, [currUserId]);
 
   const toggleLike = async (postId, hasLiked) => {
     const endpoint = hasLiked ? '/removeLike' : '/addLike';
     try {
-      await axios.post(`${rootURL}${endpoint}`, {
+      console.log(postId, currUserId, endpoint);
+      var likeRes = await axios.post(`${rootURL}${endpoint}`, {
         post_id: postId,
         user_id: currUserId
       });
-      const updatedFeed = await axios.get(`${rootURL}/getFeed`, { params: { userId: currUserId } });
-      setFeed(updatedFeed.data.results);
+      console.log(likeRes);
+      
+      setFeed(prevFeed => {
+        return prevFeed.map(post => {
+          if (post.id === postId) {
+            return {
+              ...post,
+              hasLiked: !hasLiked,
+              like_count: hasLiked ? post.like_count - 1 : post.like_count + 1
+            };
+          }
+          return post;
+        });
+      });
     } catch (error) {
       console.error('Error toggling like:', error);
       setErrorMessage('Error processing your like. Please try again.');
@@ -92,8 +122,7 @@ function Home() {
                 </div>
                 {post.image && <img src={post.image} alt="Post" />}
                 <div className={styles.postContent}>
-                  <button className={post.hasLiked ? styles.likedHeart : styles.heart} 
-                      onClick={() => toggleLike(post.id, post.hasLiked)}>
+                  <button className={post.hasLiked ? styles.likedHeart : styles.heart} onClick={() => toggleLike(post.id, post.hasLiked)}>
                       {post.hasLiked ? '♥' : '♡'} {post.like_count}
                   </button>
                   <button className={styles.comment} onClick={() => openCommentPopup(post)}>

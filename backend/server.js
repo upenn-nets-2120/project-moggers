@@ -26,12 +26,17 @@ app.use(userRouter);
 
 const server = http.createServer(app); // Create an HTTP server with Express app
 
-const io = require("socket.io")(server); // Pass the HTTP server to socket.io
+const io = require("socket.io")(server, {
+  cors: {
+    origin: "*",
+  },
+}); // Pass the HTTP server to socket.io
 
 io.on("connection", function (socket) {
-  console.log("Socket: a user connected");
+  // console.log("Socket: a user connected");
 
   socket.on("chat message", obj => {
+    console.log("received socket chat message");
     io.to(obj.room).emit("chat message", obj);
   });
 

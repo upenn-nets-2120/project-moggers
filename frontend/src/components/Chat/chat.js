@@ -30,19 +30,27 @@ const Chat = () => {
     // var socket = io.connect();
     // const socketURL = `ws://${config.serverRootURL}`;
 
-
-    var socket = io("ws://localhost:8080");
+    const socket = useRef();
+    useEffect(() => {
+        try {
+            socket.current = io('http://localhost:8080');
+            console.log('Socket connection established successfully.');
+        } catch (error) {
+            console.error('Error establishing socket connection:', error);
+        }
+    }, []);
+    
     var room = false; // whether or not the client is in a room
+    const [incomingMessage, setIncomingMessage] = useState(false);
   
     
 
     // whenever someone sends a chat message
-    socket.on("chat message", obj => {
+    socket.current.on("chat message", obj => {
         console.log("client received socket chat message");
 
         // change in order to call the hook
-        setCurrentChatId(true);
-        setCurrentChatId(false);
+        setIncomingMessage(true);
     })
 
 
@@ -77,13 +85,14 @@ const Chat = () => {
 
                 setMessages(res.data.data);
                 setSentMessage(false);
+                setIncomingMessage(false);
             } catch (error) {
                 console.log(error);
             }
             
         } 
         getMsgs();
-    }, [currentChatId, sentMessage])
+    }, [currentChatId, sentMessage, incomingMessage])
 
     useEffect(() => {
         if (chatBoxRef.current) {
@@ -132,7 +141,7 @@ const Chat = () => {
                     // reset state of message
                     setNewMessage("");
                     setSentMessage(true);
-                    socket.emit("chat message", {
+                    socket.current.emit("chat message", {
                         text : newMessage,
                         sender: currUserId,
                         room : currentChatId
@@ -230,16 +239,16 @@ const Chat = () => {
     function handleSelectChat(chatId) {
         const oldChatId = currentChatId;
         setCurrentChatId(chatId);
-        const rooms = Object.keys(socket.rooms); // Get an array of room names
+        const rooms = Object.keys(socket.current.rooms); // Get an array of room names
         const isInRoom = rooms.length > 1; // If the socket is in any room other than its own room
 
         if (!isInRoom) {
             console.log('Socket is not currently in a room');
-            socket.emit("leave room", {
+            socket.current.emit("leave room", {
                 room : oldChatId
             })
         } 
-        socket.emit("join room", {
+        socket.current.emit("join room", {
             room : currentChatId
         });
     }

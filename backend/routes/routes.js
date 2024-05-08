@@ -1261,9 +1261,11 @@ router.post('/sendChatRequest', async (req, res) => {
         if (!sender || ! receiver) {
             return res.status(400).json({error: 'Missing chat request input'});
         }
+        console.log("hi1");
 
         var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${sender}"`)
         var count1res = count1[0]['COUNT(*)'];
+        console.log("hi2");
     
         if (count1res != 1) {
             return res.status(500).json({message: 'Could not find sender ID in users or found more than one.'});
@@ -1275,17 +1277,21 @@ router.post('/sendChatRequest', async (req, res) => {
             return res.status(500).json({message: 'Could not find receiver ID in users or found more than one.'});
         }
            
+        console.log("hi3");
+    
         var existingRequest = await db1.send_sql(` SELECT COUNT(*) AS count FROM chatRequests  WHERE sender = ${sender} AND receiver = ${receiver};  `);
         
         if (existingRequest[0].count != 0) {
             return res.status(500).json({message: `Chat request is already sent`});
         }
+        console.log("hi4");
 
 
         var existingRequest2 = await db1.send_sql(` SELECT COUNT(*) AS count FROM chatRequests  WHERE sender = ${receiver} AND receiver = ${sender};  `);
+        console.log(existingRequest2);
         
         if (existingRequest2[0].count != 0) {
-            return res.status(500).json({message: `Your friend already sent you a request, please accept.`});///////////////////
+            return res.status(200).json({message: `Your friend already sent you a request, please accept.`});///////////////////
         }
 
 

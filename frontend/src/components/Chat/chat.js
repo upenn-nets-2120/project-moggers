@@ -225,7 +225,10 @@ const Chat = () => {
     function sendNewChatReq(userId, friendId) {
         const sendChatRequest = async () => {
             const res = await axios.post(`${rootURL}/sendChatRequest`, { sender: userId, receiver: friendId });
+            console.log(res);
+            console.log(res.data.message);
             if (res.data.message == "Your friend already sent you a request, please accept.") {
+                console.log("are we here");
                 //////////////////////////// DO STUFF///////////////////////////////////////////////////////////////////////
                 return;
             }
@@ -266,26 +269,26 @@ const Chat = () => {
         console.log(invites);
         setClickedInvite(!clickedInvite);
     }
-
+    
     // Called during handleClickInvite
     useEffect (() => {
         // re get the invites and put into setInvites
-        const getInvites = async () => {
-            try {
-                const res = await axios.get(`${rootURL}/getInvites`, { params: { userId: currUserId } });
-          
-                console.log(res);
-                console.log("aliica");
-                console.log(res.data.data);
-                setInvites(res.data.data);
-            } catch (error) {
-                console.log(error);
-            }
-        }
+        
         getInvites();
     }, [clickedInvite])
-
-    function handleAcceptInvite() {
+    const getInvites = async () => {
+        try {
+            const res = await axios.get(`${rootURL}/getInvites`, { params: { userId: currUserId } });
+      
+            console.log(res);
+            console.log("aliica");
+            console.log(res.data.data);
+            setInvites(res.data.data);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+    async function handleAcceptInvite(senderId, receiverId) {
         // send accept Chat invite request and rerender
         try {
             const acceptInvite = async () => {
@@ -295,15 +298,17 @@ const Chat = () => {
             };
             console.log("test2");
 
-            acceptInvite();
+            await acceptInvite();
             setClickedInvite(!clickedInvite);
             console.log("test3");
         } catch (error) {
             console.log(error);
         }
+        console.log("did we clikc this");
+        getInvites();
     }
 
-    function handleDeclineInvite() {
+    function handleDeclineInvite(senderId, receiverId) {
         try {
             const declineInvite = async () => {
                 const res = await axios.post(`${rootURL}/declineChatInvite`, { sender: senderId, receiver: receiverId });
@@ -318,8 +323,7 @@ const Chat = () => {
     function getUsername(userId) {
         const getUsernameHelper = async () => {
             try {
-                console.log(senderId);
-                console.log("okkkkkk");
+              
                 const username = await axios.get(`${rootURL}/getIdGivenUsername`, {
                     params: {
                       user_id: userId
@@ -342,11 +346,11 @@ const Chat = () => {
                         <div className = "inviteEntry">
                             <img className="inviteImage" src='https://www.pngitem.com/pimgs/m/146-1468479_my-profile-icon-blank-profile-picture-circle-hd.png' alt=''/>
                             <div className="inviteInfo">
-                                <span>{getUsername(inv.sender)} has invited you to chat</span>
+                                <span>{inv.sender} has invited you to chat</span>
                             </div>
                             <div className="inviteActions">
-                                <button className="acceptButton" onClick={handleAcceptInvite}>Accept</button>
-                                <button className="declineButton" onClick={handleDeclineInvite}>Decline</button>
+                                <button className="acceptButton" onClick={()=>handleAcceptInvite(inv.sender, inv.receiver)}>Accept</button>
+                                <button className="declineButton" onClick={()=>handleDeclineInvite(inv.sender, inv.receiver)}>Decline</button>
                             </div>
                         </div>                  
                     ))}

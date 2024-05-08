@@ -67,7 +67,7 @@ function PostDetails({ post, onClose }) {
         <div className={styles.overlay}>
         <div className={styles.popup}>
         <div className={styles.postDetails}>
-            <button style={{marginBottom: '5px', background: 'None', border: 'None', color: 'grey', fontSize: '20px' }} onClick={onClose}><b>X</b></button>
+            <button style={{marginBottom: '5px', background: 'None', border: 'None', color: 'grey', fontSize: '20px', position: 'absolute' }} onClick={onClose}><b>X</b></button>
             <div key={post.id} className={styles.post}>
                 <div className={styles.postHeader}>
                   <div className={styles.userInfo}>

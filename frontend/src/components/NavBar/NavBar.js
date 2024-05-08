@@ -24,7 +24,8 @@ const NavBar = () => {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div>
+    <nav className="navbar navbar-expand-lg navbar-dark bg-dark" style={{position: 'fixed', width: '100%'}}>
       <div className="container">
         <Link className="navbar-brand" to="/">
           Moggerstagram
@@ -83,6 +84,7 @@ const NavBar = () => {
         </div>
       </div>
     </nav>
+    <br></br><br></br></div>
   );
 }
 

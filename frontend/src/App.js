@@ -11,6 +11,7 @@ import Friends from "./components/Friends/Friends.js";
 import Profile from "./components/Profile/Profile.js";
 import Post from "./components/Post/Post.js";
 import ReactSession from './ReactSession.js';
+import PostDetails from './components/Post/PostDetails.js';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/" element = {<Home/>}/>
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/:user_id" element={<Profile />} />
+          <Route path="/post/:postId" element={<PostDetails />} />
           <Route path="/post" element={<Post/>}/>
           <Route path= "/chat" element ={<Chat/>}/>
           <Route path= "/friends" element={<Friends />} />

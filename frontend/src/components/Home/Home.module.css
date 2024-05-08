@@ -42,6 +42,7 @@ img {
   height: auto;
   display: block;
   margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 .postHeader {
@@ -50,10 +51,55 @@ img {
   justify-content: space-between;
 }
 
+/* .postContent {
+  display: flex;
+  align-items: left;
+  justify-content: left;
+} */
+
+.postContent {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start; 
+}
+
+.profilePic {
+  width: 55px;
+  height: 55px; 
+  border-radius: 50%; 
+  margin-right: 10px; 
+}
+
+.fullName {
+  font-size: 14px;
+}
+
+.userInfo {
+  display: flex;
+  align-items: flex-start;
+}
+
+.userInfo > div {
+  margin-left: 10px;
+}
+
+.username {
+  font-weight: bold;
+  margin-top: 8px;
+  margin-bottom: 1px;
+}
+
 .heart, .likedHeart {
   border: none; 
   background: none; 
   cursor: pointer; 
   font-size: 24px; 
   color: #ff0000; 
+}
+
+.comment {
+  border: none; 
+  background: none; 
+  cursor: pointer; 
+  font-size: 22px; 
 }

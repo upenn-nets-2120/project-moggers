@@ -33,7 +33,7 @@ function Profile() {
       }
     };
     fetchProfile();
-  }, []);
+  }, [user_id]);
 
   if (!profileData) {
     return <div style={{textAlign: "center"}}>Loading...</div>;
@@ -78,7 +78,7 @@ function Profile() {
         {profileData.posts.slice().reverse().map(post => (
           <div key={post.id} className={styles.post}>
             <p>{formatDate(post.timstamp)}</p>
-            {post.image && <img src={post.image} alt="Post" style={{ width: '100%', height: 'auto' }} />}
+            {post.image && <img src={post.image} alt="Post" style={{ width: '100%', height: '180px' }} />}
             <p>♥ {post.num_likes}</p>
             <p>{post.content}</p>
           </div>

@@ -1,0 +1,125 @@
+  
+  .feed {
+    width: 50%;
+    margin-top: 30px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    background: #fff;
+    border-radius: 8px;
+  }
+  
+  .post {
+    border: 1px solid #ccc;
+    margin-bottom: 20px;
+    padding: 10px;
+  }
+  
+  .comment {
+    margin-left: 20px;
+    border: 1px solid #eee;
+    padding: 5px;
+    background: #f9f9f9;
+    border-radius: 5px;
+  }
+  
+  .comment-thread {
+    margin-left: 30px;
+    margin-top: 5px;
+    border: 1px solid #eee;
+    padding: 5px;
+    background: #f0f0f0;
+    border-radius: 3px;
+  }
+  
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .postHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  /* .postContent {
+    display: flex;
+    align-items: left;
+    justify-content: left;
+  } */
+  
+  .postContent {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start; 
+    top: 0;
+  }
+  
+  .profilePic {
+    width: 55px;
+    height: 55px; 
+    border-radius: 50%; 
+    margin-right: 10px; 
+  }
+  
+  .fullName {
+    font-size: 14px;
+  }
+  
+  .userInfo {
+    display: flex;
+    align-items: flex-start;
+  }
+  
+  .userInfo > div {
+    margin-left: 10px;
+  }
+  
+  .username {
+    font-weight: bold;
+    margin-top: 8px;
+    margin-bottom: 1px;
+  }
+  
+  .heart, .likedHeart {
+    border: none; 
+    background: none; 
+    cursor: pointer; 
+    font-size: 24px; 
+    color: #ff0000; 
+  }
+  
+  .comment {
+    border: none; 
+    background: none; 
+    font-size: 20px; 
+    align-items: center;
+    justify-content: center;
+  }
+
+  .overlay {
+    position: fixed;
+    top: 7%;
+    left: 25%;
+    offset: 50%;
+    width: 50%;
+    height: 85%;
+    background-color: rgba(0, 0, 0, 0.5); 
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .popup {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 100%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
+    max-height: 100%;
+  }

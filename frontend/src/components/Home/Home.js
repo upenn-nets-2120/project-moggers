@@ -4,12 +4,14 @@ import config from '../../serverConfig.json';
 import { useNavigate } from 'react-router-dom';
 import styles from './Home.module.css';
 import ReactSession from '../../ReactSession.js';
+import PostDetails from '../Post/PostDetails.js';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faComment } from '@fortawesome/free-regular-svg-icons'
 
 function Home() {
   const [feed, setFeed] = useState([]);
-  const [comments, setComments] = useState({});
-  const [commentThreads, setCommentThreads] = useState({});
   const [errorMessage, setErrorMessage] = useState(null);
+  const [popupPost, setPopupPost] = useState(null);
   const navigate = useNavigate();
   var currUserId = ReactSession.get("user_id");
   var currUsername = ReactSession.get("username");
@@ -32,7 +34,7 @@ function Home() {
       }
     };
     fetchFeed();
-  }, []);
+  }, [currUserId]);
 
   const toggleLike = async (postId, hasLiked) => {
     const endpoint = hasLiked ? '/removeLike' : '/addLike';
@@ -49,22 +51,14 @@ function Home() {
     }
   };
 
-  const handleGetComments = async (postId) => {
-    try {
-      const response = await axios.get(`${rootURL}/getComments`, { params: { postId } });
-      setComments({ ...comments, [postId]: response.data.data });
-    } catch (error) {
-      console.error('Error fetching comments:', error);
-    }
+  const openCommentPopup = (post) => {
+    console.log("open");
+    setPopupPost(post);
   };
 
-  const handleGetCommentThreads = async (postCommentId) => {
-    try {
-      const response = await axios.get(`${rootURL}/getCommentThreads`, { params: { postCommentId } });
-      setCommentThreads({ ...commentThreads, [postCommentId]: response.data.data });
-    } catch (error) {
-      console.error('Error fetching comment threads:', error);
-    }
+  const closeCommentPopup = () => {
+    console.log("close");
+    setPopupPost(null);
   };
 
   return (
@@ -74,36 +68,39 @@ function Home() {
       ) : (
         <div className={styles.feed}>
           <h1 style={{ textAlign: "center" }}>Feed</h1>
+          {popupPost && (
+            <PostDetails post={popupPost} onClose={closeCommentPopup} />
+          )}
           {feed.length > 0 ? (
             feed.slice().reverse().map(post => (
               <div key={post.id} className={styles.post}>
                 <div className={styles.postHeader}>
-                  <h3>{post.username}</h3>
+                  <div className={styles.userInfo}>
+                    <img
+                      src={post.profilePhoto || "https://www.pngitem.com/pimgs/m/146-1468479_my-profile-icon-blank-profile-picture-circle-hd.png"}
+                      alt="Profile pic"
+                      className={styles.profilePic}
+                    />
+                    <div>
+                      <h3 className={styles.username}>{post.username}</h3>
+                      <p className={styles.fullName}>
+                        {post.firstName} {post.lastName}
+                      </p>
+                    </div>
+                  </div>
+                  <p>{new Date(post.timstamp).toLocaleDateString()}</p>
+                </div>
+                {post.image && <img src={post.image} alt="Post" />}
+                <div className={styles.postContent}>
                   <button className={post.hasLiked ? styles.likedHeart : styles.heart} 
-                    onClick={() => toggleLike(post.id, post.hasLiked)}>
-                    {post.hasLiked ? '♥' : '♡'}
+                      onClick={() => toggleLike(post.id, post.hasLiked)}>
+                      {post.hasLiked ? '♥' : '♡'} {post.like_count}
+                  </button>
+                  <button className={styles.comment} onClick={() => openCommentPopup(post)}>
+                    <FontAwesomeIcon icon={faComment} />
                   </button>
                 </div>
-                <p>{post.content}</p>
-                {post.image && <img src={post.image} alt="Post" />}
-                <p style={{fontSize: '20px'}}>♥ {post.like_count}</p>
-                <p>Posted on: {new Date(post.timstamp).toLocaleDateString()}</p>
-                <button onClick={() => handleGetComments(post.id)}>See Comments</button>
-                {comments[post.id] && comments[post.id].length > 0 && (
-                  comments[post.id].map(comment => (
-                    <div key={comment.comment_id} className={styles.comment}>
-                      <p>{comment.content}</p>
-                      <button onClick={() => handleGetCommentThreads(comment.comment_id)}>See More</button>
-                      {commentThreads[comment.comment_id] && (
-                        commentThreads[comment.comment_id].map(thread => (
-                          <div key={thread.comment_id} className={styles.commentThread}>
-                            <p>{thread.content}</p>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  ))
-                )}
+                <p style={{ whiteSpace: 'pre-wrap' }}>{post.content}</p>
               </div>
             ))
           ) : (

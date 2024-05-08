@@ -492,6 +492,40 @@ router.get('/getFollowing', async (req, res) => {
     }
 });
 
+// get recommendations for people to follow
+router.get('/recommendations', async (req, res) => {
+    try {
+        // var id = req.query.user_id;
+        var id = 8;
+
+        if (!id) {
+            return res.status(400).json({error: 'Missing id for get following'});
+        }
+
+        var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${id}"`)
+        var count1res = count1[0]['COUNT(*)'];
+        if (count1res != 1) {
+            return res.status(500).json({message: 'Could not find ID in users or found more than one.'});
+        }
+
+        var recommendations = await db1.send_sql(`
+            SELECT u.id, u.username, u.firstName, u.lastName, u.profilePhoto
+            FROM users u 
+            JOIN recommendations r 
+            ON u.id = r.recommendation
+            WHERE r.person = "${id}"
+            ORDER BY r.strength DESC
+        `);
+
+        // debug print
+        console.log(recommendations);
+        return res.status(200).json({ recommendations });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 router.get('/getTopTenHashtags', async (req, res) => {
     try {
         var topTen = await db1.send_sql(`SELECT name, COUNT(*) AS frequency
@@ -619,7 +653,6 @@ router.post('/createPost', async (req, res) => {
         const x = await db1.send_sql('SELECT LAST_INSERT_ID() AS id');
         for (const hashtag of hashtags) {
             await db1.insert_items(`INSERT INTO hashtagPosts (name, hashID) VALUES ("${hashtag}", ${x[0].id})`);
-         
         }
         const username1 = await db1.send_sql(` SELECT username FROM users WHERE id = ${author} `);
     

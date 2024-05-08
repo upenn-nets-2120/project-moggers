@@ -24,8 +24,11 @@ function Home() {
       currUsername = ReactSession.get("username");
       try {
         if (currUserId === -1 || currUserId === null) {
+          
           navigate('/login');
         } else {
+          console.log("kkkkkkk");
+          const res1 = await axios.post(`${rootURL}/goOnline`,  { username: currUsername }  );
           const response = await axios.get(`${rootURL}/getFeed`, { params: { userId: currUserId } } );
           setFeed(response.data.results);
           console.log(feed);

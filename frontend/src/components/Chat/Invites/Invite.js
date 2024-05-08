@@ -6,7 +6,7 @@ import axios from "axios";
 
 // sender is 0 if self, 1 if system, and 2 if other
 // still need to add a variable holdibng the actual text
-export default function Invite({senderId, receiverId}) {
+export default function Invite({senderId, receiverId, parentFunction}) {
     const [profilePic, setProfilePic] = useState('https://www.pngitem.com/pimgs/m/146-1468479_my-profile-icon-blank-profile-picture-circle-hd.png');
     const [name, setName] = useState('');
 
@@ -40,6 +40,7 @@ export default function Invite({senderId, receiverId}) {
                 const res = await axios.post(`${config.serverRootURL}/acceptChatRequest`, { sender: senderId, receiver: receiverId });
             };
             acceptInvite();
+            parentFunction();
         } catch (error) {
             console.log(error);
         }
@@ -51,6 +52,7 @@ export default function Invite({senderId, receiverId}) {
                 const res = await axios.post(`${config.serverRootURL}/declineChatInvite`, { sender: senderId, receiver: receiverId });
             };
             declineInvite();
+            parentFunction();
         } catch (error) {
             console.log(error);
         }

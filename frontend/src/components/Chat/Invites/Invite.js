@@ -14,7 +14,7 @@ export default function Invite({senderId, receiverId}) {
     useEffect(() => {
         const getUsername = async () => {
             try {
-                const username = await axios.get(`${rootURL}/getIdGivenUsername`, {user_id : sender_id});
+                const username = await axios.get(`${config.serverRootURL}/getIdGivenUsername`, {user_id : senderId});
                 setName(username);
             } catch (error) {
                 console.log(error);
@@ -27,7 +27,7 @@ export default function Invite({senderId, receiverId}) {
         // send accept Chat invite request and rerender
         try {
             const acceptInvite = async () => {
-                const res = await axios.post(`${rootURL}/acceptChatRequest`, { sender: senderId, receiver: receiverId });
+                const res = await axios.post(`${config.serverRootURL}/acceptChatRequest`, { sender: senderId, receiver: receiverId });
             };
             acceptInvite();
         } catch (error) {
@@ -38,7 +38,7 @@ export default function Invite({senderId, receiverId}) {
     function handleDeclineInvite() {
         try {
             const declineInvite = async () => {
-                const res = await axios.post(`${rootURL}/declineChatInvite`, { sender: senderId, receiver: receiverId });
+                const res = await axios.post(`${config.serverRootURL}/declineChatInvite`, { sender: senderId, receiver: receiverId });
             };
             declineInvite();
         } catch (error) {

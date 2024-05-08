@@ -159,93 +159,109 @@ async function findTopKMatches(collection, image, k) {
   return ret;
 }
 
-// /**
-//  * Example: Compare two images in files directly using FaceAPI
-//  * 
-//  * @param {*} file1 
-//  * @param {*} file2 
-//  */
-// async function compareImages(file1, file2) {
-//   console.log('Comparing images:', file1, file2); // eslint-disable-line no-console
+/**
+ * Example: Compare two images in files directly using FaceAPI
+ * 
+ * @param {*} file1 
+ * @param {*} file2 
+ */
+async function compareImages(file1, file2) {
+  console.log('Comparing images:', file1, file2); // eslint-disable-line no-console
 
-//   const desc1 = await getEmbeddings(file1);
-//   const desc2 = await getEmbeddings(file2);
+  const desc1 = await getEmbeddings(file1);
+  const desc2 = await getEmbeddings(file2);
 
-//   // Euclidean distance or L2 distance between two face descriptors
-//   const distance = faceapi.euclideanDistance(desc1[0], desc2[0]); // only compare first found face in each image
-//   console.log('L2 distance between most prominent detected faces:', distance); // eslint-disable-line no-console
-//   console.log('Similarity between most prominent detected faces:', 1 - distance); // eslint-disable-line no-console
-// };
+  // Euclidean distance or L2 distance between two face descriptors
+  const distance = faceapi.euclideanDistance(desc1[0], desc2[0]); // only compare first found face in each image
+  console.log('L2 distance between most prominent detected faces:', distance); // eslint-disable-line no-console
+  console.log('Similarity between most prominent detected faces:', 1 - distance); // eslint-disable-line no-console
+};
 
-// ////////////////////////
-// // Main
+////////////////////////
+// Main
 
-// const client = new ChromaClient();
-// initializeFaceModels()
-// .then(async () => {
+const client = new ChromaClient();
+initializeFaceModels()
+.then(async () => {
 
-//   const collection = await client.getOrCreateCollection({
-//     name: "face-api",
-//     embeddingFunction: null,
-//     // L2 here is squared L2, not Euclidean distance
-//     metadata: { "hnsw:space": "l2" },
-//   });
+  const collection = await client.getOrCreateCollection({
+    name: "face-api",
+    embeddingFunction: null,
+    // L2 here is squared L2, not Euclidean distance
+    metadata: { "hnsw:space": "l2" },
+  });
 
-//   console.info("Looking for files");
-//   const promises = [];
-//   // Loop through all the files in the images directory
-//   fs.readdir("images", function (err, files) {
-//     if (err) {
-//       console.error("Could not list the directory.", err);
-//       process.exit(1);
-//     }
-//   console.info("Looking for files");
-//   const promises = [];
-//   // Loop through all the files in the images directory
-//   fs.readdir("images", function (err, files) {
-//     if (err) {
-//       console.error("Could not list the directory.", err);
-//       process.exit(1);
-//     }
+  console.info("Looking for files");
+  const promises = [];
+  // Loop through all the files in the images directory
+  fs.readdir("images", function (err, files) {
+    if (err) {
+      console.error("Could not list the directory.", err);
+      process.exit(1);
+    }
+  console.info("Looking for files");
+  const promises = [];
+  // Loop through all the files in the images directory
+  fs.readdir("images", function (err, files) {
+    if (err) {
+      console.error("Could not list the directory.", err);
+      process.exit(1);
+    }
 
-//     files.forEach(function (file, index) {
-//       console.info("Adding task for " + file + " to index.");
-//       promises.push(indexAllFaces(path.join("images", file), file, collection));
-//     });
-//     console.info("Done adding promises, waiting for completion.");
-//     Promise.all(promises)
-//     .then(async (results) => {
-//       console.info("All images indexed.");
+    files.forEach(function (file, index) {
+      console.info("Adding task for " + file + " to index.");
+      promises.push(indexAllFaces(path.join("images", file), file, collection));
+    });
+    console.info("Done adding promises, waiting for completion.");
+    Promise.all(promises)
+    .then(async (results) => {
+      console.info("All images indexed.");
   
-//       const search = 'query.jpg';
-//       const search = 'query.jpg';
+     
+      const search = 'query.jpg';
   
-//       console.log('\nTop-k indexed matches to ' + search + ':');
-//       for (var item of await findTopKMatches(collection, search, 5)) {
-//         for (var i = 0; i < item.ids[0].length; i++) {
-//           console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
-//         }
-//       }
-//       console.log('\nTop-k indexed matches to ' + search + ':');
-//       for (var item of await findTopKMatches(collection, search, 5)) {
-//         for (var i = 0; i < item.ids[0].length; i++) {
-//           console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
-//         }
-//       }
+      console.log('\nTop-k indexed matches to ' + search + ':');
+      for (var item of await findTopKMatches(collection, search, 5)) {
+        for (var i = 0; i < item.ids[0].length; i++) {
+          console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
+        }
+      }
+      console.log('\nTop-k indexed matches to ' + search + ':');
+      for (var item of await findTopKMatches(collection, search, 5)) {
+        for (var i = 0; i < item.ids[0].length; i++) {
+          console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
+        }
+      }
     
-//     })
-//     .catch((err) => {
-//       console.error("Error indexing images:", err);
-//     });
-//     });
-//     })
-//     .catch((err) => {
-//       console.error("Error indexing images:", err);
-//     });
-//     });
+    })
+    .catch((err) => {
+      console.error("Error indexing images:", err);
+    });
+    });
+    })
+    .catch((err) => {
+      console.error("Error indexing images:", err);
+    });
+    });
 
-// });
-// });
+    router.get('/getEmbedding', async (req, res) => {
+        try {
+           
+            const imagePath = req.query.imagePath;
+    
+            initializeFaceModels();
+            const c =  await indexAllFaces(pathName, image, collection); //
+            const embeddings = await findTopKMatches(collection, imagePath, 5);
+    
+            res.status(200).json({ embeddings });
+        } catch (error) {
+            console.error('Error processing image:', error);
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    });
+    
+
+
 
 
 
@@ -331,11 +347,14 @@ router.post('/register', async (req, res) => {
 router.post('/goOnline', async (req, res) => {
   
     try {
+        console.log("did we entere");
         var username = req.body.username;
 
         if (!username) {
+            console.log("did we entere1");
             return res.status(400).json({error: 'Missing username'});
         }
+        console.log("did we entere2");
        
         var existingUser = await db1.send_sql(`SELECT * FROM users WHERE username = "${username}"`);
       
@@ -1275,9 +1294,10 @@ router.get('/getProfile', async (req, res) => {
 
 
 router.get('/getUserName', async (req, res) => {
+    console.log("99");
     try {
         const username = req.query.username;
-
+        console.log(username);
         if (!username) {
             return res.status(400).json({error: 'Missing username.'});
         }
@@ -1298,7 +1318,7 @@ router.get('/getUserName', async (req, res) => {
        
     } catch (error) {
        
-        res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ message: 'Internal server error' });
     };
 });
 
@@ -1353,39 +1373,45 @@ router.get('/getStatus', async (req, res) => {
 
 router.get('/chatAlreadyExists', async (req, res) => {
     try {
-        const userid1 = req.query.user_id1;
+        const user1 = req.query.user_id1;
       
-        const userid2 = req.query.user_id2;
+        const user2 = req.query.user_id2;
 
-        if (!userid1 || !userid2) {
+        if (!user1 || !user2) {
             return res.status(400).json({error: 'Missing id.'});
         }
       
-        var status1 = await db1.send_sql(`
-        SELECT DISTINCT chat_id
-        FROM user_chats
-        WHERE user_id = "${userid1}" OR user_id = "${userid2}"
-        GROUP BY chat_id
-        HAVING COUNT(DISTINCT user_id) = 2`);
-   
-        const chatIds = status1.map(item => item.chat_id);
+        var x1 = await db1.send_sql(`SELECT * FROM user_chats WHERE user_id = "${user1}"`);
+        var x2 = await db1.send_sql(`SELECT * FROM user_chats WHERE user_id = "${user2}"`);
+       
+        const x1parsed = x1.map(row => ({
+            chat_id: row.chat_id, 
+            user_id: row.user_id
+        }));
+        const x2parsed = x2.map(row => ({
+            chat_id: row.chat_id, 
+            user_id: row.user_id
+        }));
+        const combined = x1parsed.concat(x2parsed);
+        const chatIdsSet = new Set();
+        let hasDuplicates = false;
 
-        const inClause = chatIds.join(',');
-   
-      
-
-        var status2 = await db1.send_sql(`
-        SELECT chat_id, GROUP_CONCAT(user_id) AS user_ids
-        FROM user_chats
-        WHERE chat_id IN (${inClause}) 
-        GROUP BY chat_id
-        HAVING COUNT(user_id) = 2;
-        `);
-        if (status2.length === 0) {
-            return res.status(200).json({ status: false});
+        for (const item of combined) {
+            if (chatIdsSet.has(item.chat_id)) {
+                hasDuplicates = true;
+                break;
         } else {
+            chatIdsSet.add(item.chat_id);
+            }
+        }
+
+        if (hasDuplicates) {
             return res.status(200).json({ status: true});
-        }   
+        }
+        return res.status(200).json({ status: false});
+   
+       
+    
  
     } catch (error) {
         console.error(error);
@@ -1514,18 +1540,18 @@ router.post('/acceptChatRequest', async (req, res) => {
         var count1res = count1[0]['COUNT(*)'];
     
         if (count1res != 1) {
-            return res.status(500).json({message: 'Could not find user ID in users or found more than one.'});
+            return res.status(400).json({message: 'Could not find user ID in users or found more than one.'});
         }
         var count2 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${sender}"`)
         var count2res = count2[0]['COUNT(*)'];
     
         if (count2res != 1) {
-            return res.status(500).json({message: 'Could not find user ID in users or found more than one.'});
+            return res.status(400).json({message: 'Could not find user ID in users or found more than one.'});
         }
 
         var existingChatRequest = await db1.send_sql(` SELECT COUNT(*) AS count  FROM chatRequests  WHERE sender = ${sender} AND receiver = ${receiver};  `);
         if (existingChatRequest[0].count == 0) {
-            return res.status(500).json({message: `Friend request does not exist`});
+            return res.status(400).json({message: `Friend request does not exist`});
         }
         // var existingFriends = await db1.send_sql(` SELECT COUNT(*) AS count  FROM chatRequests  WHERE sender = ${sender} AND receiver = ${receiver};  `);
         
@@ -1535,14 +1561,18 @@ router.post('/acceptChatRequest', async (req, res) => {
         await db1.send_sql(`DELETE FROM chatRequests WHERE sender = ${sender} AND receiver = ${receiver};`);
         
         await db1.insert_items(`INSERT INTO chats (name) VALUES ("${sender}/${receiver} Chat")`);
-        const new_chat_id = -1;//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        const x = await db1.send_sql('SELECT LAST_INSERT_ID() AS id');
+        const new_chat_id = x[0].id;//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         await db1.insert_items(`INSERT INTO user_chats (user_id, chat_id) VALUES ("${sender}", "${new_chat_id}")`);
         await db1.insert_items(`INSERT INTO user_chats (user_id, chat_id) VALUES ("${receiver}", "${new_chat_id}")`);
+        var content = 'Chat created.';
+        const timestamp = new Date().toISOString(); 
+        await db1.insert_items(`INSERT INTO messages (author, content, chat_id, timstamp) VALUES ("${9}", "${content}", "${new_chat_id}", "${timestamp}")`);
         return res.status(200).json({message: `Request accepted`});
         
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ message: 'Internal server error' });
     }
 });
 

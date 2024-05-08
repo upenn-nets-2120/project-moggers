@@ -148,17 +148,22 @@ const Chat = () => {
     // Called when button to send new invite is pressed
     const handleNewInvite = () => {
         const helper = async () => {
+            console.log("2");
             try {
+                console.log("999");
                 if (newFriendChatInvite === currUsername) {
+                    console.log("3");
                     setInputPlaceholder("You can't chat with yourself.");
                     setChatMenuInputClass("chatMenuInputError");
                     setNewFriendChatInvite("");
                 } else {
                     // first see if the person is online or not.
                     // get id of newFriendChatInvite
-                    const res = await axios.get(`${rootURL}/getUserName`, { params: { username: newFriendChatInvite } });
-                    const friend_id = res.data.data.id;
-
+                    console.log("7");
+                    const res9 = await axios.get(`${rootURL}/getUserName`, { params: { username: newFriendChatInvite } });
+                    console.log("9");
+                    const friend_id = res9.data.data.id;
+                    
                     if (friend_id === -1) {
                         // could not friend's id
                         setInputPlaceholder("Could not find friend. Type exact username.");
@@ -169,7 +174,7 @@ const Chat = () => {
 
                     // then get status of id and if they are offline then don't make
                     const res1 = await axios.get(`${rootURL}/getStatus`, { params: { user_id: friend_id } });
-
+                    
                     const friend_status = res1.data.data[0].status;
                     console.log(friend_status);
                     if (!friend_status) {
@@ -178,11 +183,13 @@ const Chat = () => {
                         setNewFriendChatInvite("");
                         return;
                     }
-                    console.log("hi!");
+                    console.log("hi!xxxx");
                     console.log(currUserId);
                 
                     // otherwise check if they are already in a 1 on 1 chat then just change the chatMenuInput placeholder text to "already have convo"
                     const res2 = await axios.get(`${rootURL}/chatAlreadyExists`, { params: { user_id1: currUserId , user_id2: friend_id} });
+                    console.log("ok1");
+                    console.log(res2);
                     const already_exists = res2.data.status;
                     if (already_exists) {
                         setInputPlaceholder("You already have a chat with this person.");
@@ -206,6 +213,7 @@ const Chat = () => {
                     console.log("sent chat request");
                 }
             } catch (error) {
+                console.log("8");
                 console.log(error);
             }            
         }
@@ -253,6 +261,8 @@ const Chat = () => {
     
     // When you click on an invite anywhere calls below
     function handleClickInvite() {
+        console.log("this is invites");
+        console.log(invites);
         setClickedInvite(!clickedInvite);
     }
 
@@ -262,6 +272,10 @@ const Chat = () => {
         const getInvites = async () => {
             try {
                 const res = await axios.get(`${rootURL}/getInvites`, { params: { userId: currUserId } });
+          
+                console.log(res);
+                console.log("aliica");
+                console.log(res.data.data);
                 setInvites(res.data.data);
             } catch (error) {
                 console.log(error);
@@ -276,7 +290,7 @@ const Chat = () => {
                 <div className="chatInviteBar">
                     {invites.map(inv => (
                         <div key={(inv.sender, inv.receiver)} onClick={() => handleClickInvite()}>
-                            <Invite senderId={inv.sender} receiverId={inv.receiver} />
+                            <Invite senderId={inv.sender} receiverId={inv.receiver}  />
                         </div>
                     ))}
 

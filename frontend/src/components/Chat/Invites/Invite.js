@@ -34,12 +34,14 @@ export default function Invite({senderId, receiverId}) {
         // send accept Chat invite request and rerender
         try {
             const acceptInvite = async () => {
-                console.log(senderId);
-                console.log(receiverId);
-                console.log('okkkk');
+                console.log("did we get called here");
                 const res = await axios.post(`${config.serverRootURL}/acceptChatRequest`, { sender: senderId, receiver: receiverId });
+                console.log(res);
             };
+            console.log("test2");
+
             acceptInvite();
+            console.log("test3");
         } catch (error) {
             console.log(error);
         }

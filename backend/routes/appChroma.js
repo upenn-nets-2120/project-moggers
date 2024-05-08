@@ -199,4 +199,10 @@ initializeFaceModels()
     });
 
 });
+module.exports = {
+  getEmbeddingsFromS3,
+  findTopKMatches,
+  initializeFaceModels,
+  indexAllFaces
+};
 

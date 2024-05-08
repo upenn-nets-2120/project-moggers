@@ -14,14 +14,6 @@
     padding: 10px;
   }
   
-  .comment {
-    margin-left: 20px;
-    border: 1px solid #eee;
-    padding: 5px;
-    background: #f9f9f9;
-    border-radius: 5px;
-  }
-  
   .comment-thread {
     margin-left: 30px;
     margin-top: 5px;
@@ -63,6 +55,7 @@
     height: 55px; 
     border-radius: 50%; 
     margin-right: 10px; 
+    object-fit: cover;
   }
 
   .commentProfilePic {
@@ -117,7 +110,7 @@
     left: 25%;
     offset: 50%;
     width: 50%;
-    height: 75%;
+    height: 85%;
     background-color: rgba(0, 0, 0, 0.5); 
     border-radius: 8px;
     display: flex;
@@ -138,4 +131,30 @@
 
   .postdetails {
     height: 100%;
+  }
+
+.commentContent {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start; 
+    width: 95%;
+}
+
+.replyButton {
+    background: None;
+    border: None;
+    font-size: 20px;
+    margin-top: 5px;
+}
+
+  .commentThread {
+    border: none; 
+    background: none; 
+    font-size: 20px; 
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0;
+    margin-top: 0;
+    margin-left: 30px;
+    padding-bottom: 0;
   }

@@ -8,9 +8,10 @@ import ReactSession from '../../ReactSession';
 function Post() {
   const [content, setContent] = useState('');
   const [imageFile, setImageFile] = useState(null);
-  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
   var [currUserId, setCurrUserId] = useState(null);
   var [currUsername, setCurrUsername] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     currUserId = ReactSession.get("user_id");
@@ -27,6 +28,7 @@ function Post() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
         var signedUrlResponse = await axios.post(`${config.serverRootURL}/get_presigned_url`, {
             fileName: imageFile.name,
@@ -43,7 +45,7 @@ function Post() {
         console.log("image url: ", `https://moggers-image-uploads.s3.amazonaws.com/${signedUrlResponse.data.key}`)
         await axios.post(`${config.serverRootURL}/createPost`, {
             author: ReactSession.get("user_id"),
-            content: JSON.stringify(content),
+            content: content,
             image_url: `https://moggers-image-uploads.s3.amazonaws.com/${signedUrlResponse.data.fileName}`
         });
 
@@ -51,6 +53,7 @@ function Post() {
         navigate('/profile');
     } catch (error) {
         console.error('Error creating post:', error);
+        navigate('/profile');
     }
   };
 
@@ -71,9 +74,13 @@ function Post() {
             onChange={handleImageChange}
             style={{ display: 'block', width: '100%' }}
           />
+          {isLoading ? (
+            <p>Loading...</p>
+          ) : (
           <button type="submit" style={{ padding: '10px 0', borderRadius: '4px', border: 'none', color: 'white', backgroundColor: 'blue', cursor: 'pointer' }}>
-            Submit
-          </button>
+              Submit
+            </button>
+          )}
         </form>
       </div>
     </div>

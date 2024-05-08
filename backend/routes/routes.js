@@ -360,8 +360,8 @@ router.post('/sendComment', async (req, res) => { // needs to be debugged
 
         const date_posted = new Date().toISOString().split('T')[0];
         const timestampString = timestamp.toISOString();
-
-        if (!parent_post) {
+        
+        if (parent_post == -1) {
             const query = `INSERT INTO comments (post_id, author, content, date_posted, timstamp) 
                        VALUES (${post_id},  ${author}, "${content}", "${date_posted}", "${timestampString}")`;
             await db1.insert_items(query);
@@ -1073,7 +1073,7 @@ router.get('/getMessages', async (req, res) => {
     };
 });
 
-router.get('/Ts', async (req, res) => {
+router.get('/getComments', async (req, res) => {
     try {
         const postid = req.query.postId;
 
@@ -1107,8 +1107,6 @@ router.get('/Ts', async (req, res) => {
 
 router.get('/getCommentThreads', async (req, res) => {
     try {
-
-
         const postcommentid = req.query.postCommentId;
 
         if (!postcommentid) {
@@ -1116,10 +1114,17 @@ router.get('/getCommentThreads', async (req, res) => {
         }
          
         var data = await db1.send_sql(`
-        SELECT comments.id AS comment_id, comments.author AS author, comments.timstamp AS timestamp, comments.content AS content 
-        FROM comments
-        WHERE comments.parent_post = "${postcommentid}" 
-        `);
+            SELECT comments.id AS comment_id, 
+                   comments.author AS author_id, 
+                   comments.parent_post AS parent_post,
+                   users.username AS author_username, 
+                   users.profilePhoto AS author_profile_photo,
+                   comments.timstamp AS timestamp, 
+                   comments.content AS content 
+            FROM comments
+            JOIN users ON comments.author = users.id
+            WHERE comments.parent_post = "${postcommentid}"`
+        );
         return res.status(200).json({data});
  
     } catch (error) {
@@ -1173,8 +1178,6 @@ router.post('/declineChatInvite', async (req, res) => {
 
 router.get('/getInvites', async (req, res) => {
     try {
-
-
         const id = req.query.userId;
 
         if (!id) {

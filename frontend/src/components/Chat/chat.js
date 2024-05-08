@@ -32,6 +32,7 @@ const Chat = () => {
     const [sentMessage, setSentMessage] = useState(false);
     const [incomingMessage, setIncomingMessage] = useState(false);
 
+
     const chatBoxRef = useRef(null);
 
     // used to scroll to bottom of messages
@@ -284,15 +285,77 @@ const Chat = () => {
         getInvites();
     }, [clickedInvite])
 
+    function handleAcceptInvite() {
+        // send accept Chat invite request and rerender
+        try {
+            const acceptInvite = async () => {
+                console.log("did we get called here");
+                const res = await axios.post(`${rootURL}/acceptChatRequest`, { sender: senderId, receiver: receiverId });
+                console.log(res);
+            };
+            console.log("test2");
+
+            acceptInvite();
+            setClickedInvite(!clickedInvite);
+            console.log("test3");
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    function handleDeclineInvite() {
+        try {
+            const declineInvite = async () => {
+                const res = await axios.post(`${rootURL}/declineChatInvite`, { sender: senderId, receiver: receiverId });
+            };
+            declineInvite();
+            setClickedInvite(!clickedInvite);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    function getUsername(userId) {
+        const getUsernameHelper = async () => {
+            try {
+                console.log(senderId);
+                console.log("okkkkkk");
+                const username = await axios.get(`${rootURL}/getIdGivenUsername`, {
+                    params: {
+                      user_id: userId
+                    }
+                  });
+              
+                return username.data.data.username;
+            } catch (error) {
+                console.log(error);
+            }   
+        }
+        return getUsernameHelper();
+    }
+
     return (
         <div className="chat">
             <div className="chatMenu">
                 <div className="chatInviteBar">
                     {invites.map(inv => (
+                        <div className = "inviteEntry">
+                            <img className="inviteImage" src='https://www.pngitem.com/pimgs/m/146-1468479_my-profile-icon-blank-profile-picture-circle-hd.png' alt=''/>
+                            <div className="inviteInfo">
+                                <span>{getUsername(inv.sender)} has invited you to chat</span>
+                            </div>
+                            <div className="inviteActions">
+                                <button className="acceptButton" onClick={handleAcceptInvite}>Accept</button>
+                                <button className="declineButton" onClick={handleDeclineInvite}>Decline</button>
+                            </div>
+                        </div>                  
+                    ))}
+{/* 
+                    {invites.map(inv => (
                         <div key={(inv.sender, inv.receiver)} onClick={() => handleClickInvite()}>
                             <Invite senderId={inv.sender} receiverId={inv.receiver}  />
                         </div>
-                    ))}
+                    ))} */}
 
                 </div>
                 <div className="chatMenuWrapper">

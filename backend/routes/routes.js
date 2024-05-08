@@ -181,85 +181,85 @@ async function compareImages(file1, file2) {
 ////////////////////////
 // Main
 
-const client = new ChromaClient();
-initializeFaceModels()
-.then(async () => {
+// const client = new ChromaClient();
+// initializeFaceModels()
+// .then(async () => {
 
-  const collection = await client.getOrCreateCollection({
-    name: "face-api",
-    embeddingFunction: null,
-    // L2 here is squared L2, not Euclidean distance
-    metadata: { "hnsw:space": "l2" },
-  });
+//   const collection = await client.getOrCreateCollection({
+//     name: "face-api",
+//     embeddingFunction: null,
+//     // L2 here is squared L2, not Euclidean distance
+//     metadata: { "hnsw:space": "l2" },
+//   });
 
-  console.info("Looking for files");
-  const promises = [];
-  // Loop through all the files in the images directory
-  fs.readdir("images", function (err, files) {
-    if (err) {
-      console.error("Could not list the directory.", err);
-      process.exit(1);
-    }
-  console.info("Looking for files");
-  const promises = [];
-  // Loop through all the files in the images directory
-  fs.readdir("images", function (err, files) {
-    if (err) {
-      console.error("Could not list the directory.", err);
-      process.exit(1);
-    }
+//   console.info("Looking for files");
+//   const promises = [];
+//   // Loop through all the files in the images directory
+//   fs.readdir("images", function (err, files) {
+//     if (err) {
+//       console.error("Could not list the directory.", err);
+//       process.exit(1);
+//     }
+//   console.info("Looking for files");
+//   const promises = [];
+//   // Loop through all the files in the images directory
+//   fs.readdir("images", function (err, files) {
+//     if (err) {
+//       console.error("Could not list the directory.", err);
+//       process.exit(1);
+//     }
 
-    files.forEach(function (file, index) {
-      console.info("Adding task for " + file + " to index.");
-      promises.push(indexAllFaces(path.join("images", file), file, collection));
-    });
-    console.info("Done adding promises, waiting for completion.");
-    Promise.all(promises)
-    .then(async (results) => {
-      console.info("All images indexed.");
+//     files.forEach(function (file, index) {
+//       console.info("Adding task for " + file + " to index.");
+//       promises.push(indexAllFaces(path.join("images", file), file, collection));
+//     });
+//     console.info("Done adding promises, waiting for completion.");
+//     Promise.all(promises)
+//     .then(async (results) => {
+//       console.info("All images indexed.");
   
      
-      const search = 'query.jpg';
+//       const search = 'query.jpg';
   
-      console.log('\nTop-k indexed matches to ' + search + ':');
-      for (var item of await findTopKMatches(collection, search, 5)) {
-        for (var i = 0; i < item.ids[0].length; i++) {
-          console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
-        }
-      }
-      console.log('\nTop-k indexed matches to ' + search + ':');
-      for (var item of await findTopKMatches(collection, search, 5)) {
-        for (var i = 0; i < item.ids[0].length; i++) {
-          console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
-        }
-      }
+//       console.log('\nTop-k indexed matches to ' + search + ':');
+//       for (var item of await findTopKMatches(collection, search, 5)) {
+//         for (var i = 0; i < item.ids[0].length; i++) {
+//           console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
+//         }
+//       }
+//       console.log('\nTop-k indexed matches to ' + search + ':');
+//       for (var item of await findTopKMatches(collection, search, 5)) {
+//         for (var i = 0; i < item.ids[0].length; i++) {
+//           console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
+//         }
+//       }
     
-    })
-    .catch((err) => {
-      console.error("Error indexing images:", err);
-    });
-    });
-    })
-    .catch((err) => {
-      console.error("Error indexing images:", err);
-    });
-    });
+//     })
+//     .catch((err) => {
+//       console.error("Error indexing images:", err);
+//     });
+//     });
+//     })
+//     .catch((err) => {
+//       console.error("Error indexing images:", err);
+//     });
+//     });
 
-    router.get('/getEmbedding', async (req, res) => {
-        try {
+//     router.get('/getEmbedding', async (req, res) => {
+//         try {
            
-            const imagePath = req.query.imagePath;
+//             const imagePath = req.query.imagePath;
     
-            initializeFaceModels();
-            const c =  await indexAllFaces(pathName, image, collection); //
-            const embeddings = await findTopKMatches(collection, imagePath, 5);
+//             initializeFaceModels();
+//             const c =  await indexAllFaces(pathName, image, collection); //
+//             const embeddings = await findTopKMatches(collection, imagePath, 5);
     
-            res.status(200).json({ embeddings });
-        } catch (error) {
-            console.error('Error processing image:', error);
-            res.status(500).json({ error: 'Internal server error' });
-        }
-    });
+//             res.status(200).json({ embeddings });
+//         } catch (error) {
+//             console.error('Error processing image:', error);
+//             res.status(500).json({ error: 'Internal server error' });
+//         }
+//     });
     
 
 
@@ -1456,9 +1456,11 @@ router.post('/sendChatRequest', async (req, res) => {
         if (!sender || ! receiver) {
             return res.status(400).json({error: 'Missing chat request input'});
         }
+        console.log("hi1");
 
         var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${sender}"`)
         var count1res = count1[0]['COUNT(*)'];
+        console.log("hi2");
     
         if (count1res != 1) {
             return res.status(500).json({message: 'Could not find sender ID in users or found more than one.'});
@@ -1470,17 +1472,21 @@ router.post('/sendChatRequest', async (req, res) => {
             return res.status(500).json({message: 'Could not find receiver ID in users or found more than one.'});
         }
            
+        console.log("hi3");
+    
         var existingRequest = await db1.send_sql(` SELECT COUNT(*) AS count FROM chatRequests  WHERE sender = ${sender} AND receiver = ${receiver};  `);
         
         if (existingRequest[0].count != 0) {
             return res.status(500).json({message: `Chat request is already sent`});
         }
+        console.log("hi4");
 
 
         var existingRequest2 = await db1.send_sql(` SELECT COUNT(*) AS count FROM chatRequests  WHERE sender = ${receiver} AND receiver = ${sender};  `);
+        console.log(existingRequest2);
         
         if (existingRequest2[0].count != 0) {
-            return res.status(500).json({message: `Your friend already sent you a request, please accept.`});///////////////////
+            return res.status(200).json({message: `Your friend already sent you a request, please accept.`});///////////////////
         }
 
 

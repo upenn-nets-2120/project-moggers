@@ -592,6 +592,8 @@ router.post('/addLike', async (req, res) => {
             return res.status(500).json({ message: `Like already exists` });
         }
 
+        await db1.send_sql(`UPDATE posts SET num_likes = num_likes + 1 WHERE id = ${post_id}`);
+
         await db1.insert_items(`INSERT INTO likes (post_id, user_id) VALUES ("${post_id}", "${user_id}")`);
 
         res.status(200).json({message: "Post liked"});
@@ -623,6 +625,8 @@ router.post('/removeLike', async (req, res) => {
             return res.status(500).json({ message: `Like does not exist` });
         }
 
+        await db1.send_sql(`UPDATE posts SET num_likes = num_likes - 1 WHERE id = ${post_id}`);
+
         await db1.send_sql(`DELETE FROM likes WHERE post_id = ${post_id} AND user_id = ${user_id}`);
 
         res.status(200).json({ message: "Like removed" });
@@ -632,6 +636,27 @@ router.post('/removeLike', async (req, res) => {
     };
 });
 
+router.post('/checkLikes', async (req, res) => {
+    try {
+        const { postIds, userId } = req.body;
+    
+        if (!postIds || !userId) {
+            return res.status(400).json({ error: 'Missing postIds or userId' });
+        }
+    
+        const likes = {};
+    
+        for (const postId of postIds) {
+            const existingLike = await db1.send_sql(`SELECT COUNT(*) AS count FROM likes WHERE post_id = ${postId} AND user_id = ${userId}`);
+            likes[postId] = existingLike[0].count > 0;
+        }
+    
+        return res.status(200).json(likes);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});  
 
 router.get('/numLikes', async (req, res) => {
     try {

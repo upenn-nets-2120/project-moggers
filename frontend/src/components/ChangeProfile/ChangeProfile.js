@@ -72,6 +72,7 @@ const ChangeProfile = () => {
             }
             const res = await axios.post(`${rootURL}/updateProfile`, newParams);
         }
+        postNewProfileData();
 
         setAlertText("Success!");
         setAlertStatus("Complete!")
@@ -123,10 +124,11 @@ const ChangeProfile = () => {
                 value={passwordInput}
                 onChange={(event) => setAffiliationInput(event.target.value)}
             />
-
-            <div className={alertStatus}>
-                {alertText}
-            </div> 
+            {alertStatus !== "None" && (
+                <div className={alertStatus}>
+                    {alertText}
+                </div> 
+            )}
 
             <button type="submit" className="btn btn-primary" onClick={handleSubmitChanges}>Save Changes</button>
         </div>

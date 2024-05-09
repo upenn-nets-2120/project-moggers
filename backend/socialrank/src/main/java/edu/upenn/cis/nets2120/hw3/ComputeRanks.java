@@ -209,14 +209,16 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Tuple2<String, Do
 
         // perform adsorption
         for (int i = 0; i < 15; i++) {
-            JavaPairRDD<String, Tuple2<Tuple2<String, Double>, Tuple2<String, Double>>> prop = nodes.join(edges);
-	    	JavaPairRDD<String, Tuple2<String, Double>> newNodes = prop.mapToPair(x -> new Tuple2<>
+            // 
+	    	JavaPairRDD<String, Tuple2<String, Double>> newNodes = nodes.join(edges).mapToPair(x -> new Tuple2<>
 	    		(x._2._2._1, new Tuple2<>(x._2._1._1,x._2._1._2 * x._2._2._2)));
 
-            JavaPairRDD<String, Double> extractDouble = newNodes.mapToPair(x -> new Tuple2<>(x._1(), x._2()._2()));
-            JavaPairRDD<String, Double> sumWeights = extractDouble.reduceByKey((x, y) -> x + y);
-            JavaPairRDD<String, Tuple2<Tuple2<String, Double>, Double>> newNodesWithSum = newNodes.join(sumWeights);
-            newNodes = newNodesWithSum.mapToPair(x -> new Tuple2<>(x._1(), new Tuple2<>(x._2()._1()._1(), x._2()._1()._2() / x._2()._2())));
+            JavaPairRDD<String, Double> wL = newNodes.mapToPair(x -> new Tuple2<>(x._1(), x._2()._2()));
+            JavaPairRDD<String, Double> Lv = wL.reduceByKey((x, y) -> x + y);
+            JavaPairRDD<String, Tuple2<Tuple2<String, Double>, Double>> newNodesJoinLv = newNodes.join(Lv);
+
+            // want to normalize the Lv to L1 norm
+            newNodes = newNodesJoinLv.mapToPair(x -> new Tuple2<>(x._1(), new Tuple2<>(x._2()._1()._1(), x._2()._1()._2() / x._2()._2())));
             JavaPairRDD<Tuple2<String, String>, Double> newNodesChanging = newNodes.mapToPair(x -> new Tuple2<>(new Tuple2<>(x._1(), x._2()._1()), x._2()._2()));
 
             newNodesChanging = newNodesChanging.reduceByKey((x, y) -> x + y);
@@ -224,8 +226,9 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Tuple2<String, Do
             newNodesChanging = newNodesChanging.union(usersChanging);
 
             Double maxDiff = newNodesChanging.join(usersChanging).mapToDouble(x -> Math.abs(x._2()._1() - x._2()._2())).max(Comparator.naturalOrder());
+            System.out.println("MAXDIFFFFFF: " + maxDiff);
 
-            if (maxDiff < 0.15) {
+            if (maxDiff < 0.05) {
                 break;
             }
 
@@ -238,7 +241,7 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Tuple2<String, Do
 
         nodes = nodes.join(posthashtagsEdges).mapToPair(x -> new Tuple2<>(x._1(), new Tuple2<>(x._2()._1()._1(), x._2()._1()._2())));
         nodes = nodes.mapToPair(x -> new Tuple2<>(x._1(), new Tuple2<>(x._2()._1(), x._2()._2())));
-        // writeToTable(nodes);
+        writeToTable(nodes);
         List<Tuple2<String, Tuple2<String, Double>>> output = new ArrayList<>(); 
         nodes.foreach(x -> output.add(new Tuple2<>(x._1(), new Tuple2<>(x._2()._1(), x._2()._2()))));
         return output;

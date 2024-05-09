@@ -175,9 +175,6 @@ router.post('/updateProfile', async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 });
-  
-
-
 
 
 // all functions for handling data, calling the database, post/get requests, etc.
@@ -348,6 +345,24 @@ router.post('/goOffline', async (req, res) => {
         } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+router.post('/leaveChat', async (req, res) => {
+    try {
+        const { userId, chatId } = req.body;
+
+        const userChatExists = await db.query('SELECT * FROM user_chats WHERE user_id = ? AND chat_id = ?', [userId, chatId]);
+        if (userChatExists.length === 0) {
+            return res.status(404).json({ error: 'User-chat association not found.' });
+        }
+
+        await db.query('DELETE FROM user_chats WHERE user_id = ? AND chat_id = ?', [userId, chatId]);
+
+        res.status(200).json({ message: 'User left the chat successfully.' });
+    } catch (error) {
+        console.error('Error leaving chat:', error);
+        res.status(500).json({ error: 'Internal server error.' });
     }
 });
 

@@ -146,11 +146,11 @@ router.get('/findMatches', async (req, res) => {
         const documentsArray = topMatches.map(item => item.documents[0]);
         console.log(documentsArray);
         // const nconsts = documentsArray.map(item => '${item.replace('.jpg', '')}').join(', ');
+        const x = documentsArray[0];
+        const newArray = x.map(str => str.replace('.jpg', ''));
+        console.log(newArray);
 
-        const documentsArray1 = topMatches.map(item => item.documents[0].replace('.jpg', ''));
-        console.log(documentsArray1);
-
-        return res.status(200).json({ documentsArray1: documentsArray1, nconsts: nconsts });
+        return res.status(200).json({ documentsArray: x, nconsts: newArray });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ error: 'Internal server error' });

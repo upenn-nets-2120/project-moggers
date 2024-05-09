@@ -288,6 +288,14 @@ const Chat = () => {
             console.log(error);
         }
     }
+    const [usernameInput, setUsernameInput] = useState(null);
+    const [passwordInput, setpasswordInput] = useState(null);
+    const [emailInput, setEmailInput] = useState(null);
+    const [firstNameInput, setFirstNameInput] = useState(null);
+    const [lastNameInput, setLastNameInput] = useState(null);
+    const [affiliationInput, setAffiliationInput] = useState(null);
+    const [alertText, setAlertText] = useState("");
+    const [alertStatus, setAlertStatus] = useState("None");
     async function handleAcceptInvite(senderId, receiverId) {
         // send accept Chat invite request and rerender
         try {

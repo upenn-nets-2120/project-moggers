@@ -136,7 +136,6 @@ router.get('/recommendations', async (req, res) => {
 });
 router.get('/findMatches', async (req, res) => {
     try {
-
         const userSelfie = req.query.userSelfie;
 
         console.log("xxx");
@@ -156,6 +155,8 @@ router.get('/findMatches', async (req, res) => {
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
+
+
 
 router.post('/updateProfile', async (req, res) => {
     try {
@@ -419,6 +420,19 @@ router.post('/addHashtag', async (req, res) => {
         } catch (error) {
     
         res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+router.post('/linkToActor', async (req, res) => {
+    try {
+        const { selectedImage, user_id } = req.body;
+
+        await db.query('INSERT INTO userActorLinks (user_id, actor_id) VALUES (?, ?)', [user_id, selectedImage]);
+
+        res.status(200).json({ message: 'User linked to actor successfully.' });
+    } catch (error) {
+        console.error('Error linking user to actor:', error);
+        res.status(500).json({ error: 'Internal server error.' });
     }
 });
 

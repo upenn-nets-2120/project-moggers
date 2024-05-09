@@ -41,6 +41,14 @@ async function create_tables(db) {
         FOREIGN KEY (followed) REFERENCES users(id)
     )`);
 
+    let q8 = db.create_tables(`CREATE TABLE IF NOT EXISTS userActorLinks (
+        user_id INT,
+        actor_id INT,
+        PRIMARY KEY (user_id, actor_id),
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (actor_id) REFERENCES actors(id)
+    )`);
+
     let q13= db.create_tables(`CREATE TABLE IF NOT EXISTS friendRequests (
       follower INT NOT NULL,
       followed INT NOT NULL,

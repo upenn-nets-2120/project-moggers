@@ -72,8 +72,14 @@ const Register = () => {
       // setCookie('user_id', response.data.user_id, { path: `${config.serverRootURL}/` });
       // setCookie('username', response.data.username, { path: `${config.serverRootURL}/` });
       // const responseData = JSON.parse(response.data.message);
+
       ReactSession.set("user_id", response.data.user_id);
       ReactSession.set("username", response.data.username);
+
+      await axios.post(`${config.serverRootURL}/linkToActor`, {
+        selectedImage: selectedImage,
+        user_id: response.data.user_id
+      });
       console.log(ReactSession.get("user_id"));
     } catch (error) {
       console.log("Error", error);
@@ -143,12 +149,12 @@ const Register = () => {
         console.error('Error uploading profile photo:', error);
       };
 
-      // const response = await axios.post(`${config.serverRootURL}/findMatches`, {
-      //   fileName: signedUrlResponse.data.fileName
-      // });
-      // console.log(response.data);
-      // setSimilarImages(response.data.similarImages);
-      // setStep(4);
+      const response = await axios.post(`${config.serverRootURL}/findMatches`, {
+        fileName: signedUrlResponse.data.fileName
+      });
+      console.log(response.data);
+      setSimilarImages(response.data.documentsArray);
+      setStep(4);
     } catch (error) {
       console.log("Error", error);
       setError('Error uploading profile photo');
@@ -273,7 +279,7 @@ const Register = () => {
             <button className={styles.registerbtn} style={{backgroundColor: 'green', width: '80px', height: '35px', marginTop: '8px', fontSize: '14px'}} type="submit">Upload</button>
             <br></br><br></br>
           </form>
-          <button className={styles.registerbtn} onClick={handleSubmit}>Submit</button>
+          {/* <button className={styles.registerbtn} onClick={handleSubmit}>Submit</button> */}
           </div>
         );
       case 4:
@@ -282,9 +288,8 @@ const Register = () => {
             {/* Step 4: Display similar images */}
             {similarImages.map(image => (
               <img
-                key={image.id}
-                src={image.url}
-                alt={image.description}
+                key={image.split('.')[0]}
+                src={`../../../../backend/images/${image}`}
                 onClick={() => handleImageSelect(image)}
                 style={{ cursor: 'pointer', border: selectedImage === image ? '2px solid red' : 'none' }}
               />

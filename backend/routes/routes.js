@@ -218,7 +218,6 @@ router.post('/register', async (req, res) => {
         if (!username || !password || !firstName || !lastName || !email || !affiliation || !birthday) {
             return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
         }
-       
 
         for (var i = 0; i < username.length; i++) {
             if (!/[A-Za-z0-9 \.\?,_]/.test(username[i])) {
@@ -237,7 +236,7 @@ router.post('/register', async (req, res) => {
         if (existingUser.length > 0) {
             return res.status(409).json({error: "An account with this username already exists, please try again."});
         }
-  
+        console.log("start salt");
         bcrypt.genSalt(10, async (err, salt) => {
             if (err) {
             console.error(err);
@@ -249,15 +248,32 @@ router.post('/register', async (req, res) => {
                 return res.status(500).json({ message: 'Internal server error' });
             }
             await db1.insert_items(`INSERT INTO users (username, password, firstName, lastName, email, affiliation, birthday, profilePhoto, hashtags) VALUES ("${username}", "${hashedPassword}", "${firstName}", "${lastName}", "${email}", "${affiliation}", "${birthday}", "${profilePhoto}", "${hashtags}")`);
-            
-            res.status(200).json({message: `{username: '${username}'}`})
+            console.log("User registered successfully!");
+            const user = await db1.send_sql(`SELECT * FROM users WHERE username = "${username}"`);
+            console.log(user);
+    
+            const user_id = user[0].id;
+            res.status(200).json({user_id: user_id, username: username});
             });
         });
-        } catch (error) {
+    } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
+router.post('/changeProfile', async (req, res) => {
+    try {
+        const { user_id, newUsername, newPassword, newEmail, newfirstName, newLastName, newAffiliation, newProfilePhoto, newInterests } = req.body;
+
+        await db1.send_sql(`UPDATE users SET username = "${newUsername}", password = "${newPassword}", email = "${newEmail}", firstName = "${newfirstName}", lastName = "${newLastName}", affiliation = "${newAffiliation}", profilePhoto = "${newProfilePhoto}", hashtags = "${newInterests}" WHERE id = ${user_id}`);
+        res.status(200).json({ message: 'Profile updated successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 
 router.post('/goOnline', async (req, res) => {
   
@@ -588,7 +604,7 @@ router.get('/recommendations', async (req, res) => {
 router.get('/getTopTenHashtags', async (req, res) => {
     try {
         var topTen = await db1.send_sql(`SELECT name, COUNT(*) AS frequency
-        FROM hashtagPosts
+        FROM interests
         GROUP BY name
         ORDER BY frequency DESC
         LIMIT 10`);
@@ -1219,7 +1235,7 @@ router.get('/getProfile', async (req, res) => {
         const y1 = followers[0]['COUNT(*)'];
         const y2 = following[0]['COUNT(*)'];
         var status1 = await db1.send_sql(`SELECT status FROM users WHERE id = "${userid}"`);
-
+        console.log("data: ", data);
         const data1 = [{
             "username": data[0].username,
             "firstName": data[0].firstName,
@@ -1227,12 +1243,12 @@ router.get('/getProfile', async (req, res) => {
             "affiliation": data[0].affiliation,
             "profilePhoto": data[0].profilePhoto,
             "birthday": data[0].birthday,
-            "interests": data[0].interests,
+            "interests": data[0].hashtags,
             "followers": y1,
             "following": y2,
             "status": status1[0].status
         }];
-       
+        console.log("dat1: ", data1);
         return res.status(200).json({ data1, posts });
  
     } catch (error) {

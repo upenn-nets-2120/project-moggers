@@ -62,20 +62,24 @@ const Register = () => {
     setError('');
     try {
       // combine selected hashtags into comma separated string and add to formData
-      const interests = selectedHashtags.join(',');
-      const formData = { ...formData, hashtags: interests, profilePhoto: `https://moggers-image-uploads.s3.amazonaws.com/${s3FileName}` };
-      
-      const response = await axios.post(`${config.serverRootURL}/register`, formData);
-      console.log(response.data);
+      console.log("form data", formData);
+      // setFormData({ ...formData, hashtags: interests, profilePhoto: `https://moggers-image-uploads.s3.amazonaws.com/${s3FileName}` });
+      console.log(formData);
+      console.log("selected hashtags", selectedHashtags);
+      console.log(selectedHashtags.join(','));
+      const response = await axios.post(`${config.serverRootURL}/register`, { ...formData, hashtags: selectedHashtags.join(', '), profilePhoto: `https://moggers-image-uploads.s3.amazonaws.com/${s3FileName}` });
+      console.log(response.data.message);
       // setCookie('user_id', response.data.user_id, { path: `${config.serverRootURL}/` });
       // setCookie('username', response.data.username, { path: `${config.serverRootURL}/` });
+      // const responseData = JSON.parse(response.data.message);
       ReactSession.set("user_id", response.data.user_id);
       ReactSession.set("username", response.data.username);
       console.log(ReactSession.get("user_id"));
-      navigate('/profile');
     } catch (error) {
-      setError(error.response.data.error || 'An error occurred');
+      console.log("Error", error);
+      setError('An error occurred');
     }
+    navigate('/profile');
   };
 
   const handleSubmitStep1 = async (e) => {
@@ -139,12 +143,12 @@ const Register = () => {
         console.error('Error uploading profile photo:', error);
       };
 
-      const response = await axios.post(`${config.serverRootURL}/findMatches`, {
-        fileName: signedUrlResponse.data.fileName
-      });
-      console.log(response.data);
-      setSimilarImages(response.data.similarImages);
-      setStep(4);
+      // const response = await axios.post(`${config.serverRootURL}/findMatches`, {
+      //   fileName: signedUrlResponse.data.fileName
+      // });
+      // console.log(response.data);
+      // setSimilarImages(response.data.similarImages);
+      // setStep(4);
     } catch (error) {
       console.log("Error", error);
       setError('Error uploading profile photo');
@@ -266,8 +270,11 @@ const Register = () => {
           <form onSubmit={handleSubmitStep3}>
             {/* Step 3: Profile photo upload */}
             <input type="file" onChange={handleProfilePhotoChange} />
-            <button type="submit">Upload</button>
-          </form></div>
+            <button className={styles.registerbtn} style={{backgroundColor: 'green', width: '80px', height: '35px', marginTop: '8px', fontSize: '14px'}} type="submit">Upload</button>
+            <br></br><br></br>
+          </form>
+          <button className={styles.registerbtn} onClick={handleSubmit}>Submit</button>
+          </div>
         );
       case 4:
         return (

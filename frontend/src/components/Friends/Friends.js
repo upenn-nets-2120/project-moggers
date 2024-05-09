@@ -57,7 +57,7 @@ function Friends() {
         return (
         <div className="user-display" key={user.id} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
             <img 
-            src={user.profilePic || defaultImageUrl} 
+            src={user.profilePhoto || defaultImageUrl} 
             alt={user.username} 
             style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover', marginRight: '10px' }} 
             />

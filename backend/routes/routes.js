@@ -6,6 +6,8 @@ const {S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { fromIni } = require("@aws-sdk/credential-provider-ini");
 require('dotenv').config();
+const openai = require('openai');
+const dotenv = require('dotenv').config();
 
 var db = require('../models/create_tables.js');
 const db1 = require('../models/db_access');
@@ -17,89 +19,89 @@ var bodyParser = require('body-parser');
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({extended: true}));
 var config = require('../config.json');
-const { Kafka } = require('kafkajs');
-const kafka = new Kafka({
-    clientId: 'g01',
-    brokers: config.bootstrapServers
-});
+// const { Kafka } = require('kafkajs');
+// const kafka = new Kafka({
+//     clientId: 'g01',
+//     brokers: config.bootstrapServers
+// });
 
-const consumer = kafka.consumer({ 
-    groupId: 'g01a', 
-    bootstrapServers: config.bootstrapServers});
-const producer = kafka.producer();
+// const consumer = kafka.consumer({ 
+//     groupId: 'g01a', 
+//     bootstrapServers: config.bootstrapServers});
+// const producer = kafka.producer();
 
-const consumer2 = kafka.consumer({ 
-        groupId: 'g01b', 
-        bootstrapServers: config.bootstrapServers});
+// const consumer2 = kafka.consumer({ 
+//         groupId: 'g01b', 
+//         bootstrapServers: config.bootstrapServers});
 
-var kafka_messages_federated_posts = [];
-var kafka_message1 = [];
-router.get('/getKafka', (req, res) => {
-    res.send(JSON.stringify(kafka_messages_federated_posts));
-});
-const {  CompressionTypes, CompressionCodecs } = require('kafkajs')
-const SnappyCodec = require('kafkajs-snappy');
-const { LexRuntimeV2 } = require('aws-sdk');
+// var kafka_messages_federated_posts = [];
+// var kafka_message1 = [];
+// router.get('/getKafka', (req, res) => {
+//     res.send(JSON.stringify(kafka_messages_federated_posts));
+// });
+// const {  CompressionTypes, CompressionCodecs } = require('kafkajs')
+// const SnappyCodec = require('kafkajs-snappy');
+// const { LexRuntimeV2 } = require('aws-sdk');
  
-CompressionCodecs[CompressionTypes.Snappy] = SnappyCodec;
+// CompressionCodecs[CompressionTypes.Snappy] = SnappyCodec;
 
 
 
-const { ChromaClient } = require("chromadb");
+// const { ChromaClient } = require("chromadb");
 
-const { getEmbeddingsFromS3, findTopKMatches, initializeFaceModels, indexAllFaces } = require('./appChroma');
-const client = require('/nets2120/project-moggers/backend/routes/chromaClient.js');
-var path = require('path');
+// const { getEmbeddingsFromS3, findTopKMatches, initializeFaceModels, indexAllFaces } = require('./appChroma');
+// const client = require('/nets2120/project-moggers/backend/routes/chromaClient.js');
+// var path = require('path');
 
-const fs = require('fs');
-const tf = require('@tensorflow/tfjs-node');
-const faceapi = require('@vladmandic/face-api');
-const axios = require('axios');
-var collection;
-initializeFaceModels()
-.then(async () => {
+// const fs = require('fs');
+// const tf = require('@tensorflow/tfjs-node');
+// const faceapi = require('@vladmandic/face-api');
+// const axios = require('axios');
+// var collection;
+// initializeFaceModels()
+// .then(async () => {
 
-  collection = await client.getOrCreateCollection({
-    name: "face-api",
-    embeddingFunction: null,
-    // L2 here is squared L2, not Euclidean distance
-    metadata: { "hnsw:space": "l2" },
-  });
+//   collection = await client.getOrCreateCollection({
+//     name: "face-api",
+//     embeddingFunction: null,
+//     // L2 here is squared L2, not Euclidean distance
+//     metadata: { "hnsw:space": "l2" },
+//   });
 
-  console.info("Looking for files");
-  const promises = [];
-  // Loop through all the files in the images directory
-  fs.readdir("images", function (err, files) {
-    if (err) {
-      console.error("Could not list the directory.", err);
-      process.exit(1);
-    }
+//   console.info("Looking for files");
+//   const promises = [];
+//   // Loop through all the files in the images directory
+//   fs.readdir("images", function (err, files) {
+//     if (err) {
+//       console.error("Could not list the directory.", err);
+//       process.exit(1);
+//     }
 
-    files.forEach(function (file, index) {
-      console.info("Adding task for " + file + " to index.");
-      promises.push(indexAllFaces(path.join("images", file), file, collection));
-    });
-    console.info("Done adding promises, waiting for completion.");
-    Promise.all(promises)
-    .then(async (results) => {
-      console.info("All images indexed.");
+//     files.forEach(function (file, index) {
+//       console.info("Adding task for " + file + " to index.");
+//       promises.push(indexAllFaces(path.join("images", file), file, collection));
+//     });
+//     console.info("Done adding promises, waiting for completion.");
+//     Promise.all(promises)
+//     .then(async (results) => {
+//       console.info("All images indexed.");
   
-    //   const search = 'query.jpg';
+//     //   const search = 'query.jpg';
   
-    //   console.log('\nTop-k indexed matches to ' + search + ':');
-    //   for (var item of await findTopKMatches(collection, search, 5)) {
-    //     for (var i = 0; i < item.ids[0].length; i++) {
-    //       console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
-    //     }
-    //   }
+//     //   console.log('\nTop-k indexed matches to ' + search + ':');
+//     //   for (var item of await findTopKMatches(collection, search, 5)) {
+//     //     for (var i = 0; i < item.ids[0].length; i++) {
+//     //       console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
+//     //     }
+//     //   }
     
-    })
-    .catch((err) => {
-      console.error("Error indexing images:", err);
-    });
-    });
+//     })
+//     .catch((err) => {
+//       console.error("Error indexing images:", err);
+//     });
+//     });
 
-});
+// });
 
 // get recommendations for people to follow
 router.get('/recommendations', async (req, res) => {
@@ -134,6 +136,79 @@ router.get('/recommendations', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
+router.get('/searchPosts', async (req, res) => {
+    try {
+        const query = req.query.q;
+
+        const relevantPosts = await filterPostsByQuery(query);
+
+        res.status(200).json({ results: relevantPosts });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+async function filterPostsByQuery(query) {
+    try {
+        const allPosts = await db1.send_sql(`
+            SELECT posts.id, posts.content, posts.image, posts.timstamp, users.username, users.firstName, users.lastName, users.profilePhoto, (
+                SELECT COUNT(*) 
+                FROM likes 
+                WHERE post_id = posts.id
+            ) AS like_count
+            FROM posts 
+            JOIN users ON posts.author = users.id
+        `);
+        const filteredPosts = []; 
+        for (const post of allPosts) {
+            const isRelevant = await isPostRelevant(post.content, query);
+            if (isRelevant) {
+                filteredPosts.push(post);
+            }
+        }
+        return filteredPosts;
+    } catch (error) {
+        console.error('Error filtering posts:', error);
+        return [];
+    };
+}
+
+async function isPostRelevant(postContent, query) {
+    try {
+        const openaiApiKey = process.env.OPENAI_API_KEY;
+        const openaiClient = new openai.OpenAI(openaiApiKey);
+        const completion = await openaiClient.chat.completions.create({
+            messages: [{ role: "system", content: `You are a helpful assistant. Respond with 1 if the given post content is relevant to the given query, and respond with 0 if the given post content is not relevant to given query. Do not give any other response. If you do not know what the post content means, just respond with 0.` }],
+            messages: [{ role: "user", content: ` Respond with 1 if the given post content is relevant to the given query, and respond with 0 if the given post content is not relevant to given query. Do not give any other response. If you do not know what the post content means, just respond with 0. Post content: ${postContent}. Query: ${query}` }],
+            model: "gpt-4-turbo-preview",
+        });
+
+        console.log(completion.choices[0]);
+
+        // if 1 is in the response, then the post is relevant
+        if (completion.choices[0].message.content.includes('1')) {
+            return true;
+        } else {   
+            return false;
+        }
+
+        // const response = await openaiClient.search({
+        //     documents: [postContent], 
+        //     query: query,
+        //     max_rerank: 1
+        // });
+
+        // const relevantPosts = filteredPosts.data;
+
+        // return relevantPosts;
+    } catch (error) {
+        console.error('Error checking if post is relevant:', error);
+        return false;
+    }
+}
+
 router.get('/findMatches', async (req, res) => {
     try {
         const userSelfie = req.query.userSelfie;

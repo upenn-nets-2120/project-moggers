@@ -52,11 +52,17 @@ async function getEmbeddings(imageFile) {
 };
 async function getEmbeddingsFromS3(s3Link) {
   try {
+      const res1 = await fetch(s3Link);
+      console.log(res1);
+      console.log("what is next?");
+      const data = await res1.arrayBuffer();
+      const data1 = new Uint8Array(data);
+      console.log(data1);
+      
 
-      const response = await axios.get(s3Link, { responseType: 'arraybuffer' });
-
-
-      const tensor = tf.node.decodeImage(response.data, 3);
+      const tensor = tf.node.decodeImage(data1, 3);
+      console.log("this is next");
+      console.log(tensor);
       const faces = await faceapi.detectAllFaces(tensor, optionsSSDMobileNet)
           .withFaceLandmarks()
           .withFaceDescriptors();
@@ -90,7 +96,7 @@ async function initializeFaceModels() {
  * @param {*} collection ChromaDB collection
  */
 async function indexAllFaces(pathName, image, collection) {
-  const embeddings = await getEmbeddings(pathName);
+  const embeddings = await getEmbeddingsFromS3(pathName);
 
   var success = true;
   var inx = 1;

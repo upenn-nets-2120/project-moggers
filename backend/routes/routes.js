@@ -55,51 +55,51 @@ const fs = require('fs');
 const tf = require('@tensorflow/tfjs-node');
 const faceapi = require('@vladmandic/face-api');
 const axios = require('axios');
+var collection;
+initializeFaceModels(); // comment this out in a second
+// initializeFaceModels().then(async () => {
 
+//    collection = await client.getOrCreateCollection({
+//     name: "face-api",
+//     embeddingFunction: null,
+//     // L2 here is squared L2, not Euclidean distance
+//     metadata: { "hnsw:space": "l2" },
+//   });
 
-initializeFaceModels().then(async () => {
+//   console.info("Looking for files");
+//   const promises = [];
+//   // Loop through all the files in the images directory
+//   fs.readdir("images", function (err, files) {
+//     if (err) {
+//       console.error("Could not list the directory.", err);
+//       process.exit(1);
+//     }
 
-  const collection = await client.getOrCreateCollection({
-    name: "face-api",
-    embeddingFunction: null,
-    // L2 here is squared L2, not Euclidean distance
-    metadata: { "hnsw:space": "l2" },
-  });
-
-  console.info("Looking for files");
-  const promises = [];
-  // Loop through all the files in the images directory
-  fs.readdir("images", function (err, files) {
-    if (err) {
-      console.error("Could not list the directory.", err);
-      process.exit(1);
-    }
-
-    files.forEach(function (file, index) {
-      console.info("Adding task for " + file + " to index.");
-      promises.push(indexAllFaces(path.join("images", file), file, collection));
-    });
-    console.info("Done adding promises, waiting for completion.");
-    Promise.all(promises)
-    .then(async (results) => {
-      console.info("All images indexed.");
+//     files.forEach(function (file, index) {
+//       console.info("Adding task for " + file + " to index.");
+//       promises.push(indexAllFaces(path.join("images", file), file, collection));
+//     });
+//     console.info("Done adding promises, waiting for completion.");
+//     Promise.all(promises)
+//     .then(async (results) => {
+//       console.info("All images indexed.");
   
-    //   const search = 'query.jpg';
+//     //   const search = 'query.jpg';
   
-    //   console.log('\nTop-k indexed matches to ' + search + ':');
-    //   for (var item of await findTopKMatches(collection, search, 5)) {
-    //     for (var i = 0; i < item.ids[0].length; i++) {
-    //       console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
-    //     }
-    //   }
+//     //   console.log('\nTop-k indexed matches to ' + search + ':');
+//     //   for (var item of await findTopKMatches(collection, search, 5)) {
+//     //     for (var i = 0; i < item.ids[0].length; i++) {
+//     //       console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
+//     //     }
+//     //   }
     
-    })
-    .catch((err) => {
-      console.error("Error indexing images:", err);
-    });
-    });
+//     })
+//     .catch((err) => {
+//       console.error("Error indexing images:", err);
+//     });
+//     });
 
-});
+// });
 
 
 // get recommendations for people to follow
@@ -140,13 +140,37 @@ router.get('/findMatches', async (req, res) => {
     try {
         
         const userSelfie = req.query.userSelfie;
-        const userSelfieEmbeddings = await getEmbeddingsFromS3(userSelfie);
-        const topMatches = await findTopKMatches(collection, userSelfieEmbeddings, 5);
+       
+        const topMatches = await findTopKMatches(collection, userSelfie, 5);
 
         return res.status(200).json({ topMatches });
     } catch (error) {
         
         return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+router.post('/updateProfile', async (req, res) => {
+    try {
+        var {user_id, newUsername, newPassword, newEmail, newFirstName, newLastName, newAffiliation} = req.body;
+
+        const sql = `
+        UPDATE users
+        SET 
+            username = '${newUsername}',
+            password = '${newPassword}',
+            email = '${newEmail}',
+            firstName = '${newFirstName}',
+            lastName = '${newLastName}',
+            affiliation = '${newAffiliation}'
+        WHERE id = ${user_id}`
+        ;
+        await db1.send_sql(sql)
+        return res.status(200).json({message: 'Profile Updated!'});
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
     }
 });
   

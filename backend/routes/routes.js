@@ -134,18 +134,23 @@ router.get('/recommendations', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 });
-
 router.get('/findMatches', async (req, res) => {
     try {
-        
+
         const userSelfie = req.query.userSelfie;
-       
+
         console.log("xxx");
         const topMatches = await findTopKMatches(collection, userSelfie, 5);
         console.log("xax");
         console.log(topMatches);
+        const documentsArray = topMatches.map(item => item.documents[0]);
+        console.log(documentsArray);
+        // const nconsts = documentsArray.map(item => '${item.replace('.jpg', '')}').join(', ');
 
-        return res.status(200).json({ topMatches });
+        const documentsArray1 = topMatches.map(item => item.documents[0].replace('.jpg', ''));
+        console.log(documentsArray1);
+
+        return res.status(200).json({ documentsArray1: documentsArray1, nconsts: nconsts });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ error: 'Internal server error' });

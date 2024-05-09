@@ -1567,6 +1567,25 @@ router.post('/acceptChatRequest', async (req, res) => {
     }
 });
 
+router.get('/alreadyInChat', async (req, res) => {
+    var userId = req.body.userId;
+    var chatId = req.body.currentChatId;
+    try {
+        // Query to check if the user is in the chat
+        const result = await pool.query('SELECT * FROM user_chats WHERE user_id = $1 AND chat_id = $2', [userId, chatId]);
+
+        // If the user is in the chat, send a success response
+        if (result.rows.length > 0) {
+            res.status(200).json({ status: true });
+        } else {
+            res.status(200).json({ status: false });
+        }
+    } catch (error) {
+        console.error('Error checking user in chat:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 
 const run = async () => {
     // Consuming

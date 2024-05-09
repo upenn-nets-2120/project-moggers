@@ -53,16 +53,12 @@ async function getEmbeddings(imageFile) {
 async function getEmbeddingsFromS3(s3Link) {
   try {
       const res1 = await fetch(s3Link);
-      console.log(res1);
-      console.log("what is next?");
+
       const data = await res1.arrayBuffer();
       const data1 = new Uint8Array(data);
-      console.log(data1);
-      
 
       const tensor = tf.node.decodeImage(data1, 3);
-      console.log("this is next");
-      console.log(tensor);
+
       const faces = await faceapi.detectAllFaces(tensor, optionsSSDMobileNet)
           .withFaceLandmarks()
           .withFaceDescriptors();
@@ -125,7 +121,7 @@ async function findTopKMatches(collection, image, k) {
   var ret = [];
 
   var queryEmbeddings = await getEmbeddingsFromS3(image);
-  console.log(queryEmbeddings);
+  // console.log(queryEmbeddings);
   for (var queryEmbedding of queryEmbeddings) {
     var results = await collection.query({
       queryEmbeddings: queryEmbedding,
@@ -134,7 +130,7 @@ async function findTopKMatches(collection, image, k) {
       // include: ['embeddings', 'documents', 'metadatas'],
       nResults: k
     });
-
+    console.log(results);
     ret.push(results);
   }
   return ret;

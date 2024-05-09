@@ -59,7 +59,7 @@ var collection;
 initializeFaceModels()
 .then(async () => {
 
-  const collection = await client.getOrCreateCollection({
+  collection = await client.getOrCreateCollection({
     name: "face-api",
     embeddingFunction: null,
     // L2 here is squared L2, not Euclidean distance
@@ -140,12 +140,14 @@ router.get('/findMatches', async (req, res) => {
         
         const userSelfie = req.query.userSelfie;
        
+        console.log("xxx");
         const topMatches = await findTopKMatches(collection, userSelfie, 5);
+        console.log("xax");
         console.log(topMatches);
 
         return res.status(200).json({ topMatches });
     } catch (error) {
-        
+        console.log(error);
         return res.status(500).json({ error: 'Internal server error' });
     }
 });

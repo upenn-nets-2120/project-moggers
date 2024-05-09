@@ -136,8 +136,16 @@ async function create_tables(db) {
       FOREIGN KEY (sender) REFERENCES users(id),
       FOREIGN KEY (receiver) REFERENCES users(id)
     )`);
+    let q16= db.create_tables(`CREATE TABLE IF NOT EXISTS chatRequestsSuper (
+      sender INT NOT NULL,
+      receiver INT NOT NULL,
+      origin INT NOT NULL,
+      PRIMARY KEY (sender, receiver, origin),
+      FOREIGN KEY (sender) REFERENCES users(id),
+      FOREIGN KEY (receiver) REFERENCES users(id)
+    )`);
 
-    return await Promise.all([q1, q2, q3, q4, q5, q6, q7, q11, q13, q12,q14,q15]).then(async () => { 
+    return await Promise.all([q1, q2, q3, q4, q5, q6, q7, q11, q13, q12,q14,q15, q16]).then(async () => { 
      
     await dbaccess.close_db(db);
     console.log('closed db' );

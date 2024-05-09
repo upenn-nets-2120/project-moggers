@@ -15,3 +15,26 @@ In backend and frontend, run npm install
 Set up the tunnel in the backend
 Set up the ec2 for the kafka backend
 Set up the chroma in the backend
+
+Source Files
+```
+Backend:
+models/create_tables.js
+routes/routes.js
+socialrank
+
+Frontend:
+ReactSession.js
+index.js
+App.js
+Components/ChangeProfile
+Components/Chat
+Components/Friends
+Components/Home
+Components/Login
+Components/Register
+Components/NavBar
+Components/Post
+Components/Profile
+Components/SearchBar
+```

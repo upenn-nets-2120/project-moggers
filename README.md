@@ -22,6 +22,7 @@ Backend:
 models/create_tables.js
 routes/routes.js
 socialrank
+recommendations
 
 Frontend:
 ReactSession.js

@@ -19,12 +19,12 @@ router.use(bodyParser.urlencoded({extended: true}));
 var config = require('../config.json');
 const { Kafka } = require('kafkajs');
 const kafka = new Kafka({
-    clientId: 'g01',
+    clientId: 'g01o',
     brokers: config.bootstrapServers
 });
 
 const consumer = kafka.consumer({ 
-    groupId: 'g01a', 
+    groupId: 'g01i', 
     bootstrapServers: config.bootstrapServers});
 const producer = kafka.producer();
 
@@ -55,51 +55,51 @@ const fs = require('fs');
 const tf = require('@tensorflow/tfjs-node');
 const faceapi = require('@vladmandic/face-api');
 const axios = require('axios');
-var collection;
-initializeFaceModels()
-.then(async () => {
+// var collection;
+// initializeFaceModels()
+// .then(async () => {
 
-  collection = await client.getOrCreateCollection({
-    name: "face-api",
-    embeddingFunction: null,
-    // L2 here is squared L2, not Euclidean distance
-    metadata: { "hnsw:space": "l2" },
-  });
+//   collection = await client.getOrCreateCollection({
+//     name: "face-api",
+//     embeddingFunction: null,
+//     // L2 here is squared L2, not Euclidean distance
+//     metadata: { "hnsw:space": "l2" },
+//   });
 
-  console.info("Looking for files");
-  const promises = [];
-  // Loop through all the files in the images directory
-  fs.readdir("images", function (err, files) {
-    if (err) {
-      console.error("Could not list the directory.", err);
-      process.exit(1);
-    }
+//   console.info("Looking for files");
+//   const promises = [];
+//   // Loop through all the files in the images directory
+//   fs.readdir("images", function (err, files) {
+//     if (err) {
+//       console.error("Could not list the directory.", err);
+//       process.exit(1);
+//     }
 
-    files.forEach(function (file, index) {
-      console.info("Adding task for " + file + " to index.");
-      promises.push(indexAllFaces(path.join("images", file), file, collection));
-    });
-    console.info("Done adding promises, waiting for completion.");
-    Promise.all(promises)
-    .then(async (results) => {
-      console.info("All images indexed.");
+//     files.forEach(function (file, index) {
+//       console.info("Adding task for " + file + " to index.");
+//       promises.push(indexAllFaces(path.join("images", file), file, collection));
+//     });
+//     console.info("Done adding promises, waiting for completion.");
+//     Promise.all(promises)
+//     .then(async (results) => {
+//       console.info("All images indexed.");
   
-    //   const search = 'query.jpg';
+//     //   const search = 'query.jpg';
   
-    //   console.log('\nTop-k indexed matches to ' + search + ':');
-    //   for (var item of await findTopKMatches(collection, search, 5)) {
-    //     for (var i = 0; i < item.ids[0].length; i++) {
-    //       console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
-    //     }
-    //   }
+//     //   console.log('\nTop-k indexed matches to ' + search + ':');
+//     //   for (var item of await findTopKMatches(collection, search, 5)) {
+//     //     for (var i = 0; i < item.ids[0].length; i++) {
+//     //       console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
+//     //     }
+//     //   }
     
-    })
-    .catch((err) => {
-      console.error("Error indexing images:", err);
-    });
-    });
+//     })
+//     .catch((err) => {
+//       console.error("Error indexing images:", err);
+//     });
+//     });
 
-});
+// });
 
 // get recommendations for people to follow
 router.get('/recommendations', async (req, res) => {
@@ -1322,6 +1322,7 @@ router.get('/getIdGivenUsername', async (req, res) => {
         FROM users 
         WHERE users.id = "${id}"
         `);
+   
         var data;
         
         if (data1.length === 0) {
@@ -1591,20 +1592,58 @@ const run = async () => {
     // Consuming
     
     console.log(`Following topic FederatedPosts`);
-    // await  consumer.connect();
+    await  consumer.connect();
     
-    // await consumer.subscribe({ topic: 'FederatedPosts', fromBeginning: true });
+    await consumer.subscribe({ topic: 'FederatedPosts', fromBeginning: true });
 
-    // await consumer.run({
-    //     eachMessage: async ({ topic, partition, message }) => {
-    //         kafka_messages_federated_posts.push({
-    //             value: message.value.toString(),
-    //         });
-    //         console.log({
-    //             value: message.value.toString(),
-    //         });
-    //     },
-    // });
+    await consumer.run({
+        eachMessage: async ({ topic, partition, message }) => {
+            const jsonString = message.value.toString(); // Convert Buffer to string
+            const jsonData = JSON.parse(jsonString); // Parse JSON string to object
+            console.log(jsonData);
+            const { username, source_site, post_uuid_within_site, post_text, content_type } = jsonData;
+            if (username) {
+                const res = await db1.send_sql(`SELECT COUNT(*) AS username_count
+                                FROM users
+                                WHERE username = '${username}'`);
+                console.log(res);
+
+            if (res[0].username_count >= 1) {
+            console.log('Username already exists');
+          }         else {
+                await db1.insert_items(`INSERT INTO users (username, password, firstName, lastName, email, affiliation, birthday, profilePhoto) 
+                VALUES ("${username}", "password", "external", "post", "fedPosts@gmail.com", "not relevant", "null", "null")`);
+                 console.log('Username does not exist');
+            }
+            var data1 = await db1.send_sql(`
+        SELECT users.id
+        FROM users 
+        WHERE users.username = "${username}"
+        `);
+        const x1 = data1[0].id;
+        console.log(x1);
+            console.log("sjdfaksdfa");
+
+            const words = post_text.split(' ').map(word => word.trim());
+
+        const filteredHashtags = words.filter(word => word.startsWith('#') && word.length > 1).map(word => word.slice(1));
+        const timstamp = new Date().toISOString();
+        const hashtags = filteredHashtags;
+     
+      
+        await db1.insert_items(`INSERT INTO posts (author, content, image, num_likes, timstamp) VALUES ("${x1}", "${post_text}", "null", 0, "${timstamp}")`);
+        const x = await db1.send_sql('SELECT LAST_INSERT_ID() AS id');
+        for (const hashtag of hashtags) {
+            await db1.insert_items(`INSERT INTO hashtagPosts (name, hashID) VALUES ("${hashtag}", ${x[0].id})`);
+         
+        }
+
+                
+            }
+            
+            
+        },
+    });
 };
 
 const run2 = async () => {

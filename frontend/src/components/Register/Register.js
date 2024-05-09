@@ -6,19 +6,6 @@ import config from '../../serverConfig.json';
 import styles from './Register.module.css';
 import ReactSession from '../../ReactSession';
 
-const defaultTopHashtags = [
-  'nature',
-  'food',
-  'travel',
-  'fitness',
-  'art',
-  'music',
-  'photography',
-  'fashion',
-  'technology',
-  'sports'
-];
-
 const Register = () => {
   const [step, setStep] = useState(1);
   const [selectedHashtags, setSelectedHashtags] = useState([]);
@@ -38,7 +25,32 @@ const Register = () => {
   const [similarImages, setSimilarImages] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [s3FileName, setS3FileName] = useState('');
+  const [defaultTopHashtags, setDefaultTopHashtags] = useState([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchHashtags = async () => {
+      try {
+        const response = await axios.get(`${config.serverRootURL}/getTopTenHashtags`);
+        setDefaultTopHashtags(response.data.topTen);
+      } catch (error) {
+        console.log(error);
+        setDefaultTopHashtags([
+          'nature',
+          'food',
+          'travel',
+          'fitness',
+          'art',
+          'music',
+          'photography',
+          'fashion',
+          'technology',
+          'sports'
+        ]);
+      }
+    };
+    fetchHashtags();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -60,7 +72,7 @@ const Register = () => {
       ReactSession.set("user_id", response.data.user_id);
       ReactSession.set("username", response.data.username);
       console.log(ReactSession.get("user_id"));
-      navigate('/login');
+      navigate('/profile');
     } catch (error) {
       setError(error.response.data.error || 'An error occurred');
     }

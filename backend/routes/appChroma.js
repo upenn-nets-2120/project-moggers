@@ -96,7 +96,7 @@ async function initializeFaceModels() {
  * @param {*} collection ChromaDB collection
  */
 async function indexAllFaces(pathName, image, collection) {
-  const embeddings = await getEmbeddingsFromS3(pathName);
+  const embeddings = await getEmbeddings(pathName);
 
   var success = true;
   var inx = 1;

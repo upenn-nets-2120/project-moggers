@@ -1103,3 +1103,7 @@
 [32mINFO[0m:     [09-05-2024 01:19:51] Uvicorn running on [1mhttp://0.0.0.0:8000[0m (Press CTRL+C to quit)
 [32mINFO[0m:     [09-05-2024 01:20:01] 127.0.0.1:50128 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
 [32mINFO[0m:     [09-05-2024 01:23:29] 127.0.0.1:55938 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [09-05-2024 01:29:30] 127.0.0.1:39566 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [09-05-2024 01:29:58] 127.0.0.1:36466 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [09-05-2024 01:30:16] 127.0.0.1:36652 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [09-05-2024 01:31:30] 127.0.0.1:41778 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200

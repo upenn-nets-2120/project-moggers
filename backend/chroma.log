@@ -1062,3 +1062,44 @@
 [32mINFO[0m:     [09-05-2024 00:43:31] Waiting for application startup.
 [32mINFO[0m:     [09-05-2024 00:43:31] Application startup complete.
 [32mINFO[0m:     [09-05-2024 00:43:31] Uvicorn running on [1mhttp://0.0.0.0:8000[0m (Press CTRL+C to quit)
+[32mINFO[0m:     [09-05-2024 01:14:57] 127.0.0.1:32848 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [09-05-2024 01:15:40] 127.0.0.1:53642 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [09-05-2024 01:17:07] 127.0.0.1:48994 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [09-05-2024 01:17:15] Shutting down
+[32mINFO[0m:     [09-05-2024 01:17:16] Waiting for application shutdown.
+[32mINFO[0m:     [09-05-2024 01:17:16] Application shutdown complete.
+[32mINFO[0m:     [09-05-2024 01:17:16] Finished server process [[36m62061[0m]
+[33mWARNING[0m:  [09-05-2024 01:17:19] chroma_server_nofile is set to 65535, but this is less than current soft limit of 1048576. chroma_server_nofile will not be set.
+[32mINFO[0m:     [09-05-2024 01:17:19] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [09-05-2024 01:17:19] Starting component System
+[36mDEBUG[0m:    [09-05-2024 01:17:19] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [09-05-2024 01:17:19] Starting component SimpleAssignmentPolicy
+[36mDEBUG[0m:    [09-05-2024 01:17:19] Starting component SqliteDB
+[36mDEBUG[0m:    [09-05-2024 01:17:19] Starting component Posthog
+[36mDEBUG[0m:    [09-05-2024 01:17:19] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [09-05-2024 01:17:19] Starting component SegmentAPI
+[32mINFO[0m:     [09-05-2024 01:17:19] Started server process [[36m90159[0m]
+[32mINFO[0m:     [09-05-2024 01:17:19] Waiting for application startup.
+[32mINFO[0m:     [09-05-2024 01:17:19] Application startup complete.
+[32mINFO[0m:     [09-05-2024 01:17:19] Uvicorn running on [1mhttp://0.0.0.0:8000[0m (Press CTRL+C to quit)
+[32mINFO[0m:     [09-05-2024 01:17:30] 127.0.0.1:58274 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [09-05-2024 01:19:20] 127.0.0.1:47294 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [09-05-2024 01:19:48] Shutting down
+[32mINFO[0m:     [09-05-2024 01:19:48] Waiting for application shutdown.
+[32mINFO[0m:     [09-05-2024 01:19:48] Application shutdown complete.
+[32mINFO[0m:     [09-05-2024 01:19:48] Finished server process [[36m90159[0m]
+[33mWARNING[0m:  [09-05-2024 01:19:51] chroma_server_nofile is set to 65535, but this is less than current soft limit of 1048576. chroma_server_nofile will not be set.
+[32mINFO[0m:     [09-05-2024 01:19:51] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [09-05-2024 01:19:51] Starting component System
+[36mDEBUG[0m:    [09-05-2024 01:19:51] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [09-05-2024 01:19:51] Starting component SimpleAssignmentPolicy
+[36mDEBUG[0m:    [09-05-2024 01:19:51] Starting component SqliteDB
+[36mDEBUG[0m:    [09-05-2024 01:19:51] Starting component Posthog
+[36mDEBUG[0m:    [09-05-2024 01:19:51] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [09-05-2024 01:19:51] Starting component SegmentAPI
+[32mINFO[0m:     [09-05-2024 01:19:51] Started server process [[36m92383[0m]
+[32mINFO[0m:     [09-05-2024 01:19:51] Waiting for application startup.
+[32mINFO[0m:     [09-05-2024 01:19:51] Application startup complete.
+[32mINFO[0m:     [09-05-2024 01:19:51] Uvicorn running on [1mhttp://0.0.0.0:8000[0m (Press CTRL+C to quit)
+[32mINFO[0m:     [09-05-2024 01:20:01] 127.0.0.1:50128 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [09-05-2024 01:23:29] 127.0.0.1:55938 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200

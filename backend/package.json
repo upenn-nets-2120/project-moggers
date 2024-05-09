@@ -60,6 +60,7 @@
     "@vladmandic/face-api": "^1.7.13",
     "@vladmandic/pilogger": "^0.4.9",
     "aws-sdk": "^2.1602.0",
+    "axios": "^1.6.8",
     "bcrypt": "^5.1.1",
     "chromadb": "1.8.1",
     "cors": "^2.8.5",

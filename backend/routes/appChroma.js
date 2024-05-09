@@ -124,7 +124,8 @@ async function indexAllFaces(pathName, image, collection) {
 async function findTopKMatches(collection, image, k) {
   var ret = [];
 
-  var queryEmbeddings = await getEmbeddings(image);
+  var queryEmbeddings = await getEmbeddingsFromS3(image);
+  console.log(queryEmbeddings);
   for (var queryEmbedding of queryEmbeddings) {
     var results = await collection.query({
       queryEmbeddings: queryEmbedding,

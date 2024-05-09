@@ -2,7 +2,7 @@
 
 # Team 
 Our group number is 8 and we are called MOGGERS.
-Names: Matthew Tsui, Ashley Zhang, Alicia Sun, Kevin He
+Names: Matthew Tsui (matsu), Ashley Zhang (ashzhang), Alicia Sun (asun0102), Kevin He (haokunhe)
 
 ## Overview
 Moggerstram is the culmination of the collaborative efforts of Matthew Tsui, Ashley Zhang, Alicia Sun, and Kevin He from the University of Pennsylvania. This project introduces "InstaLite," a social media platform reminiscent of Instagram but with a unique blend of features and technologies. Leveraging a diverse technology stack including Node.js, Javascript, RDS, DynamoDB, ChromaDB, S3, Apache Kafka, Apache Spark, React, and JavaScript, managed through GitHub, Moggerstram offers users a dynamic and engaging social media experience.

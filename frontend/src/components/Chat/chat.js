@@ -23,7 +23,10 @@ const Chat = () => {
     const [inputPlaceholder, setInputPlaceholder] = useState("Search a friend username to invite for a new chat session");
     const [numInvites, setNumInvites] = useState(0);
     const [invites, setInvites] = useState([]);
-    const [convoChatId, setConvoChatId] = useState(null);    
+    const [convoChatId, setConvoChatId] = useState(null);  
+    const [inviteUsername, setInviteUsername] = useState(""); 
+    const [chatInvClass, setChatInvClass] = useState("inviteInput")
+    const [inputPlaceholder2, setInputPlaceholder2] = useState("Enter a user to invite...")
     
     // will just keep flickering to activate hook
     const [clickedInvite, setClickedInvite] = useState(false);
@@ -31,6 +34,7 @@ const Chat = () => {
     const [convoMapDummy, setConvoMapDummy] = useState(false);
     const [sentMessage, setSentMessage] = useState(false);
     const [incomingMessage, setIncomingMessage] = useState(false);
+
 
 
     const chatBoxRef = useRef(null);
@@ -110,6 +114,12 @@ const Chat = () => {
         setChatMenuInputClass("chatMenuInput");
     };
 
+    const handleInviteUsernameChange = (event) => {
+        setInputPlaceholder2("Enter a user to invite...");
+        setInviteUsername(event.target.value);
+        setChatInvClass("chatMenuInput");
+    }
+
     // When you click the send message button
     const sendMessage = () => {
         const send = async () => {
@@ -149,9 +159,7 @@ const Chat = () => {
     // Called when button to send new invite is pressed
     const handleNewInvite = () => {
         const helper = async () => {
-            console.log("2");
             try {
-                console.log("999");
                 if (newFriendChatInvite === currUsername) {
                     console.log("3");
                     setInputPlaceholder("You can't chat with yourself.");
@@ -160,9 +168,8 @@ const Chat = () => {
                 } else {
                     // first see if the person is online or not.
                     // get id of newFriendChatInvite
-                    console.log("7");
                     const res9 = await axios.get(`${rootURL}/getUserName`, { params: { username: newFriendChatInvite } });
-                    console.log("9");
+
                     const friend_id = res9.data.data.id;
                     
                     if (friend_id === -1) {
@@ -220,6 +227,85 @@ const Chat = () => {
         }
         helper();
     };
+
+    const handleNewInviteMore = () => {
+        const helper = async () => {
+            try {
+                if (newFriendChatInvite === currUsername) {
+                    console.log("3");
+                    setInputPlaceholder2("You can't chat with yourself.");
+                    setChatInvClass("chatMenuInputError");
+                    setInviteUsername("");
+
+                    setInputPlaceholder("You can't chat with yourself.");
+                    setChatMenuInputClass("chatMenuInputError");
+                    setNewFriendChatInvite("");
+                } else {
+                    // first see if the person is online or not.
+                    // get id of newFriendChatInvite
+                    const res9 = await axios.get(`${rootURL}/getUserName`, { params: { username: newFriendChatInvite } });
+
+                    const friend_id = res9.data.data.id;
+                    
+                    if (friend_id === -1) {
+                        // could not friend's id
+                        setInputPlaceholder2("Could not find friend. Type exact username.");
+                        setChatInvClass("chatMenuInputError");
+                        setInviteUsername("");
+                        return;
+                    }
+
+                    // then get status of id and if they are offline then don't make
+                    const res1 = await axios.get(`${rootURL}/getStatus`, { params: { user_id: friend_id } });
+                    
+                    const friend_status = res1.data.data[0].status;
+                    console.log(friend_status);
+                    if (!friend_status) {
+                        setInputPlaceholder2("Friend is not online currently, try again later.");
+                        setChatInvClass("chatMenuInputError");
+                        setInviteUsername("");
+                        return;
+                    }
+                    console.log("hi!xxxx");
+                    console.log(currUserId);
+// ***********************************************************
+                    // otherwise check if they are already in the chat rn
+                    const res2 = await axios.get(`${rootURL}/alreadyInChat`, { params: { userId: friend_id , chatId: currentChatId} });
+                    if (res2.data.data.status) {
+                        // they are already in the chat
+                        setInputPlaceholder2("This person is already here.");
+                        setChatInvClass("chatMenuInputError");
+                        setInviteUsername("");
+                    }
+
+                    // check if you already sent a chat req with this person
+                    const res3 = await axios.get(`${rootURL}/alreadySent`, { params: { user_id1: currUserId , user_id2: friend_id} });
+                    const already_sent = res3.data.status;
+                    if (already_sent) {
+                        setInputPlaceholder2("You sent an invite to this person.");
+                        setChatInvClass("chatMenuInputError");
+                        setInviteUsername("");
+                        return;
+                    }
+
+                    // otherwise just send a chat req
+                    sendNewChatReq(currUserId, friend_id);
+                    console.log("sent chat request");
+                }
+            } catch (error) {
+                console.log(error);
+            }            
+        }
+        helper();
+    };
+
+
+    const handleLeave = () => {
+        const leaveHelper = async () => {
+            const res = await axios.post(`${rootURL}/leaveChat`, { userId: currUserId, chatId: currentChatId });
+        };
+        leaveHelper();
+    }
 
     // Helper to handleNewInvite to actually send the request
     function sendNewChatReq(userId, friendId) {
@@ -388,7 +474,17 @@ const Chat = () => {
             <div className="chatBox">
                 <div className="chatBoxWrapper">
                     {currentChatId ? (
-                        <>
+                        <>  
+                            <div className = "ChatBoxBar" >
+                                <input
+                                    className={chatInvClass}
+                                    placeholder={inputPlaceholder2}
+                                    value={inviteUsername}
+                                    onChange={handleInviteUsernameChange}
+                                />
+                                <button className="inviteButton" onClick={handleNewInviteMore}>Invite</button>
+                                <button className="leaveButton" onClick={handleLeave}>Leave</button>
+                            </div>
                             <div className="chatBoxTop" ref={chatBoxRef}>
                                 {messages.map(msg => (
                                     <div key={msg.message_id}>

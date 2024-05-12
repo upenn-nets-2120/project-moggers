@@ -5,7 +5,7 @@ const session = require('express-session');
 const http = require("http"); // Import http module
 
 const { S3Client, GetObjectCommand } = require("@aws-sdk/client-s3");
-const { ChromaClient } = require("chromadb");
+// const { ChromaClient } = require("chromadb");
 
 const configFile = fs.readFileSync('config.json', 'utf8');
 const config = JSON.parse(configFile);

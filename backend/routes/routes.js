@@ -50,7 +50,7 @@ CompressionCodecs[CompressionTypes.Snappy] = SnappyCodec;
 const { ChromaClient } = require("chromadb");
 
 const { getEmbeddingsFromS3, findTopKMatches, initializeFaceModels, indexAllFaces } = require('./appChroma');
-const client = require('/nets2120/project-moggers/backend/routes/chromaClient.js');
+// const client = require('/nets2120/project-moggers/backend/routes/chromaClient.js');
 var path = require('path');
 
 const fs = require('fs');
@@ -58,50 +58,50 @@ const tf = require('@tensorflow/tfjs-node');
 const faceapi = require('@vladmandic/face-api');
 const axios = require('axios');
 var collection;
-initializeFaceModels()
-.then(async () => {
+// initializeFaceModels()
+// .then(async () => {
 
-  collection = await client.getOrCreateCollection({
-    name: "face-api",
-    embeddingFunction: null,
-    // L2 here is squared L2, not Euclidean distance
-    metadata: { "hnsw:space": "l2" },
-  });
+// //   collection = await client.getOrCreateCollection({
+// //     name: "face-api",
+// //     embeddingFunction: null,
+// //     // L2 here is squared L2, not Euclidean distance
+// //     metadata: { "hnsw:space": "l2" },
+// //   });
 
-  console.info("Looking for files");
-  const promises = [];
-  // Loop through all the files in the images directory
-  fs.readdir("images", function (err, files) {
-    if (err) {
-      console.error("Could not list the directory.", err);
-      process.exit(1);
-    }
+//   console.info("Looking for files");
+//   const promises = [];
+//   // Loop through all the files in the images directory
+//   fs.readdir("images", function (err, files) {
+//     if (err) {
+//       console.error("Could not list the directory.", err);
+//       process.exit(1);
+//     }
 
-    files.forEach(function (file, index) {
-      console.info("Adding task for " + file + " to index.");
-      promises.push(indexAllFaces(path.join("images", file), file, collection));
-    });
-    console.info("Done adding promises, waiting for completion.");
-    Promise.all(promises)
-    .then(async (results) => {
-      console.info("All images indexed.");
+//     files.forEach(function (file, index) {
+//       console.info("Adding task for " + file + " to index.");
+//       promises.push(indexAllFaces(path.join("images", file), file, collection));
+//     });
+//     console.info("Done adding promises, waiting for completion.");
+//     Promise.all(promises)
+//     .then(async (results) => {
+//       console.info("All images indexed.");
   
-    //   const search = 'query.jpg';
+//     //   const search = 'query.jpg';
   
-    //   console.log('\nTop-k indexed matches to ' + search + ':');
-    //   for (var item of await findTopKMatches(collection, search, 5)) {
-    //     for (var i = 0; i < item.ids[0].length; i++) {
-    //       console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
-    //     }
-    //   }
+//     //   console.log('\nTop-k indexed matches to ' + search + ':');
+//     //   for (var item of await findTopKMatches(collection, search, 5)) {
+//     //     for (var i = 0; i < item.ids[0].length; i++) {
+//     //       console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
+//     //     }
+//     //   }
     
-    })
-    .catch((err) => {
-      console.error("Error indexing images:", err);
-    });
-    });
+//     })
+//     .catch((err) => {
+//       console.error("Error indexing images:", err);
+//     });
+//     });
 
-});
+// });
 
 // get recommendations for people to follow
 router.get('/recommendations', async (req, res) => {

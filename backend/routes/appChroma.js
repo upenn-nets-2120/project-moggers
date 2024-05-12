@@ -157,7 +157,7 @@ async function compareImages(file1, file2) {
 ////////////////////////
 // Main
 
-const client = require('/nets2120/project-moggers/backend/routes/chromaClient.js');
+// const client = require('/nets2120/project-moggers/backend/routes/chromaClient.js');
 // initializeFaceModels()
 // .then(async () => {
 

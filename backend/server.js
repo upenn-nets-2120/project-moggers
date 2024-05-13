@@ -41,10 +41,12 @@ io.on("connection", function (socket) {
   });
 
   socket.on("join room", obj => {
+    console.log("joining a room");
     socket.join(obj.room);
   });
 
   socket.on("leave room", obj => {
+    console.log("leaving a room");
     socket.leave(obj.room);
   });
 });

@@ -356,14 +356,14 @@ router.post('/changeProfile', async (req, res) => {
 router.post('/goOnline', async (req, res) => {
   
     try {
-        console.log("did we entere");
+        // console.log("did we entere");
         var username = req.body.username;
 
         if (!username) {
             console.log("did we entere1");
             return res.status(400).json({error: 'Missing username'});
         }
-        console.log("did we entere2");
+        // console.log("did we entere2");
        
         var existingUser = await db1.send_sql(`SELECT * FROM users WHERE username = "${username}"`);
       
@@ -1225,9 +1225,10 @@ router.get('/getCommentThreads', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     };
 });
-
+ 
 router.post('/postMessage', async (req, res) => {
     try {
+        console.log(req.body);
         var author = req.body.author;
         var content = req.body.content;
         var chat_id = req.body.chat_id;
@@ -1238,8 +1239,17 @@ router.post('/postMessage', async (req, res) => {
         const timestamp = new Date().toISOString(); 
 
         await db1.insert_items(`INSERT INTO messages (author, content, chat_id, timstamp) VALUES ("${author}", "${content}", "${chat_id}", "${timestamp}")`);
-
-        return res.status(200).json({ message: "Message posted successfully" });
+        console.log("this is the result");
+        console.log("reachedhere");
+        var data1 = await db1.send_sql(`
+        SELECT id AS message_id FROM messages ORDER BY timstamp DESC;
+        `);
+        const message_id = data1[0].message_id;
+        console.log(message_id);
+        console.log("done");
+        return res.status(200).json({ message: "Message posted successfully",
+                                    timestamp: timestamp,
+                                    message_id: message_id});
     } catch (error) {
         // Handle errors
      
@@ -1323,6 +1333,27 @@ router.post("/get_presigned_url", async (req, res) => {
     }
 });
 
+router.get('/getProfilesInChat', async (req, res) => {
+    try {
+        const chatid = req.query.chatId;
+       
+        if (!chatid) {
+            return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
+        }
+
+        var data = await db1.send_sql(`
+            SELECT user_id
+            FROM user_chats
+            WHERE user_chats.chat_id = "${chatid}" 
+        `);
+        return res.status(200).json({ data });
+ 
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    };
+});
+
 router.get('/getProfile', async (req, res) => {
     try {
         const userid = req.query.user_id;
@@ -1346,7 +1377,7 @@ router.get('/getProfile', async (req, res) => {
         const y1 = followers[0]['COUNT(*)'];
         const y2 = following[0]['COUNT(*)'];
         var status1 = await db1.send_sql(`SELECT status FROM users WHERE id = "${userid}"`);
-        console.log("data: ", data);
+        // console.log("data: ", data);
         const data1 = [{
             "username": data[0].username,
             "firstName": data[0].firstName,
@@ -1359,7 +1390,7 @@ router.get('/getProfile', async (req, res) => {
             "following": y2,
             "status": status1[0].status
         }];
-        console.log("dat1: ", data1);
+        // console.log("dat1: ", data1);
         return res.status(200).json({ data1, posts });
  
     } catch (error) {

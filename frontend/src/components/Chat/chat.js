@@ -23,17 +23,21 @@ const Chat = () => {
     const [inputPlaceholder, setInputPlaceholder] = useState("Search a friend username to invite for a new chat session");
     const [numInvites, setNumInvites] = useState(0);
     const [invites, setInvites] = useState([]);
-    const [convoChatId, setConvoChatId] = useState(null);  
+    const [oldChatId, setOldChatId] = useState(null);  
     const [inviteUsername, setInviteUsername] = useState(""); 
     const [chatInvClass, setChatInvClass] = useState("chatMenuInput")
     const [inputPlaceholder2, setInputPlaceholder2] = useState("Enter a user to invite...")
+    const [arrivalMsg, setArrivalMsg] = useState(null);
+    const [timestamp, setTimestamp] = useState(null);
+    const [messageId, setMessageId] = useState(null);
+    const [chatProfiles, setChatProfiles] = useState({}); // hashmap of userId : stuff
     
     // will just keep flickering to activate hook
     const [clickedInvite, setClickedInvite] = useState(false);
     const [sendMessageDummy, setSendMessageDummy] = useState(false);
     const [convoMapDummy, setConvoMapDummy] = useState(false);
-    const [sentMessage, setSentMessage] = useState(false);
     const [incomingMessage, setIncomingMessage] = useState(false);
+
 
 
 
@@ -53,9 +57,20 @@ const Chat = () => {
             socket.current = io('http://localhost:8080');
             socket.current.on("chat message", obj => {
                 console.log("client received socket chat message");
-        
+                
                 // change in order to call the hook
+                console.log(incomingMessage);
+                console.log(!incomingMessage);
                 setIncomingMessage(!incomingMessage);
+                setArrivalMsg({
+                    message_id: obj.message_id,
+                    content : obj.content,
+                    author: obj.author,
+                    timestamp: obj.timestamp,
+                    room : obj.room
+                });
+
+                console.log(incomingMessage);
             })
 
             console.log('Socket connection established successfully.');
@@ -63,6 +78,14 @@ const Chat = () => {
             console.error('Error establishing socket connection:', error);
         }
     }, []);
+    
+    useEffect(() => {
+        console.log("blahhhhhhh");
+        if (arrivalMsg) {
+            setMessages((prev) => [...prev, arrivalMsg]);
+        }
+        console.log(messages);
+    }, [arrivalMsg])
 
     
     // loads all the conversations for a user
@@ -87,25 +110,58 @@ const Chat = () => {
         getConversations();
     }, [currUserId, clickedInvite])
 
-    // Sets the messages of the chat
-    useEffect(() => {
-        const getMsgs = async () => {
-            try {
-                console.log("kms");
-                const res = await axios.get(`${rootURL}/getMessages`, { params: { chatId: currentChatId } });
-                setMessages(res.data.data);
-            } catch (error) {
-                console.log(error);
-            }
-        } 
-        getMsgs();
-    }, [currentChatId, sentMessage, incomingMessage, numInvites])
-    console.log(messages);
+    const getProfiles = async (chatId) => {
+        try {
+            console.log("cp1");
+            console.log(currentChatId);
+            const res = await axios.get(`${rootURL}/getProfilesInChat`, { params: { chatId: chatId } });
+            console.log("cp2");
+            const promises = res.data.data.map(async (item) => {
+                const response = await axios.get(`${rootURL}/getProfile`, {
+                    params: { user_id: item.user_id }
+                });
+                return [item.user_id, response.data.data1[0]]; // Assuming you want to return the data from the response
+            });
+            console.log("cp3");
+            const profiles = await Promise.all(promises);
+            var profiles_mapping = {};
+            console.log("cp4");
+            await profiles.forEach(item => {
+                profiles_mapping[item[0]] = item[1];
+            })
+            console.log("cp5");
+            setChatProfiles(profiles_mapping);
+            console.log("cp6");
+        } catch (error) {
+            console.log(error);
+        }
+    } 
 
-    // When the text box of messages changes
-    const handleMessageChange = (event) => {
-        setNewMessage(event.target.value);
-    };
+    // Sets the messages of the chat and gets all profile information
+    // useEffect(() => {
+    //     console.log("hello???");
+    //     const getMsgs = async () => {
+    //         try {
+    //             const res = await axios.get(`${rootURL}/getMessages`, { params: { chatId: currentChatId } });
+    //             setMessages(res.data.data);
+                
+    //         } catch (error) {
+    //             console.log(error);
+    //         }
+    //     }         
+    //     getMsgs();
+    // }, [currentChatId])
+
+    async function loadMsgs(chatId) {
+        console.log("hello???");
+        try {
+            const res = await axios.get(`${rootURL}/getMessages`, { params: { chatId: chatId } });
+            setMessages(res.data.data);
+        } catch (error) {
+            console.log(error);
+        }  
+    }
+    console.log(messages);
 
     // When the text box of invite input changes
     const handleInviteTextChange = (event) => {
@@ -131,13 +187,11 @@ const Chat = () => {
                 console.log('Trying to send message:', newMessage);
                 try {
                     const res = await axios.post(`${rootURL}/postMessage`, {author: currUserId, content:newMessage, chat_id: currentChatId});
-                    setNewMessage("");
-                    setSentMessage(!sentMessage);
-                    // socket.current.emit("chat message", {
-                    //     text : newMessage,
-                    //     sender: currUserId,
-                    //     room : currentChatId
-                    // });
+                    console.log("sent");
+                    setMessageId(res.data.message_id);
+                    console.log("this is the id");
+                    console.log(res.data.message_id);
+                    setTimestamp(res.data.timestamp);
                     setSendMessageDummy(!sendMessageDummy);
                 } catch (error) {
                     console.log(error);
@@ -150,10 +204,13 @@ const Chat = () => {
     // Called when a message is sent by button by sendMessage
     useEffect(() => {
         socket.current.emit("chat message", {
-            text : newMessage,
-            sender: currUserId,
+            message_id: messageId,
+            content : newMessage,
+            author: currUserId,
+            timestamp: timestamp,
             room : currentChatId
         });
+        setNewMessage("");
     }, [sendMessageDummy])
 
     // Called when button to send new invite is pressed
@@ -322,28 +379,38 @@ const Chat = () => {
     }
 
     // Called when you click on a convo
-     function handleSelectChat(chatId) {
+    async function handleSelectChat(chatId) {
+        setCurrentChatId(chatId);
+        console.log(chatId);
+        console.log(currentChatId);
+        console.log("getting profiles now");
+        await getProfiles(chatId);
+        console.log(chatProfiles);
+        console.log("got profiles");
         setConvoMapDummy(!convoMapDummy);
-        setConvoChatId(chatId);
+        await loadMsgs(chatId);
     }
 
     // Used to enter a socket room when you click on a convo. Helper for above
     useEffect(() => {
         function dummy2() {
-            const oldChatId = currentChatId;
-            setCurrentChatId(convoChatId);
+            setCurrentChatId(currentChatId);
             // const rooms = Object.keys(socket.current.rooms); // Get an array of room names
             // const isInRoom = rooms.length > 1; // If the socket is in any room other than its own room
-    
-            // if (!isInRoom) {
-                // console.log('Socket is not currently in a room');
-                socket.current.emit("leave room", {
-                    room : oldChatId
-                })
-            // } 
-            socket.current.emit("join room", {
-                room : currentChatId
-            });
+   
+            socket.current.emit("leave room", {
+                room : oldChatId
+            })
+            
+            console.log("about to join a room");
+            console.log("this is the chatid");
+            console.log(currentChatId);
+            if (currentChatId) {
+                socket.current.emit("join room", {
+                    room : currentChatId
+                });
+                setOldChatId(currentChatId);
+            }
         }
         dummy2();
     }, [convoMapDummy])
@@ -373,14 +440,7 @@ const Chat = () => {
             console.log(error);
         }
     }
-    const [usernameInput, setUsernameInput] = useState(null);
-    const [passwordInput, setpasswordInput] = useState(null);
-    const [emailInput, setEmailInput] = useState(null);
-    const [firstNameInput, setFirstNameInput] = useState(null);
-    const [lastNameInput, setLastNameInput] = useState(null);
-    const [affiliationInput, setAffiliationInput] = useState(null);
-    const [alertText, setAlertText] = useState("");
-    const [alertStatus, setAlertStatus] = useState("None");
+
     async function handleAcceptInvite(senderId, receiverId,senderChatId) {
         // send accept Chat invite request and rerender
         try {
@@ -411,24 +471,6 @@ const Chat = () => {
         } catch (error) {
             console.log(error);
         }
-    }
-
-    function getUsername(userId) {
-        const getUsernameHelper = async () => {
-            try {
-              
-                const username = await axios.get(`${rootURL}/getIdGivenUsername`, {
-                    params: {
-                      user_id: userId
-                    }
-                  });
-              
-                return username.data.data.username;
-            } catch (error) {
-                console.log(error);
-            }   
-        }
-        return getUsernameHelper();
     }
 
     return (
@@ -480,7 +522,7 @@ const Chat = () => {
                             <div className="chatBoxTop" ref={chatBoxRef}>
                                 {messages.map(msg => (
                                     <div key={msg.message_id}>
-                                        <Message msgContents={msg} currUser={currUserId} />
+                                        <Message msgContents={msg} currUser={currUserId} chatProfiles={chatProfiles}/>
                                     </div>
                                 ))}
                             </div>
@@ -489,7 +531,7 @@ const Chat = () => {
                                     className="chatMessageInput"
                                     placeholder="Enter a message..."
                                     value={newMessage}
-                                    onChange={handleMessageChange}
+                                    onChange={(e) => setNewMessage(e.target.value)}
                                 />
                                 <button className="chatSubmitButton" onClick={sendMessage}>Send</button>
                             </div>

@@ -22,6 +22,9 @@ export default function Message({msgContents, currUser, chatProfiles}) {
     if (chatProfiles[msgContents.author] && chatProfiles[msgContents.author].username !== null && chatProfiles[msgContents.author].username !== "undefined") {
         name = chatProfiles[msgContents.author].username;
     }
+    if (msgContents.author == 9) {
+        name = "System";
+    }
     // useEffect(() => {
     //     const fetchProfilePic = async () => {
     //         try {

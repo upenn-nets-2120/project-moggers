@@ -288,18 +288,16 @@ const Chat = () => {
     const handleNewInviteMore = () => {
         const helper = async () => {
             try {
-                if (newFriendChatInvite === currUsername) {
+                if (inviteUsername === currUsername) {
                     setInputPlaceholder2("You can't chat with yourself.");
                     setChatInvClass("chatMenuInputError");
                     setInviteUsername("");
 
-                    setInputPlaceholder("You can't chat with yourself.");
-                    setChatMenuInputClass("chatMenuInputError");
-                    setNewFriendChatInvite("");
+    
                 } else {
                     // first see if the person is online or not.
-                    // get id of newFriendChatInvite
-                    const res9 = await axios.get(`${rootURL}/getUserName`, { params: { username: newFriendChatInvite } });
+                    // get id of inviteUsername
+                    const res9 = await axios.get(`${rootURL}/getUserName`, { params: { username: inviteUsername } });
                     const friend_id = res9.data.data.id;
                     
                     if (friend_id === -1) {
@@ -325,12 +323,18 @@ const Chat = () => {
                     console.log(currUserId);
 // ***********************************************************
                     // otherwise check if they are already in the chat rn
+                    console.log("calling already in chat");
+                    console.log(friend_id);
+                    console.log(currentChatId);
                     const res2 = await axios.get(`${rootURL}/alreadyInChat`, { params: { userId: friend_id , chatId: currentChatId} });
-                    if (res2.data.data.status) {
+                    console.log("the status");
+                    console.log(res2.data);
+                    if (res2.data.status) {
                         // they are already in the chat
                         setInputPlaceholder2("This person is already here.");
                         setChatInvClass("chatMenuInputError");
                         setInviteUsername("");
+                        return;
                     }
 
                     // check if you already sent a chat req with this person
@@ -355,22 +359,30 @@ const Chat = () => {
     };
 
 
-    const handleLeave = () => {
+    const handleLeave = async () => {
+        const res = await axios.post(`${rootURL}/postMessage`, {author: 9, content:`User ${currUserId} has left`, chat_id: currentChatId});
+        console.log("leave cp1");
         const leaveHelper = async () => {
-            const res = await axios.post(`${rootURL}/leaveChat`, { userId: currUserId, chatId: currentChatId });
+            const res1 = await axios.post(`${rootURL}/leaveChat`, { userId: currUserId, chatId: currentChatId });
         };
-        leaveHelper();
+        await leaveHelper();
+        console.log("leave cp2");
         setCurrentChatId(null);
+        setClickedInvite(!clickedInvite);
     }
 
     // Helper to handleNewInvite to actually send the request
     function sendNewChatReq(userId, friendId, senderChatId) {
+        console.log("sending chat req with params");
+        console.log(senderChatId);
         const sendChatRequest = async () => {
             const res = await axios.post(`${rootURL}/sendChatRequest`, { sender: userId, receiver: friendId, origin: senderChatId });
-            console.log(res);
-            console.log(res.data.message);
+
             if (res.data.message == "Your friend already sent you a request, please accept.") {
                 console.log("are we here");
+                setInputPlaceholder("Your friend already sent the request, please accept.");
+                setChatMenuInputClass("chatMenuInputError");
+                setNewFriendChatInvite("");
                 //////////////////////////// DO STUFF///////////////////////////////////////////////////////////////////////
                 return;
             }
@@ -442,17 +454,22 @@ const Chat = () => {
     }
 
     async function handleAcceptInvite(senderId, receiverId,senderChatId) {
+        console.log("this user id is");
+        console.log(currUserId);
+        console.log(senderId);
+        console.log(receiverId);
+        console.log(senderChatId);
         // send accept Chat invite request and rerender
         try {
             const acceptInvite = async () => {
                 console.log("did we get called here");
-                const res = await axios.post(`${rootURL}/acceptChatRequest`, { sender: senderId, receiver: receiverId , senderChatId: senderChatId});
+                const res = await axios.post(`${rootURL}/acceptChatRequest`, { sender: senderId, receiver: receiverId , origin: senderChatId});
                 console.log(res);
             };
             console.log("test2");
 
             await acceptInvite();
-            setClickedInvite(!clickedInvite);
+            await setClickedInvite(!clickedInvite);
             console.log("test3");
         } catch (error) {
             console.log(error);
@@ -464,7 +481,7 @@ const Chat = () => {
     function handleDeclineInvite(senderId, receiverId, senderChatId) {
         try {
             const declineInvite = async () => {
-                const res = await axios.post(`${rootURL}/declineChatInvite`, { sender: senderId, receiver: receiverId , senderChatId: senderChatId});
+                await axios.post(`${rootURL}/declineChatInvite`, { sender: senderId, receiver: receiverId , senderChatId: senderChatId});
             };
             declineInvite();
             setClickedInvite(!clickedInvite);
@@ -548,4 +565,3 @@ const Chat = () => {
 };
 
 export default Chat;
-

@@ -431,15 +431,17 @@ router.post('/goOffline', async (req, res) => {
 
 router.post('/leaveChat', async (req, res) => {
     try {
+        console.log("backend cp1");
         const { userId, chatId } = req.body;
-
-        const userChatExists = await db.query('SELECT * FROM user_chats WHERE user_id = ? AND chat_id = ?', [userId, chatId]);
+        console.log("backend cp2");
+        const userChatExists = await db1.send_sql(`SELECT * FROM user_chats WHERE user_id = ${userId} AND chat_id = ${chatId}`);
         if (userChatExists.length === 0) {
             return res.status(404).json({ error: 'User-chat association not found.' });
         }
+        console.log("backend cp3");
 
-        await db.query('DELETE FROM user_chats WHERE user_id = ? AND chat_id = ?', [userId, chatId]);
-
+        await db1.send_sql(`DELETE FROM user_chats WHERE user_id = ${userId} AND chat_id = ${chatId}`);
+        console.log("backend cp4");
         res.status(200).json({ message: 'User left the chat successfully.' });
     } catch (error) {
         console.error('Error leaving chat:', error);
@@ -978,33 +980,33 @@ router.get('/numLikes', async (req, res) => {
     };
 });
 
-router.post('/joinChat', async (req, res) => {
-    try {
-        const room = req.body.room;
+// router.post('/joinChat', async (req, res) => {
+//     try {
+//         const room = req.body.room;
 
-        // write to database
-        return res.send({
-            success: true
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
-    };
-});
+//         // write to database
+//         return res.send({
+//             success: true
+//         });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ message: 'Internal server error' });
+//     };
+// });
 
-router.post('/leaveChat', async (req, res) => {
-    try {
-        const room = req.body.room;
+// router.post('/leaveChat', async (req, res) => {
+//     try {
+//         const room = req.body.room;
 
-        // write to database
-        return res.send({
-            success: true
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
-    };
-});
+//         // write to database
+//         return res.send({
+//             success: true
+//         });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ message: 'Internal server error' });
+//     };
+// });
 // *********************************************************
 // only call this method AFTER person 2 ACCEPTS the invite and also we sent the invite.
 router.post('/postChats', async (req, res) => {
@@ -1406,16 +1408,17 @@ router.get('/getUserName', async (req, res) => {
         const username = req.query.username;
         console.log(username);
         if (!username) {
+            console.log("spongebob1");
             return res.status(400).json({error: 'Missing username.'});
         }
-      
+        console.log("spongebob2");
         var data1 = await db1.send_sql(`
         SELECT users.id 
         FROM users 
         WHERE users.username = "${username}"
         `);
         var data;
-        
+        console.log("spongebob2");
         if (data1.length === 0) {
             return res.status(200).json({ data: { id: -1 } });
         } else {
@@ -1530,24 +1533,28 @@ router.get('/chatAlreadyExists', async (req, res) => {
 
 router.get('/alreadySent', async (req, res) => {
     try {
+        console.log("already sent")
         const userid1 = req.query.user_id1;
         const userid2 = req.query.user_id2;
+        console.log("cp1");
 
         if (!userid1 || !userid2) {
             return res.status(400).json({error: 'Missing id.'});
         }
+        console.log("cp2");
       
         var status1 = await db1.send_sql(`
-        SELECT *
-        FROM chatRequests
-        WHERE sender = "${userid1}" OR receiver = "${userid2}"
+        SELECT COUNT(*) AS count
+        FROM chatRequestsSuper
+        WHERE sender = "${userid1}" AND receiver = "${userid2}"
         `);
-       
+        console.log("cp3");
+        console.log(status1);
      
-        if (status1.length === 0) {
-            return res.status(200).json({ status: false});
-        } else {
+        if (status1[0].count > 0) {
             return res.status(200).json({ status: true});
+        } else {
+            return res.status(200).json({ status: false});
         }
        
     } catch (error) {
@@ -1558,40 +1565,47 @@ router.get('/alreadySent', async (req, res) => {
 
 router.post('/sendChatRequest', async (req, res) => {
     try {
-        var {sender, receiver, senderChatId} = req.body;
-        
+        var {sender, receiver, origin} = req.body;
+        console.log(origin);
+        console.log("req cp1");
+        console.log(sender);
+        console.log(receiver);
+        console.log(origin);
         if (!sender || ! receiver) {
+            console.log("req cp2");
             return res.status(400).json({error: 'Missing chat request input'});
         }
         console.log("hi1");
 
         var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${sender}"`)
+        console.log("req cp3");
         var count1res = count1[0]['COUNT(*)'];
         console.log("hi2");
     
         if (count1res != 1) {
             return res.status(500).json({message: 'Could not find sender ID in users or found more than one.'});
         }
+        console.log("req cp4");
         var count2 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${receiver}"`)
         var count2res = count2[0]['COUNT(*)'];
-    
+        console.log("req cp5");
         if (count2res != 1) {
             return res.status(500).json({message: 'Could not find receiver ID in users or found more than one.'});
         }
            
         console.log("hi3");
     
-        var existingRequest = await db1.send_sql(` SELECT COUNT(*) AS count FROM chatRequestsSuper  WHERE sender = ${sender} AND receiver = ${receiver} AND origin = ${senderChatId} `);
-        
+        var existingRequest = await db1.send_sql(` SELECT COUNT(*) AS count FROM chatRequestsSuper WHERE sender = ${sender} AND receiver = ${receiver} AND origin = ${origin} `);
+        console.log("req cp5.5");
         if (existingRequest[0].count != 0) {
             return res.status(500).json({message: `Chat request is already sent`});
         }
         console.log("hi4");
 
 
-        var existingRequest2 = await db1.send_sql(` SELECT COUNT(*) AS count FROM chatRequestsSuper  WHERE sender = ${sender} AND receiver = ${receiver} AND origin = ${senderChatId} `);
+        var existingRequest2 = await db1.send_sql(` SELECT COUNT(*) AS count FROM chatRequestsSuper  WHERE sender = ${sender} AND receiver = ${receiver} AND origin = ${origin} `);
         console.log(existingRequest2);
-        
+        console.log("req cp6");
         if (existingRequest2[0].count != 0) {
             return res.status(200).json({message: `Your friend already sent you a request, please accept.`});///////////////////
         }
@@ -1604,7 +1618,8 @@ router.post('/sendChatRequest', async (req, res) => {
         //     return res.status(500).json({message: `Request Exist`});
         // }
         // await db1.insert_items(`INSERT INTO chatRequests (sender, receiver) VALUES ("${sender}", "${receiver}")`);
-        await db1.insert_items(`INSERT INTO chatRequestsSuper (sender, receiver, origin) VALUES ("${sender}", "${receiver}", "${senderChatId}")`);
+        await db1.insert_items(`INSERT INTO chatRequestsSuper (sender, receiver, origin) VALUES ("${sender}", "${receiver}", "${origin}")`);
+        console.log("req cp7");
         return res.status(200).json({message: `Request sent`});
         
         } catch (error) {
@@ -1645,57 +1660,62 @@ router.get('/getChatRequests', async (req, res) => {
 
 router.post('/acceptChatRequest', async (req, res) => {
     try {
-        var {sender, receiver, senderChatId} = req.body;
-        
+        var {sender, receiver, origin} = req.body;
+        console.log("accept cp1");
         if (!sender || ! receiver) {
             return res.status(400).json({error: 'Missing chat request input'});
         }
-
+        console.log("accept cp2");
         var count1 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${sender}"`)
         var count1res = count1[0]['COUNT(*)'];
-    
+        console.log("accept cp3");
         if (count1res != 1) {
             return res.status(400).json({message: 'Could not find user ID in users or found more than one.'});
         }
+        console.log("accept cp4");
         var count2 = await db1.send_sql(`SELECT COUNT(*) FROM users WHERE id = "${sender}"`)
         var count2res = count2[0]['COUNT(*)'];
-    
+        console.log("accept cp5");
         if (count2res != 1) {
             return res.status(400).json({message: 'Could not find user ID in users or found more than one.'});
         }
-
-        var existingChatRequest = await db1.send_sql(` SELECT COUNT(*) AS count  FROM chatRequestsSuper WHERE sender = "${sender}" AND receiver = "${receiver}" AND chatSenderID = "${senderChatId}"`);
+        console.log("accept cp6");
+        var existingChatRequest = await db1.send_sql(` SELECT COUNT(*) AS count  FROM chatRequestsSuper WHERE sender = "${sender}" AND receiver = "${receiver}" AND origin = "${origin}"`);
         if (existingChatRequest[0].count == 0) {
             return res.status(400).json({message: `Friend request does not exist`});
         }
-
+        console.log("accept cp7");
         // check if we need to create a new one or not
-        var count3 = await db1.send_sql(`SELECT COUNT(*) FROM chatRequestsSuper WHERE sender = "${sender}" AND receiver = "${receiver}" AND chatSenderID = "${senderChatId}"`);
+        var count3 = await db1.send_sql(`SELECT COUNT(*) FROM chatRequestsSuper WHERE sender = "${sender}" AND receiver = "${receiver}" AND origin = "${origin}"`);
         var count3res = count3[0]['COUNT(*)'];
-        const chatSenderID = count3[0].senderChatId;
-        if (chatSenderID == -1) {
+
+        if (origin == -1) {
             // no chat sender Id means make new
             // var existingFriends = await db1.send_sql(` SELECT COUNT(*) AS count  FROM chatRequests  WHERE sender = ${sender} AND receiver = ${receiver};  `);
         
             // if (existingFriends[0].count != 0) {
             //     return res.status(500).json({message: `User is already followed`});
             // }
-            await db1.send_sql(`DELETE FROM chatRequestsSuper WHERE sender = ${sender} AND receiver = ${receiver} AND chatSenderID = "${senderChatId}"`);
+            console.log("accept cp9");
+            await db1.send_sql(`DELETE FROM chatRequestsSuper WHERE sender = ${sender} AND receiver = ${receiver} AND origin = "${origin}"`);
 
-            
+            console.log("accept cp10");
             await db1.insert_items(`INSERT INTO chats (name) VALUES ("${sender}/${receiver} Chat")`);
             const x = await db1.send_sql('SELECT LAST_INSERT_ID() AS id');
+            console.log("accept cp11");
             const new_chat_id = x[0].id;//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             await db1.insert_items(`INSERT INTO user_chats (user_id, chat_id) VALUES ("${sender}", "${new_chat_id}")`);
             await db1.insert_items(`INSERT INTO user_chats (user_id, chat_id) VALUES ("${receiver}", "${new_chat_id}")`);
+            console.log("accept cp12");
             var content = 'Chat created.';
             const timestamp = new Date().toISOString(); 
             await db1.insert_items(`INSERT INTO messages (author, content, chat_id, timstamp) VALUES ("${9}", "${content}", "${new_chat_id}", "${timestamp}")`);
             return res.status(200).json({message: `Request accepted`});
         } else {
+            console.log("cpx1");
             // else no need to make new chat
-            await db1.send_sql(`DELETE FROM chatRequestsSuper WHERE sender = ${sender} AND receiver = ${receiver} AND chatSenderID = "${senderChatId}"`);
-            await db1.insert_items(`INSERT INTO user_chats (user_id, chat_id) VALUES ("${receiver}", "${senderChatId}")`);
+            await db1.send_sql(`DELETE FROM chatRequestsSuper WHERE sender = ${sender} AND receiver = ${receiver} AND origin = "${origin}"`);
+            await db1.insert_items(`INSERT INTO user_chats (user_id, chat_id) VALUES ("${receiver}", "${origin}")`);
             var content = 'New user joined.';
             const timestamp = new Date().toISOString(); 
             await db1.insert_items(`INSERT INTO messages (author, content, chat_id, timstamp) VALUES ("${9}", "${content}", "${new_chat_id}", "${timestamp}")`);
@@ -1709,14 +1729,17 @@ router.post('/acceptChatRequest', async (req, res) => {
 });
 
 router.get('/alreadyInChat', async (req, res) => {
-    var userId = req.body.userId;
-    var chatId = req.body.currentChatId;
+    var userId = req.query.userId;
+    var chatId = req.query.chatId;
     try {
+        console.log("already in chat");
+        console.log(userId);
+        console.log(chatId);
         // Query to check if the user is in the chat
-        const result = await pool.query('SELECT * FROM user_chats WHERE user_id = $1 AND chat_id = $2', [userId, chatId]);
-
+        const result = await db1.send_sql(`SELECT COUNT(*) AS count FROM user_chats WHERE user_id = ${userId} AND chat_id = ${chatId}`);
+        console.log(result);
         // If the user is in the chat, send a success response
-        if (result.rows.length > 0) {
+        if (result[0].count > 0) {
             res.status(200).json({ status: true });
         } else {
             res.status(200).json({ status: false });

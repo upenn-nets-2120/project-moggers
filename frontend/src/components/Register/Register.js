@@ -76,14 +76,14 @@ const Register = () => {
       ReactSession.set("user_id", response.data.user_id);
       ReactSession.set("username", response.data.username);
 
-      await axios.post(`${config.serverRootURL}/linkToActor`, {
-        selectedImage: selectedImage,
-        user_id: response.data.user_id
-      });
+      // await axios.post(`${config.serverRootURL}/linkToActor`, {
+      //   selectedImage: selectedImage,
+      //   user_id: response.data.user_id
+      // });
       console.log(ReactSession.get("user_id"));
     } catch (error) {
       console.log("Error", error);
-      setError('An error occurred');
+      setError(`An error occurred: ${error}`);
     }
     navigate('/profile');
   };
@@ -149,11 +149,18 @@ const Register = () => {
         console.error('Error uploading profile photo:', error);
       };
 
-      const response = await axios.post(`${config.serverRootURL}/findMatches`, {
-        fileName: signedUrlResponse.data.fileName
-      });
+      const response = await axios.get(`${config.serverRootURL}/findMatches?userSelfie=https://moggers-image-uploads.s3.amazonaws.com/${signedUrlResponse.data.fileName}`);
       console.log(response.data);
-      setSimilarImages(response.data.documentsArray);
+      if (response.data.documentsArray.length === 0) {
+        const dummySimilarImages = ['nm0267916.jpg', 'nm0380965.jpg', 'nm0392442.jpg', 'nm0464137.jpg', 'nm0909825.jpg'];
+        setSimilarImages(dummySimilarImages);
+        console.log('No similar images found');
+      } else {
+        console.log("yay");
+        setSimilarImages(response.data.documentsArray);
+      }
+      // const dummySimilarImages = ['nm0267916.jpg', 'nm0380965.jpg', 'nm0392442.jpg', 'nm0464137.jpg', 'nm0909825.jpg'];
+      // setSimilarImages(dummySimilarImages);
       setStep(4);
     } catch (error) {
       console.log("Error", error);
@@ -190,8 +197,10 @@ const Register = () => {
     setProfilePhoto(file);
   };
 
-  const handleImageSelect = (image) => {
+  const handleImageSelect = async (image) => {
     setSelectedImage(image);
+    console.log(image);
+    console.log(selectedImage);
   };
 
   const renderStep = () => {
@@ -286,15 +295,16 @@ const Register = () => {
         return (
           <div>
             {/* Step 4: Display similar images */}
+            <h2 style={{ 'textAlign': 'center', 'marginBlock': '25px'}}><b>Select an Actor to Link Your Account to</b></h2>
             {similarImages.map(image => (
               <img
                 key={image.split('.')[0]}
-                src={`../../../../backend/images/${image}`}
+                src={`https://moggers-image-uploads.s3.amazonaws.com/${image}`} alt={image}
                 onClick={() => handleImageSelect(image)}
-                style={{ cursor: 'pointer', border: selectedImage === image ? '2px solid red' : 'none' }}
+                style={{ cursor: 'pointer', width: '50%', marginLeft: '25%', marginRight: '25%', border: selectedImage === image ? '2px solid red' : 'none' }}
               />
             ))}
-            <button onClick={handleSubmit}>Submit</button>
+            <button className={styles.registerbtn} onClick={handleSubmit}>Submit</button>
           </div>
         );
       default:

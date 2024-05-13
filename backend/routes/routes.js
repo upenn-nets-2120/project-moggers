@@ -31,7 +31,7 @@ const consumer = kafka.consumer({
 const producer = kafka.producer();
 
 const consumer2 = kafka.consumer({ 
-        groupId: 'g01b', 
+        groupId: 'g01lkol', 
         bootstrapServers: config.bootstrapServers});
 
 var kafka_messages_federated_posts = [];
@@ -1811,13 +1811,12 @@ const run = async () => {
         eachMessage: async ({ topic, partition, message }) => {
             const jsonString = message.value.toString(); // Convert Buffer to string
             const jsonData = JSON.parse(jsonString); // Parse JSON string to object
-            console.log(jsonData);
             const { username, source_site, post_uuid_within_site, post_text, content_type } = jsonData;
             if (username) {
                 const res = await db1.send_sql(`SELECT COUNT(*) AS username_count
                                 FROM users
                                 WHERE username = '${username}'`);
-                console.log(res);
+               
 
             if (res[0].username_count >= 1) {
             console.log('Username already exists');
@@ -1861,20 +1860,58 @@ const run2 = async () => {
     // Consuming
    
     console.log(`Following topic Twitter-Kafka`);
-    // await consumer2.connect();
+    await consumer2.connect();
 
-    // await consumer2.subscribe({ topic: 'Twitter-Kafka', fromBeginning: true });
+    await consumer2.subscribe({ topic: 'Twitter-Kafka', fromBeginning: true });
 
-    // await consumer2.run({
-    //     eachMessage: async ({ topic, partition, message }) => {
-    //         kafka_message1.push({
-    //             value: message.value.toString(),
-    //         });
-    //         console.log({
-    //             value: message.value.toString(),
-    //         });
-    //     },
-    // });
+    await consumer2.run({
+        eachMessage: async ({ topic, partition, message }) => {
+
+            const jsonString = message.value.toString(); // Convert Buffer to string
+            console.log(jsonString);
+            const jsonData = JSON.parse(jsonString); // Parse JSON string to object
+            console.log(jsonData);
+            const { hashtags, text } = jsonData;
+            var username = "twitter-kafka";
+            if (username) {
+                const res = await db1.send_sql(`SELECT COUNT(*) AS username_count
+                                FROM users
+                                WHERE username = '${username}'`);
+                console.log(res);
+
+            if (res[0].username_count >= 1) {
+            console.log('Username already exists');
+          }         else {
+                await db1.insert_items(`INSERT INTO users (username, password, firstName, lastName, email, affiliation, birthday, profilePhoto) 
+                VALUES ("${username}", "password", "external", "post", "fedPosts@gmail.com", "not relevant", "null", "null")`);
+                 console.log('Username does not exist');
+            }
+            var data1 = await db1.send_sql(`
+        SELECT users.id
+        FROM users 
+        WHERE users.username = "${username}"
+        `);
+        const x1 = data1[0].id;
+        console.log(x1);
+            
+
+       
+        const timstamp = new Date().toISOString();
+     
+        console.log("did we enter here???");
+        await db1.insert_items(`INSERT INTO posts (author, content, image, num_likes, timstamp) VALUES ("${x1}", "${text}", "null", 0, "${timstamp}")`);
+        const x = await db1.send_sql('SELECT LAST_INSERT_ID() AS id');
+
+            await db1.insert_items(`INSERT INTO hashtagPosts (name, hashID) VALUES ("${hashtags}", ${x[0].id})`);
+         
+        
+
+                
+            }
+            
+            
+        },
+    });
 };
 
 

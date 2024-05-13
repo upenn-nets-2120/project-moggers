@@ -122,9 +122,10 @@ function Profile() {
             </div>
           </div>
         </div>
+        {(paramUserId === currUserId || paramUserId === undefined) && (
         <Link to="/changeProfile" className={styles.settingsButton}>
           <FontAwesomeIcon icon={faCog} />
-        </Link>
+        </Link>)}
       </div>
 
       {/* Render posts */}

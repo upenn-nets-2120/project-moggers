@@ -41,10 +41,10 @@ const ChangeProfile = () => {
     
     useEffect(() => {
         async function fetchAndSet() {
-            const response = await axios.get(`${rootURL}/getProfile`, {
+            const response = await axios.get(`${rootURL}/getProfileChange`, {
                 params: { user_id: currUserId }
             });
-
+            console.log(response.data.data1);
             setUsernameInput(response.data.data1[0].username);
             setpasswordInput(response.data.data1[0].password);
             setEmailInput(response.data.data1[0].email);
@@ -53,6 +53,9 @@ const ChangeProfile = () => {
             setAffiliationInput(response.data.data1[0].affiliation);
             setS3FileName(response.data.data1[0].profilePhoto);
             setSelectedHashtags(response.data.data1[0].interests.split(',') || []);
+            if (selectedHashtags.length !== 0 && (selectedHashtags[0] == '' || selectedHashtags[0] === ' ')) {
+                setSelectedHashtags([]);
+            }
 
             console.log("change profile: these are the user change params:");
             console.log(response.data.data1[0].username);
@@ -170,26 +173,32 @@ const ChangeProfile = () => {
                     newUsername: usernameInput,
                     newPassword: passwordInput,
                     newEmail: emailInput,
-                    newfirstName: firstNameInput,
+                    newFirstName: firstNameInput,
                     newLastName: lastNameInput,
                     newAffiliation: affiliationInput,
                     newProfilePhoto: s3FileName,
                     newInterests: interests
                 }
-                const res = await axios.post(`${rootURL}/updateProfile`, newParams);
+                try {
+                    const response = await axios.post(`${config.serverRootURL}/changeProfile`, newParams);
+                    console.log(response.data);
+                    // setCookie('user_id', response.data.user_id, { path: `${config.serverRootURL}/` });
+                    // setCookie('username', response.data.username, { path: `${config.serverRootURL}/` });
+                    if (response.data) {
+                        ReactSession.set("username", response.data.username);
+                        console.log(ReactSession.get("user_id"));
+                    }
+                } catch (error) {
+                    console.log(error);
+                }
+
+                navigate('/profile');
             }
             postNewProfileData();
     
             setAlertText("Success!");
             setAlertStatus("Complete!")
-            
-            const response = await axios.post(`${config.serverRootURL}/changeProfile`, postNewProfileData);
-            console.log(response.data);
-            // setCookie('user_id', response.data.user_id, { path: `${config.serverRootURL}/` });
-            // setCookie('username', response.data.username, { path: `${config.serverRootURL}/` });
-            ReactSession.set("username", response.data.username);
-            console.log(ReactSession.get("user_id"));
-            navigate('/profile');
+        
           } catch (error) {
             setAlertText(error.response.data.error || 'An error occurred');
           }
@@ -198,56 +207,49 @@ const ChangeProfile = () => {
     return (
         <div className="profile-container">
             <h2>Change Profile Information</h2>
-            <label htmlFor="username">Username:</label>
-            <input style={{width: "75%", marginLeft: "10px"}}
+            <label htmlFor="username">Username:</label><br></br>
+            <input style={{ width: "95%"}}
                 // placeholder={usernameInput}
                 className="paramChanges"
                 value={usernameInput}
                 onChange={(event) => setUsernameInput(event.target.value)}
             />
-            <label htmlFor="email">Email:</label>
-            <input style={{width: "75%", marginLeft: "10px"}}
+            <label htmlFor="email">Email:</label><br></br>
+            <input style={{ width: "95%"}}
                 // placeholder={emailInput}
                 className="paramChanges"
                 value={emailInput}
                 onChange={(event) => setEmailInput(event.target.value)}
             />
-            <label htmlFor="firstName">First Name:</label>
-            <input style={{width: "75%", marginLeft: "10px"}}
+            <label htmlFor="firstName">First Name:</label><br></br>
+            <input style={{ width: "95%"}}
                 // placeholder={firstNameInput}
                 className="paramChanges"
                 value={firstNameInput}
                 onChange={(event) => setFirstNameInput(event.target.value)}
             />
-            <label htmlFor="lastName">Last Name:</label>
-            <input style={{width: "75%", marginLeft: "10px"}}
+            <label htmlFor="lastName">Last Name:</label><br></br>
+            <input style={{ width: "95%"}}
                 // placeholder={lastNameInput}
                 className="paramChanges"
                 value={lastNameInput}
                 onChange={(event) => setLastNameInput(event.target.value)}
             />
-            <label htmlFor="affiliation">Affiliation:</label>
-            <input style={{width: "75%", marginLeft: "10px"}}
+            <label htmlFor="affiliation">Affiliation:</label><br></br>
+            <input style={{ width: "95%"}}
                 // placeholder={affiliationInput}
                 className="paramChanges"
                 value={affiliationInput}
                 onChange={(event) => setAffiliationInput(event.target.value)}
             />
-            <label htmlFor="password">Password:</label>
-            <input style={{width: "75%", marginLeft: "10px"}}
-                // placeholder={passwordInput}
-                type="password"
-                className="passwordChange"
-                value={passwordInput}
-                onChange={(event) => setAffiliationInput(event.target.value)}
-            />
+        
             {alertStatus !== "None" && (
                 <div className={alertStatus}>
                     {alertText}
                 </div> 
             )}
 
-<div className={styles.hashtagsContainer}>
+            <div className={styles.hashtagsContainer}>
                 {defaultTopHashtags.map(hashtag => (
                     <button
                     key={hashtag} type="button"
@@ -278,6 +280,14 @@ const ChangeProfile = () => {
             <div><input type="file" onChange={handleProfilePhotoChange} />
             <button className={styles.registerbtn} style={{backgroundColor: 'green', width: '80px', height: '35px', marginTop: '8px', fontSize: '14px'}} type="submit">Upload</button>
             </div><br></br><br></br>
+            <label htmlFor="password">Confirm Password: *</label><br></br>
+            <input style={{ width: "95%"}}
+                // placeholder={passwordInput}
+                type="password"
+                className="passwordChange"
+                value={passwordInput}
+                onChange={(event) => setpasswordInput(event.target.value)}
+            /><br></br>
 
             <button type="submit" className="btn btn-primary" onClick={handleSubmitChanges}>Save Changes</button>
         </div>

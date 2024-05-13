@@ -342,10 +342,23 @@ router.post('/register', async (req, res) => {
 
 router.post('/changeProfile', async (req, res) => {
     try {
-        const { user_id, newUsername, newPassword, newEmail, newfirstName, newLastName, newAffiliation, newProfilePhoto, newInterests } = req.body;
-
-        await db1.send_sql(`UPDATE users SET username = "${newUsername}", password = "${newPassword}", email = "${newEmail}", firstName = "${newfirstName}", lastName = "${newLastName}", affiliation = "${newAffiliation}", profilePhoto = "${newProfilePhoto}", hashtags = "${newInterests}" WHERE id = ${user_id}`);
-        res.status(200).json({ message: 'Profile updated successfully' });
+        const { user_id, newUsername, newPassword, newEmail, newFirstName, newLastName, newAffiliation, newProfilePhoto, newInterests, oldPassword } = req.body;
+        console.log("new user", newUsername);
+        const user = await db1.send_sql(`SELECT * FROM users WHERE username = "${newUsername}"`);
+        console.log(user);
+        if (user.length === 0) {
+            return res.status(401).json({error: 'Username and/or password are invalid.'});
+        }
+ 
+        const hashed_password = user[0].password;
+        bcrypt.compare(newPassword, hashed_password, (err, result) => {
+            if (result) {
+                req.session.user_id = user_id;
+                req.session.username = newUsername;   
+            } 
+        });
+        await db1.send_sql(`UPDATE users SET username = "${newUsername}", password = "${newPassword}", email = "${newEmail}", firstName = "${newFirstName}", lastName = "${newLastName}", affiliation = "${newAffiliation}", profilePhoto = "${newProfilePhoto}", hashtags = "${newInterests}" WHERE id = ${user_id}`);
+                return res.status(200).json({ user_id: user_id, username: newUsername, message: 'Profile updated successfully' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal server error' });
@@ -1401,6 +1414,41 @@ router.get('/getProfile', async (req, res) => {
     };
 });
 
+router.get('/getProfileChange', async (req, res) => {
+    try {
+        const userid = req.query.user_id;
+       
+        if (!userid) {
+            return res.status(400).json({error: 'One or more of the fields you entered was empty, please try again.'});
+        }
+
+        var data = await db1.send_sql(`
+            SELECT username, firstName, lastName, email, affiliation, profilePhoto, hashtags, birthday, interests
+            FROM users
+            WHERE users.id = "${userid}" 
+        `);
+
+        var status1 = await db1.send_sql(`SELECT status FROM users WHERE id = "${userid}"`);
+        // console.log("data: ", data);
+        const data1 = [{
+            "username": data[0].username,
+            "firstName": data[0].firstName,
+            "lastName": data[0].lastName,
+            "email": data[0].email,
+            "affiliation": data[0].affiliation,
+            "profilePhoto": data[0].profilePhoto,
+            "birthday": data[0].birthday,
+            "interests": data[0].hashtags,
+            "status": status1[0].status
+        }];
+        // console.log("dat1: ", data1);
+        return res.status(200).json({ data1 });
+ 
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    };
+});
 
 router.get('/getUserName', async (req, res) => {
     console.log("99");

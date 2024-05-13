@@ -385,6 +385,7 @@ const Chat = () => {
                 const res = await axios.post(`${rootURL}/acceptChatRequest`, { sender: senderId, receiver: receiverId , origin: senderChatId});
             };
             await acceptInvite();
+            const res = await axios.post(`${rootURL}/postMessage`, {author: 9, content:`User ${currUserId} has joined the chat`, chat_id: currentChatId});
             await setClickedInvite(!clickedInvite);
         } catch (error) {
             console.log(error);

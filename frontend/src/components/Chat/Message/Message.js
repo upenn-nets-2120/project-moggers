@@ -9,14 +9,8 @@ import axios from "axios";
 export default function Message({msgContents, currUser, chatProfiles}) {
     var profilePic = 'https://www.pngitem.com/pimgs/m/146-1468479_my-profile-icon-blank-profile-picture-circle-hd.png';
     var name = "User";
-    console.log("starting messages");
-    console.log(chatProfiles);
-    console.log(msgContents);
-    console.log(msgContents.author);
-    console.log(chatProfiles[msgContents.author]);
     
     if (chatProfiles[msgContents.author] && chatProfiles[msgContents.author].profilePhoto !== null && chatProfiles[msgContents.author].profilePhoto !== "") {
-        console.log("made it");
         profilePic = chatProfiles[msgContents.author].profilePhoto;
     }
     if (chatProfiles[msgContents.author] && chatProfiles[msgContents.author].username !== null && chatProfiles[msgContents.author].username !== "undefined") {

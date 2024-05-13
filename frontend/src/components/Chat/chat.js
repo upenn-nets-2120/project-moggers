@@ -55,12 +55,8 @@ const Chat = () => {
     useEffect(() => {
         try {
             socket.current = io('http://localhost:8080');
-            socket.current.on("chat message", obj => {
-                console.log("client received socket chat message");
-                
+            socket.current.on("chat message", obj => {                
                 // change in order to call the hook
-                console.log(incomingMessage);
-                console.log(!incomingMessage);
                 setIncomingMessage(!incomingMessage);
                 setArrivalMsg({
                     message_id: obj.message_id,
@@ -69,8 +65,6 @@ const Chat = () => {
                     timestamp: obj.timestamp,
                     room : obj.room
                 });
-
-                console.log(incomingMessage);
             })
 
             console.log('Socket connection established successfully.');
@@ -80,11 +74,9 @@ const Chat = () => {
     }, []);
     
     useEffect(() => {
-        console.log("blahhhhhhh");
         if (arrivalMsg) {
             setMessages((prev) => [...prev, arrivalMsg]);
         }
-        console.log(messages);
     }, [arrivalMsg])
 
     
@@ -92,11 +84,7 @@ const Chat = () => {
     useEffect(() => {
         const getConversations = async () => {
             try {
-                console.log(currUserId);
-                console.log("spongebobeeee");
                 const res = await axios.post(`${rootURL}/getConvos`, {user_id: currUserId});
-                console.log(res);
-                console.log(res.data.data);
                 // NEED TO GET REQUEST TO FIND NUMBER OF INVITES and use setNUMINVITES//////////////////////////////////////////////////////
                 // const res2 = await axios.get(`${rootURL}/getNumInvites`, {user_id : currUserId});
 
@@ -112,48 +100,25 @@ const Chat = () => {
 
     const getProfiles = async (chatId) => {
         try {
-            console.log("cp1");
-            console.log(currentChatId);
             const res = await axios.get(`${rootURL}/getProfilesInChat`, { params: { chatId: chatId } });
-            console.log("cp2");
             const promises = res.data.data.map(async (item) => {
                 const response = await axios.get(`${rootURL}/getProfile`, {
                     params: { user_id: item.user_id }
                 });
                 return [item.user_id, response.data.data1[0]]; // Assuming you want to return the data from the response
             });
-            console.log("cp3");
             const profiles = await Promise.all(promises);
             var profiles_mapping = {};
-            console.log("cp4");
             await profiles.forEach(item => {
                 profiles_mapping[item[0]] = item[1];
             })
-            console.log("cp5");
             setChatProfiles(profiles_mapping);
-            console.log("cp6");
         } catch (error) {
             console.log(error);
         }
     } 
 
-    // Sets the messages of the chat and gets all profile information
-    // useEffect(() => {
-    //     console.log("hello???");
-    //     const getMsgs = async () => {
-    //         try {
-    //             const res = await axios.get(`${rootURL}/getMessages`, { params: { chatId: currentChatId } });
-    //             setMessages(res.data.data);
-                
-    //         } catch (error) {
-    //             console.log(error);
-    //         }
-    //     }         
-    //     getMsgs();
-    // }, [currentChatId])
-
     async function loadMsgs(chatId) {
-        console.log("hello???");
         try {
             const res = await axios.get(`${rootURL}/getMessages`, { params: { chatId: chatId } });
             setMessages(res.data.data);
@@ -161,7 +126,6 @@ const Chat = () => {
             console.log(error);
         }  
     }
-    console.log(messages);
 
     // When the text box of invite input changes
     const handleInviteTextChange = (event) => {
@@ -187,10 +151,7 @@ const Chat = () => {
                 console.log('Trying to send message:', newMessage);
                 try {
                     const res = await axios.post(`${rootURL}/postMessage`, {author: currUserId, content:newMessage, chat_id: currentChatId});
-                    console.log("sent");
                     setMessageId(res.data.message_id);
-                    console.log("this is the id");
-                    console.log(res.data.message_id);
                     setTimestamp(res.data.timestamp);
                     setSendMessageDummy(!sendMessageDummy);
                 } catch (error) {
@@ -218,7 +179,6 @@ const Chat = () => {
         const helper = async () => {
             try {
                 if (newFriendChatInvite === currUsername) {
-                    console.log("3");
                     setInputPlaceholder("You can't chat with yourself.");
                     setChatMenuInputClass("chatMenuInputError");
                     setNewFriendChatInvite("");
@@ -241,20 +201,15 @@ const Chat = () => {
                     const res1 = await axios.get(`${rootURL}/getStatus`, { params: { user_id: friend_id } });
                     
                     const friend_status = res1.data.data[0].status;
-                    console.log(friend_status);
                     if (!friend_status) {
                         setInputPlaceholder("Friend is not online currently, try again later.");
                         setChatMenuInputClass("chatMenuInputError");
                         setNewFriendChatInvite("");
                         return;
                     }
-                    console.log("hi!xxxx");
-                    console.log(currUserId);
                 
                     // otherwise check if they are already in a 1 on 1 chat then just change the chatMenuInput placeholder text to "already have convo"
                     const res2 = await axios.get(`${rootURL}/chatAlreadyExists`, { params: { user_id1: currUserId , user_id2: friend_id} });
-                    console.log("ok1");
-                    console.log(res2);
                     const already_exists = res2.data.status;
                     if (already_exists) {
                         setInputPlaceholder("You already have a chat with this person.");
@@ -275,10 +230,8 @@ const Chat = () => {
 
                     // otherwise just send a chat req
                     sendNewChatReq(currUserId, friend_id, -1);
-                    console.log("sent chat request");
                 }
             } catch (error) {
-                console.log("8");
                 console.log(error);
             }            
         }
@@ -312,23 +265,15 @@ const Chat = () => {
                     const res1 = await axios.get(`${rootURL}/getStatus`, { params: { user_id: friend_id } });
                     
                     const friend_status = res1.data.data[0].status;
-                    console.log(friend_status);
                     if (!friend_status) {
                         setInputPlaceholder2("Friend is not online currently, try again later.");
                         setChatInvClass("chatMenuInputError");
                         setInviteUsername("");
                         return;
                     }
-                    console.log("hi!xxxx");
-                    console.log(currUserId);
-// ***********************************************************
+
                     // otherwise check if they are already in the chat rn
-                    console.log("calling already in chat");
-                    console.log(friend_id);
-                    console.log(currentChatId);
                     const res2 = await axios.get(`${rootURL}/alreadyInChat`, { params: { userId: friend_id , chatId: currentChatId} });
-                    console.log("the status");
-                    console.log(res2.data);
                     if (res2.data.status) {
                         // they are already in the chat
                         setInputPlaceholder2("This person is already here.");
@@ -361,25 +306,20 @@ const Chat = () => {
 
     const handleLeave = async () => {
         const res = await axios.post(`${rootURL}/postMessage`, {author: 9, content:`User ${currUserId} has left`, chat_id: currentChatId});
-        console.log("leave cp1");
         const leaveHelper = async () => {
             const res1 = await axios.post(`${rootURL}/leaveChat`, { userId: currUserId, chatId: currentChatId });
         };
         await leaveHelper();
-        console.log("leave cp2");
         setCurrentChatId(null);
         setClickedInvite(!clickedInvite);
     }
 
     // Helper to handleNewInvite to actually send the request
     function sendNewChatReq(userId, friendId, senderChatId) {
-        console.log("sending chat req with params");
-        console.log(senderChatId);
         const sendChatRequest = async () => {
             const res = await axios.post(`${rootURL}/sendChatRequest`, { sender: userId, receiver: friendId, origin: senderChatId });
 
             if (res.data.message == "Your friend already sent you a request, please accept.") {
-                console.log("are we here");
                 setInputPlaceholder("Your friend already sent the request, please accept.");
                 setChatMenuInputClass("chatMenuInputError");
                 setNewFriendChatInvite("");
@@ -393,12 +333,7 @@ const Chat = () => {
     // Called when you click on a convo
     async function handleSelectChat(chatId) {
         setCurrentChatId(chatId);
-        console.log(chatId);
-        console.log(currentChatId);
-        console.log("getting profiles now");
         await getProfiles(chatId);
-        console.log(chatProfiles);
-        console.log("got profiles");
         setConvoMapDummy(!convoMapDummy);
         await loadMsgs(chatId);
     }
@@ -413,10 +348,6 @@ const Chat = () => {
             socket.current.emit("leave room", {
                 room : oldChatId
             })
-            
-            console.log("about to join a room");
-            console.log("this is the chatid");
-            console.log(currentChatId);
             if (currentChatId) {
                 socket.current.emit("join room", {
                     room : currentChatId
@@ -429,8 +360,6 @@ const Chat = () => {
     
     // When you click on an invite anywhere calls below
     function handleClickInvite() {
-        console.log("this is invites");
-        console.log(invites);
         setClickedInvite(!clickedInvite);
     }
     
@@ -443,10 +372,6 @@ const Chat = () => {
     const getInvites = async () => {
         try {
             const res = await axios.get(`${rootURL}/getInvites`, { params: { userId: currUserId } });
-      
-            console.log(res);
-            console.log("aliica");
-            console.log(res.data.data);
             setInvites(res.data.data);
         } catch (error) {
             console.log(error);
@@ -454,27 +379,16 @@ const Chat = () => {
     }
 
     async function handleAcceptInvite(senderId, receiverId,senderChatId) {
-        console.log("this user id is");
-        console.log(currUserId);
-        console.log(senderId);
-        console.log(receiverId);
-        console.log(senderChatId);
         // send accept Chat invite request and rerender
         try {
             const acceptInvite = async () => {
-                console.log("did we get called here");
                 const res = await axios.post(`${rootURL}/acceptChatRequest`, { sender: senderId, receiver: receiverId , origin: senderChatId});
-                console.log(res);
             };
-            console.log("test2");
-
             await acceptInvite();
             await setClickedInvite(!clickedInvite);
-            console.log("test3");
         } catch (error) {
             console.log(error);
         }
-        console.log("did we clikc this");
         getInvites();
     }
 
